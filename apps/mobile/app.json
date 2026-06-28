@@ -9,6 +9,10 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.quickcapture.app",
+      "entitlements": {
+        "com.apple.security.application-groups": ["group.com.quickcapture.shared"]
+      },
       "infoPlist": {
         "NSCameraUsageDescription": "Quick Capture uses the camera to photograph handwritten notes and turn them into todos.",
         "NSPhotoLibraryUsageDescription": "Quick Capture lets you pick note photos from your library to extract todos.",
@@ -48,6 +52,7 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "@bacons/apple-targets",
       "expo-router",
       [
         "expo-splash-screen",

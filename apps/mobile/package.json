@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@bacons/apple-targets": "^4.0.7",
     "@neondatabase/auth": "^0.4.2-beta",
     "@quick-capture/shared": "*",
     "@react-native-community/datetimepicker": "9.1.0",

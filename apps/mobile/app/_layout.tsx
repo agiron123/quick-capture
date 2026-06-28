@@ -10,6 +10,7 @@ import 'react-native-reanimated';
 import { useColorScheme } from '@/components/useColorScheme';
 import { AuthProvider } from '@/contexts/auth-provider';
 import { initNotificationHandlers } from '@/services/notification-handler';
+import { initWatchCaptureBridge } from '@/services/watch-capture-bridge';
 import { initTodoStore } from '@/utils/todo-store';
 
 export { ErrorBoundary } from 'expo-router';
@@ -32,12 +33,14 @@ export default function RootLayout() {
 
   useEffect(() => {
     initNotificationHandlers();
+    const stopWatchBridge = initWatchCaptureBridge();
     initTodoStore()
       .then(() => setDbReady(true))
       .catch((initError) => {
         console.error('Failed to initialize SQLite database', initError);
         throw initError;
       });
+    return () => stopWatchBridge();
   }, []);
 
   useEffect(() => {
