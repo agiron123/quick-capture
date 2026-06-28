@@ -101,7 +101,7 @@ Input (voice / photo / text)
 
 ### Phase 4 — Beyond todos
 
-- [ ] Search and filter
+- [x] Search and filter (title search + open/done) — [spec](./docs/features/search-filter.md)
 - [ ] Export / share
 - [ ] Widget or shortcut for instant capture
 
@@ -116,9 +116,10 @@ Input (voice / photo / text)
 Phase 3 core is shipped. Remaining priorities:
 
 1. **OAuth providers** — Google + GitHub in Neon Console
-2. **Search and filter** — Phase 4
+2. **Export / share** — Phase 4
 
 Specs:
+- [docs/features/search-filter.md](./docs/features/search-filter.md)
 - [docs/features/subtasks.md](./docs/features/subtasks.md)
 - [docs/features/todo-tags.md](./docs/features/todo-tags.md)
 - [docs/features/todo-priority.md](./docs/features/todo-priority.md)

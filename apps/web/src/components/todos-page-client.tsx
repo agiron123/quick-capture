@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 
 import { AddSubtaskDialog } from '@/components/add-subtask-dialog';
 import { AppShell, HeaderAddButton } from '@/components/app-shell';
+import { TodoFilterBar } from '@/components/todo-filter-bar';
 import { ManageListsDialog } from '@/components/manage-lists-dialog';
 import { SetDueDateDialog } from '@/components/set-due-date-dialog';
 import { SetPriorityDialog } from '@/components/set-priority-dialog';
@@ -25,6 +26,7 @@ import { useLists } from '@/hooks/use-lists';
 import { useNotificationHighlight } from '@/hooks/use-notification-highlight';
 import { useTodos } from '@/hooks/use-todos';
 import type { Todo } from '@quick-capture/shared';
+import { filterTodos, type TodoStatusFilter } from '@quick-capture/shared';
 
 export function TodosPageClient() {
   const { lists, activeListId, setActiveListId, isLoading: listsLoading } = useLists();
@@ -51,6 +53,13 @@ export function TodosPageClient() {
   const [tagsTodo, setTagsTodo] = useState<Todo | null>(null);
   const [subtaskParent, setSubtaskParent] = useState<Todo | null>(null);
   const [newTitle, setNewTitle] = useState('');
+  const [query, setQuery] = useState('');
+  const [status, setStatus] = useState<TodoStatusFilter>('all');
+
+  const filteredTodos = useMemo(
+    () => filterTodos(todos, { query, status }),
+    [todos, query, status]
+  );
 
   const activeList = useMemo(
     () => lists.find((list) => list.id === activeListId),
@@ -84,6 +93,15 @@ export function TodosPageClient() {
           </p>
         ) : null}
 
+        {todos.length > 0 ? (
+          <TodoFilterBar
+            query={query}
+            status={status}
+            onQueryChange={setQuery}
+            onStatusChange={setStatus}
+          />
+        ) : null}
+
         {isLoading || listsLoading ? (
           <div className="space-y-3 p-4">
             <Skeleton className="h-16 w-full" />
@@ -92,7 +110,7 @@ export function TodosPageClient() {
         ) : (
           <TodoList
             listName={activeList?.name}
-            todos={todos}
+            todos={filteredTodos}
             highlightTodoId={highlightTodoId}
             onToggle={(id) => void toggleTodo(id)}
             onDelete={(id) => void deleteTodo(id)}
