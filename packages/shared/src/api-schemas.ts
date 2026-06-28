@@ -32,6 +32,9 @@ export const updateTodoSchema = z.object({
   title: z.string().trim().min(1).optional(),
   completed: z.boolean().optional(),
   reminderAt: z.string().datetime().nullable().optional(),
+  listId: z.string().min(1).optional(),
+  sortOrder: z.number().int().nonnegative().optional(),
+  baseUpdatedAt: z.string().datetime().optional(),
 });
 
 export const reorderTodosSchema = z.object({

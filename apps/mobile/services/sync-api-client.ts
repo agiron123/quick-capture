@@ -1,6 +1,7 @@
 import type { Todo, TodoListRecord } from '@quick-capture/shared';
 
 import { getAccessToken } from '@/services/auth-client';
+import { SyncConflictError } from '@/services/sync-conflict';
 
 function getApiBaseUrl(): string {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL?.trim();
@@ -56,15 +57,10 @@ export async function fetchTodosFromApi(listId: string): Promise<Todo[]> {
 
 export async function updateTodoReminderOnApi(
   id: string,
-  reminderAt: string | null
-): Promise<void> {
-  const response = await syncApiFetch(`/api/todos/${id}`, {
-    method: 'PATCH',
-    body: JSON.stringify({ reminderAt }),
-  });
-  if (!response.ok) {
-    throw new Error(await parseApiError(response));
-  }
+  reminderAt: string | null,
+  baseUpdatedAt?: string
+): Promise<Todo> {
+  return updateTodoOnApi(id, { reminderAt, baseUpdatedAt });
 }
 
 export async function createTodoOnApi(input: {
@@ -129,12 +125,25 @@ export async function createTodosBatchOnApi(
 
 export async function updateTodoOnApi(
   id: string,
-  patch: { title?: string; completed?: boolean; reminderAt?: string | null }
+  patch: {
+    title?: string;
+    completed?: boolean;
+    reminderAt?: string | null;
+    listId?: string;
+    sortOrder?: number;
+    baseUpdatedAt?: string;
+  }
 ): Promise<Todo> {
   const response = await syncApiFetch(`/api/todos/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(patch),
   });
+
+  if (response.status === 409) {
+    const data = (await response.json()) as { todo: Todo };
+    throw new SyncConflictError(data.todo);
+  }
+
   if (!response.ok) throw new Error(await parseApiError(response));
   const data = (await response.json()) as { todo: Todo };
   return data.todo;

@@ -8,20 +8,23 @@ import {
   updateTodoOnApi,
 } from '@/services/sync-api-client';
 import { isServerRemindersEnabled } from '@/services/sync-mode';
+import { SyncConflictError } from '@/services/sync-conflict';
 import * as listRepository from '@/utils/list-repository';
 import { refreshListsFromDb } from '@/utils/list-store';
 import * as todoRepository from '@/utils/todo-repository';
 import { refreshTodosFromDb } from '@/utils/todo-store';
 
-async function fetchAllServerTodoIds(serverLists: { id: string }[]): Promise<Set<string>> {
-  const ids = new Set<string>();
+async function fetchAllServerTodos(
+  serverLists: { id: string }[]
+): Promise<Map<string, Todo>> {
+  const map = new Map<string, Todo>();
   for (const list of serverLists) {
     const todos = await fetchTodosFromApi(list.id);
     for (const todo of todos) {
-      ids.add(todo.id);
+      map.set(todo.id, todo);
     }
   }
-  return ids;
+  return map;
 }
 
 function buildListIdMap(
@@ -70,7 +73,17 @@ async function ensureServerLists(
   return nextServerLists;
 }
 
-async function pushTodosForList(listId: string, todos: Todo[]): Promise<void> {
+function localTodoDiffers(local: Todo, server: Todo, mappedListId: string): boolean {
+  return (
+    local.title !== server.title ||
+    local.completed !== server.completed ||
+    (local.reminderAt ?? null) !== (server.reminderAt ?? null) ||
+    mappedListId !== server.listId ||
+    local.sortOrder !== server.sortOrder
+  );
+}
+
+async function pushNewTodosForList(listId: string, todos: Todo[]): Promise<void> {
   if (todos.length === 0) return;
 
   await createTodosBatchOnApi(
@@ -89,13 +102,42 @@ async function pushTodosForList(listId: string, todos: Todo[]): Promise<void> {
     todos.map(async (todo) => {
       if (!todo.completed && !todo.reminderAt) return;
 
-      const patch: { completed?: boolean; reminderAt?: string | null } = {};
+      const patch: {
+        completed?: boolean;
+        reminderAt?: string | null;
+        baseUpdatedAt?: string;
+      } = {};
       if (todo.completed) patch.completed = true;
       if (todo.reminderAt) patch.reminderAt = todo.reminderAt;
 
       await updateTodoOnApi(todo.id, patch);
     })
   );
+}
+
+async function pushExistingTodoChanges(
+  local: Todo,
+  server: Todo,
+  mappedListId: string
+): Promise<void> {
+  if (!localTodoDiffers(local, server, mappedListId)) return;
+
+  try {
+    await updateTodoOnApi(local.id, {
+      title: local.title,
+      completed: local.completed,
+      reminderAt: local.reminderAt ?? null,
+      listId: mappedListId,
+      sortOrder: local.sortOrder,
+      baseUpdatedAt: local.updatedAt ?? server.updatedAt,
+    });
+  } catch (error) {
+    if (error instanceof SyncConflictError) {
+      console.warn(`Sync conflict for todo ${local.id}; server version wins`);
+      return;
+    }
+    throw error;
+  }
 }
 
 export async function pushLocalToServer(): Promise<void> {
@@ -112,21 +154,35 @@ export async function pushLocalToServer(): Promise<void> {
   const listIdMap = buildListIdMap(localLists, serverLists);
   serverLists = await ensureServerLists(localLists, listIdMap, serverLists);
 
-  const serverTodoIds = await fetchAllServerTodoIds(serverLists);
-  const todosToPush = localTodos.filter((todo) => !serverTodoIds.has(todo.id));
-  if (todosToPush.length === 0) return;
+  const serverTodoMap = await fetchAllServerTodos(serverLists);
 
-  const todosByServerList = new Map<string, Todo[]>();
-  for (const todo of todosToPush) {
+  const newTodos: Todo[] = [];
+  for (const local of localTodos) {
+    if (!serverTodoMap.has(local.id)) {
+      newTodos.push(local);
+    }
+  }
+
+  const newTodosByList = new Map<string, Todo[]>();
+  for (const todo of newTodos) {
     const serverListId = listIdMap.get(todo.listId) ?? DEFAULT_LIST_ID;
-    const group = todosByServerList.get(serverListId) ?? [];
+    const group = newTodosByList.get(serverListId) ?? [];
     group.push(todo);
-    todosByServerList.set(serverListId, group);
+    newTodosByList.set(serverListId, group);
   }
 
-  for (const [listId, todos] of todosByServerList) {
-    await pushTodosForList(listId, todos);
+  for (const [listId, todos] of newTodosByList) {
+    await pushNewTodosForList(listId, todos);
   }
+
+  await Promise.all(
+    localTodos.map(async (local) => {
+      const server = serverTodoMap.get(local.id);
+      if (!server) return;
+      const mappedListId = listIdMap.get(local.listId) ?? local.listId;
+      await pushExistingTodoChanges(local, server, mappedListId);
+    })
+  );
 }
 
 export async function pullTodosFromServer(): Promise<void> {

@@ -114,9 +114,15 @@ export async function toggleTodoInStore(id: string): Promise<void> {
   const todo = cache.find((item) => item.id === id);
   if (!todo) return;
   const completed = !todo.completed;
+  let serverUpdatedAt: string | undefined;
 
   if (isServerRemindersEnabled()) {
-    await updateTodoOnApi(id, { completed });
+    const updated = await updateTodoOnApi(id, {
+      completed,
+      baseUpdatedAt: todo.updatedAt,
+    });
+    serverUpdatedAt = updated.updatedAt;
+    await todoRepository.updateTodoUpdatedAt(id, serverUpdatedAt ?? todo.createdAt);
   }
 
   if (completed) {
@@ -134,6 +140,7 @@ export async function toggleTodoInStore(id: string): Promise<void> {
       ? {
           ...item,
           completed,
+          ...(serverUpdatedAt ? { updatedAt: serverUpdatedAt } : {}),
           reminderAt: completed ? undefined : item.reminderAt,
           notificationId: completed ? undefined : item.notificationId,
         }
@@ -167,24 +174,25 @@ export async function setReminderInStore(id: string, reminderAt: string | null):
 
   if (isServerRemindersEnabled()) {
     try {
-      await updateTodoReminderOnApi(id, reminderAt);
+      const updated = await updateTodoReminderOnApi(id, reminderAt, todo.updatedAt);
+      await todoRepository.updateTodoReminder(id, reminderAt, null);
+      await todoRepository.updateTodoUpdatedAt(id, updated.updatedAt ?? todo.createdAt);
+      cache = cache.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              reminderAt: reminderAt ?? undefined,
+              notificationId: undefined,
+              updatedAt: updated.updatedAt ?? item.updatedAt,
+            }
+          : item
+      );
+      notifyListeners();
+      return Boolean(reminderAt);
     } catch (error) {
       console.error('Failed to sync reminder to API', error);
       return false;
     }
-
-    await todoRepository.updateTodoReminder(id, reminderAt, null);
-    cache = cache.map((item) =>
-      item.id === id
-        ? {
-            ...item,
-            reminderAt: reminderAt ?? undefined,
-            notificationId: undefined,
-          }
-        : item
-    );
-    notifyListeners();
-    return Boolean(reminderAt);
   }
 
   let notificationId: string | undefined;
@@ -217,10 +225,23 @@ export async function reorderTodosInStore(listId: string, todos: Todo[]): Promis
   const reordered = todos.map((todo, index) => ({ ...todo, sortOrder: index, listId }));
 
   if (isServerRemindersEnabled()) {
-    await reorderTodosOnApi(
+    const serverTodos = await reorderTodosOnApi(
       listId,
       reordered.map((todo) => todo.id)
     );
+    const serverById = new Map(serverTodos.map((todo) => [todo.id, todo]));
+    for (const todo of reordered) {
+      const serverTodo = serverById.get(todo.id);
+      if (serverTodo?.updatedAt) {
+        await todoRepository.updateTodoUpdatedAt(todo.id, serverTodo.updatedAt);
+      }
+    }
+    for (let index = 0; index < reordered.length; index++) {
+      const serverTodo = serverById.get(reordered[index].id);
+      if (serverTodo?.updatedAt) {
+        reordered[index] = { ...reordered[index], updatedAt: serverTodo.updatedAt };
+      }
+    }
   }
 
   await todoRepository.updateTodosOrder(reordered);

@@ -19,6 +19,7 @@ Quick Capture turns messy inputs (handwritten notes, voice, manual entry) into a
 | Neon Auth (web + mobile) | ✅ Shipped | [docs/features/auth.md](./docs/features/auth.md) |
 | API-backed push reminders | ✅ Shipped | [docs/features/push-notifications.md](./docs/features/push-notifications.md) |
 | Mobile cloud sync | ✅ Shipped | [docs/features/auth.md](./docs/features/auth.md) |
+| Sync conflict resolution | ✅ Shipped | [docs/features/sync-conflicts.md](./docs/features/sync-conflicts.md) |
 
 ## Vision
 
@@ -88,7 +89,7 @@ Input (voice / photo / text)
   - [x] Device management UI on web (`/devices`)
 - [x] Object storage (R2 / S3-compatible) for capture media in production
 - [x] Notification tap deep links (mobile + web)
-- [ ] Sync conflict resolution (same todo edited offline on two devices)
+- [x] Sync conflict resolution (same todo edited offline on two devices) — [spec](./docs/features/sync-conflicts.md)
 - [ ] Due dates, priority, tags, subtasks
 
 ### Phase 4 — Beyond todos
@@ -108,10 +109,11 @@ Input (voice / photo / text)
 Phase 3 core is shipped. Remaining priorities:
 
 1. **OAuth providers** — Google + GitHub in Neon Console
-2. **Sync conflict resolution** — same todo edited on multiple devices offline
+2. **Root `dev:web-api` script** — API + web in one command
 
 Specs:
 - [docs/features/auth.md](./docs/features/auth.md)
+- [docs/features/sync-conflicts.md](./docs/features/sync-conflicts.md)
 - [docs/features/web-app.md](./docs/features/web-app.md)
 - [docs/features/push-notifications.md](./docs/features/push-notifications.md)
 - [docs/features/scheduled-reminders.md](./docs/features/scheduled-reminders.md)

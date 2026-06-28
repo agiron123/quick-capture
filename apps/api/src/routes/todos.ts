@@ -142,8 +142,14 @@ todoRoutes.patch('/:id', async (c) => {
     return c.json({ error: 'Todo not found' }, 404);
   }
 
+  if (parsed.data.baseUpdatedAt !== undefined && todo.updatedAt !== parsed.data.baseUpdatedAt) {
+    return c.json({ error: 'Conflict', todo: serializeTodo(todo) }, 409);
+  }
+
   const updates: Partial<typeof todo> = {};
   if (parsed.data.title !== undefined) updates.title = parsed.data.title;
+  if (parsed.data.listId !== undefined) updates.listId = parsed.data.listId;
+  if (parsed.data.sortOrder !== undefined) updates.sortOrder = parsed.data.sortOrder;
   if (parsed.data.completed !== undefined) {
     updates.completed = parsed.data.completed;
     if (parsed.data.completed) {
@@ -155,6 +161,8 @@ todoRoutes.patch('/:id', async (c) => {
     updates.reminderAt = parsed.data.reminderAt;
     updates.reminderSentAt = null;
   }
+
+  updates.updatedAt = new Date().toISOString();
 
   await db
     .update(todos)
@@ -216,6 +224,7 @@ async function insertTodos(
         source: item.source,
         sortOrder,
         createdAt: now,
+        updatedAt: now,
         reminderAt: item.reminderAt ?? null,
         transcript: item.transcript ?? null,
         captureId: item.captureId ?? null,
@@ -230,6 +239,7 @@ async function insertTodos(
   return rows.map((row) =>
     serializeTodo({
       ...row,
+      updatedAt: row.updatedAt,
       reminderSentAt: null,
       captureId: row.captureId,
     })

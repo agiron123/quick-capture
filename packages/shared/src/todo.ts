@@ -8,6 +8,7 @@ export type Todo = {
   listId: string;
   createdAt: string;
   sortOrder: number;
+  updatedAt?: string;
   reminderAt?: string;
   notificationId?: string;
   captureId?: string;
