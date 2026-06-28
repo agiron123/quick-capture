@@ -14,6 +14,7 @@ import { isServerRemindersEnabled } from '@/services/sync-mode';
 import { normalizeTodoTags } from '@quick-capture/shared';
 import type { Todo } from '@/types/todo';
 import { getDatabase } from '@/utils/db';
+import { createId } from '@/utils/id';
 import { initListStore } from '@/utils/list-store';
 import * as todoRepository from '@/utils/todo-repository';
 
@@ -29,7 +30,7 @@ function notifyListeners(): void {
 }
 
 function nextSortOrders(count: number, listId: string): number[] {
-  const listTodos = cache.filter((todo) => todo.listId === listId);
+  const listTodos = cache.filter((todo) => todo.listId === listId && !todo.parentId);
   const minOrder =
     listTodos.length > 0 ? Math.min(...listTodos.map((todo) => todo.sortOrder)) : 0;
   return Array.from({ length: count }, (_, index) => minOrder - count + index);
@@ -76,12 +77,51 @@ export async function addTodoToStore(todo: Todo): Promise<void> {
       clientId: todo.id,
       transcript: todo.transcript,
       reminderAt: todo.reminderAt,
+      parentId: todo.parentId,
     });
     await todoRepository.insertTodo({ ...created, noteImageUri: todo.noteImageUri, noteAudioUri: todo.noteAudioUri });
     cache = [{ ...created, noteImageUri: todo.noteImageUri, noteAudioUri: todo.noteAudioUri }, ...cache];
   } else {
     await todoRepository.insertTodo(todo);
     cache = [todo, ...cache];
+  }
+  notifyListeners();
+}
+
+export async function addSubtaskToStore(parentId: string, title: string): Promise<void> {
+  const trimmed = title.trim();
+  if (!trimmed) return;
+
+  const parent = cache.find((item) => item.id === parentId);
+  if (!parent || parent.parentId) return;
+
+  const siblings = cache.filter((item) => item.parentId === parentId);
+  const sortOrder = siblings.length;
+  const todo: Todo = {
+    id: createId(),
+    title: trimmed,
+    completed: false,
+    source: 'manual',
+    listId: parent.listId,
+    parentId,
+    createdAt: new Date().toISOString(),
+    sortOrder,
+  };
+
+  if (isServerRemindersEnabled()) {
+    const created = await createTodoOnApi({
+      title: todo.title,
+      source: todo.source,
+      listId: todo.listId,
+      parentId: todo.parentId,
+      sortOrder: todo.sortOrder,
+      clientId: todo.id,
+    });
+    await todoRepository.insertTodo(created);
+    cache = [...cache, created];
+  } else {
+    await todoRepository.insertTodo(todo);
+    cache = [...cache, todo];
   }
   notifyListeners();
 }
@@ -155,16 +195,24 @@ export async function toggleTodoInStore(id: string): Promise<void> {
 
 export async function deleteTodoFromStore(id: string): Promise<void> {
   const todo = cache.find((item) => item.id === id);
+  const children = cache.filter((item) => item.parentId === id);
+
   if (todo?.notificationId) {
     await cancelReminder(todo.notificationId);
+  }
+  for (const child of children) {
+    if (child.notificationId) {
+      await cancelReminder(child.notificationId);
+    }
   }
 
   if (isServerRemindersEnabled()) {
     await deleteTodoOnApi(id);
   }
 
+  await todoRepository.deleteTodosByParentId(id);
   await todoRepository.deleteTodoById(id);
-  cache = cache.filter((item) => item.id !== id);
+  cache = cache.filter((item) => item.id !== id && item.parentId !== id);
   notifyListeners();
 }
 
@@ -340,8 +388,9 @@ export async function reorderTodosInStore(listId: string, todos: Todo[]): Promis
   }
 
   await todoRepository.updateTodosOrder(reordered);
+  const subtasks = cache.filter((todo) => todo.listId === listId && todo.parentId);
   const otherTodos = cache.filter((todo) => todo.listId !== listId);
-  cache = [...otherTodos, ...reordered];
+  cache = [...otherTodos, ...reordered, ...subtasks];
   notifyListeners();
 }
 

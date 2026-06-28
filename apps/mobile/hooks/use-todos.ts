@@ -4,6 +4,7 @@ import { useActiveListId } from '@/hooks/use-lists';
 import type { Todo, TodoSource } from '@/types/todo';
 import { createId } from '@/utils/id';
 import {
+    addSubtaskToStore,
     addTodoToStore,
     addTodosToStore,
     createSortOrdersForNewTodos,
@@ -43,6 +44,7 @@ export function useTodos(): {
   setDueDate: (id: string, dueAt: string | null) => Promise<void>;
   setPriority: (id: string, priority: import('@quick-capture/shared').TodoPriority | null) => Promise<void>;
   setTags: (id: string, tags: string[]) => Promise<void>;
+  addSubtask: (parentId: string, title: string) => void;
 } {
   const activeListId = useActiveListId();
   const allTodos = useSyncExternalStore(
@@ -144,6 +146,10 @@ export function useTodos(): {
     return setTagsInStore(id, tags);
   }, []);
 
+  const addSubtask = useCallback((parentId: string, title: string) => {
+    void addSubtaskToStore(parentId, title);
+  }, []);
+
   return {
     todos,
     getTodoById,
@@ -156,5 +162,6 @@ export function useTodos(): {
     setDueDate,
     setPriority,
     setTags,
+    addSubtask,
   };
 }

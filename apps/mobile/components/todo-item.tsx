@@ -12,7 +12,9 @@ import { formatTagsLabel } from '@/utils/format-tags';
 
 type TodoItemProps = {
   todo: Todo;
+  depth?: number;
   highlighted?: boolean;
+  canAddSubtask?: boolean;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onDrag?: () => void;
@@ -21,7 +23,9 @@ type TodoItemProps = {
 
 export function TodoItem({
   todo,
+  depth = 0,
   highlighted = false,
+  canAddSubtask = false,
   onToggle,
   onDelete,
   onDrag,
@@ -57,6 +61,11 @@ export function TodoItem({
     router.push({ pathname: '/set-tags', params: { todoId: todo.id } } as Href);
   };
 
+  const openAddSubtask = async () => {
+    await Haptics.selectionAsync();
+    router.push({ pathname: '/add-subtask', params: { todoId: todo.id } } as Href);
+  };
+
   const hasReminder = Boolean(todo.reminderAt);
   const hasDueDate = Boolean(todo.dueAt);
   const hasPriority = Boolean(todo.priority);
@@ -66,6 +75,7 @@ export function TodoItem({
   return (
     <View
       style={{
+        marginLeft: depth > 0 ? 28 : 0,
         backgroundColor: PlatformColor('secondarySystemBackground'),
         borderRadius: 14,
         borderWidth: highlighted ? 2 : 0,
@@ -237,6 +247,21 @@ export function TodoItem({
           size={20}
         />
       </Pressable>
+
+      {canAddSubtask ? (
+        <Pressable
+          onPress={openAddSubtask}
+          accessibilityRole="button"
+          accessibilityLabel="Add subtask"
+          hitSlop={8}
+          style={{ padding: 4 }}>
+          <SymbolView
+            name={{ ios: 'plus.circle', android: 'add_circle', web: 'add_circle' }}
+            tintColor={PlatformColor('systemGreen')}
+            size={20}
+          />
+        </Pressable>
+      ) : null}
 
       {todo.noteImageUri ? (
         <Image

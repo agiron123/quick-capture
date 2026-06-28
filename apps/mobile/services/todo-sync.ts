@@ -102,6 +102,7 @@ async function pushNewTodosForList(listId: string, todos: Todo[]): Promise<void>
       dueAt: todo.dueAt,
       priority: todo.priority,
       tags: todo.tags,
+      parentId: todo.parentId,
       sortOrder: todo.sortOrder,
     }))
   );

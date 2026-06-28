@@ -23,6 +23,7 @@ Quick Capture turns messy inputs (handwritten notes, voice, manual entry) into a
 | Due dates (`dueAt`) | ✅ Shipped | [docs/features/due-dates.md](./docs/features/due-dates.md) |
 | Todo priority | ✅ Shipped | [docs/features/todo-priority.md](./docs/features/todo-priority.md) |
 | Todo tags | ✅ Shipped | [docs/features/todo-tags.md](./docs/features/todo-tags.md) |
+| Subtasks | ✅ Shipped | [docs/features/subtasks.md](./docs/features/subtasks.md) |
 
 ## Vision
 
@@ -96,7 +97,7 @@ Input (voice / photo / text)
 - [x] Due dates (`dueAt`) — [spec](./docs/features/due-dates.md)
 - [x] Priority (`low` / `medium` / `high`) — [spec](./docs/features/todo-priority.md)
 - [x] Tags (`string[]`) — [spec](./docs/features/todo-tags.md)
-- [ ] Subtasks
+- [x] Subtasks — [spec](./docs/features/subtasks.md)
 
 ### Phase 4 — Beyond todos
 
@@ -115,9 +116,10 @@ Input (voice / photo / text)
 Phase 3 core is shipped. Remaining priorities:
 
 1. **OAuth providers** — Google + GitHub in Neon Console
-2. **Subtasks** — parent/child todos
+2. **Search and filter** — Phase 4
 
 Specs:
+- [docs/features/subtasks.md](./docs/features/subtasks.md)
 - [docs/features/todo-tags.md](./docs/features/todo-tags.md)
 - [docs/features/todo-priority.md](./docs/features/todo-priority.md)
 - [docs/features/due-dates.md](./docs/features/due-dates.md)

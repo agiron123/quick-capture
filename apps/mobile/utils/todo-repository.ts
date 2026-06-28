@@ -9,6 +9,7 @@ type TodoRow = {
   completed: number;
   source: string;
   list_id: string;
+  parent_id: string | null;
   created_at: string;
   updated_at: string | null;
   due_at: string | null;
@@ -51,6 +52,7 @@ function rowToTodo(row: TodoRow): Todo {
     completed: row.completed === 1,
     source: row.source as TodoSource,
     listId: row.list_id,
+    parentId: row.parent_id ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at ?? row.created_at,
     dueAt: row.due_at ?? undefined,
@@ -79,8 +81,8 @@ export async function insertTodo(todo: Todo): Promise<void> {
     `INSERT INTO todos (
       id, title, completed, source, list_id, created_at, updated_at, due_at, priority, sort_order,
       reminder_at, notification_id,
-      note_image_uri, note_audio_uri, transcript, tags
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      note_image_uri, note_audio_uri, transcript, parent_id, tags
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       todo.id,
       todo.title,
@@ -97,6 +99,7 @@ export async function insertTodo(todo: Todo): Promise<void> {
       todo.noteImageUri ?? null,
       todo.noteAudioUri ?? null,
       todo.transcript ?? null,
+      todo.parentId ?? null,
       tagsToJson(todo.tags),
     ]
   );
@@ -111,8 +114,8 @@ export async function insertTodos(todos: Todo[]): Promise<void> {
         `INSERT INTO todos (
           id, title, completed, source, list_id, created_at, updated_at, due_at, priority, sort_order,
           reminder_at, notification_id,
-          note_image_uri, note_audio_uri, transcript, tags
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          note_image_uri, note_audio_uri, transcript, parent_id, tags
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           todo.id,
           todo.title,
@@ -129,6 +132,7 @@ export async function insertTodos(todos: Todo[]): Promise<void> {
           todo.noteImageUri ?? null,
           todo.noteAudioUri ?? null,
           todo.transcript ?? null,
+          todo.parentId ?? null,
           tagsToJson(todo.tags),
         ]
       );
@@ -198,6 +202,11 @@ export async function updateTodosOrder(todos: Todo[]): Promise<void> {
   });
 }
 
+export async function deleteTodosByParentId(parentId: string): Promise<void> {
+  const db = await getDatabase();
+  await db.runAsync('DELETE FROM todos WHERE parent_id = ?', [parentId]);
+}
+
 export async function deleteTodoById(id: string): Promise<void> {
   const db = await getDatabase();
   await db.runAsync('DELETE FROM todos WHERE id = ?', [id]);
@@ -217,8 +226,8 @@ export async function replaceAllTodos(todos: Todo[]): Promise<void> {
         `INSERT INTO todos (
           id, title, completed, source, list_id, created_at, updated_at, due_at, priority, sort_order,
           reminder_at, notification_id,
-          note_image_uri, note_audio_uri, transcript, tags
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          note_image_uri, note_audio_uri, transcript, parent_id, tags
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           todo.id,
           todo.title,
@@ -235,6 +244,7 @@ export async function replaceAllTodos(todos: Todo[]): Promise<void> {
           todo.noteImageUri ?? null,
           todo.noteAudioUri ?? null,
           todo.transcript ?? null,
+          todo.parentId ?? null,
           tagsToJson(todo.tags),
         ]
       );

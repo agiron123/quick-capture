@@ -91,6 +91,7 @@ export async function createTodoOnApi(input: {
   title: string;
   source?: Todo['source'];
   listId: string;
+  parentId?: string;
   sortOrder?: number;
   clientId?: string;
   captureId?: string;
@@ -103,6 +104,7 @@ export async function createTodoOnApi(input: {
       title: input.title,
       source: input.source ?? 'manual',
       listId: input.listId,
+      parentId: input.parentId,
       sortOrder: input.sortOrder,
       clientId: input.clientId,
       captureId: input.captureId,
@@ -124,6 +126,10 @@ export async function createTodosBatchOnApi(
     captureId?: string;
     transcript?: string;
     reminderAt?: string;
+    dueAt?: string;
+    priority?: Todo['priority'];
+    tags?: string[];
+    parentId?: string;
     sortOrder?: number;
   }>
 ): Promise<Todo[]> {
@@ -138,6 +144,10 @@ export async function createTodosBatchOnApi(
         captureId: item.captureId,
         transcript: item.transcript,
         reminderAt: item.reminderAt,
+        dueAt: item.dueAt,
+        priority: item.priority,
+        tags: item.tags,
+        parentId: item.parentId,
         sortOrder: item.sortOrder,
       })),
     }),

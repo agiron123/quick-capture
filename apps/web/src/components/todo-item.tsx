@@ -1,7 +1,7 @@
 'use client';
 
 import type { Todo } from '@quick-capture/shared';
-import { Bell, Calendar, Flag, Hash, Trash2 } from 'lucide-react';
+import { Bell, Calendar, Flag, Hash, ListPlus, Trash2 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,24 +24,30 @@ function sourceLabel(source: Todo['source']): string {
 
 type TodoItemProps = {
   todo: Todo;
+  depth?: number;
   highlighted?: boolean;
+  canAddSubtask?: boolean;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onSetReminder: (todo: Todo) => void;
   onSetDueDate: (todo: Todo) => void;
   onSetPriority: (todo: Todo) => void;
   onSetTags: (todo: Todo) => void;
+  onAddSubtask?: (todo: Todo) => void;
 };
 
 export function TodoItem({
   todo,
+  depth = 0,
   highlighted = false,
+  canAddSubtask = false,
   onToggle,
   onDelete,
   onSetReminder,
   onSetDueDate,
   onSetPriority,
   onSetTags,
+  onAddSubtask,
 }: TodoItemProps) {
   const dueOverdue = todo.dueAt ? isDueOverdue(todo.dueAt, todo.completed) : false;
 
@@ -121,6 +127,16 @@ export function TodoItem({
       >
         <Bell className={`size-4 ${todo.reminderAt ? 'text-orange-600' : ''}`} />
       </Button>
+      {canAddSubtask && onAddSubtask ? (
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Add subtask"
+          onClick={() => onAddSubtask(todo)}
+        >
+          <ListPlus className="size-4 text-green-600" />
+        </Button>
+      ) : null}
       <Button
         variant="ghost"
         size="sm"

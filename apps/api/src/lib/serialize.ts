@@ -22,6 +22,7 @@ export function serializeTodo(row: TodoRow): Todo {
     completed: row.completed,
     source: row.source as TodoSource,
     listId: row.listId,
+    parentId: row.parentId ?? undefined,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     sortOrder: row.sortOrder,

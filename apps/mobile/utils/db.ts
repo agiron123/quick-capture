@@ -58,6 +58,7 @@ async function openAndMigrate(): Promise<SQLite.SQLiteDatabase> {
   await migrateDueAtColumn(db);
   await migratePriorityColumn(db);
   await migrateTagsColumn(db);
+  await migrateParentIdColumn(db);
   await ensureDefaultList(db);
 
   await db.execAsync(`
@@ -127,6 +128,13 @@ async function migrateTagsColumn(db: SQLite.SQLiteDatabase): Promise<void> {
   if (columns.some((column) => column.name === 'tags')) return;
 
   await db.execAsync('ALTER TABLE todos ADD COLUMN tags TEXT');
+}
+
+async function migrateParentIdColumn(db: SQLite.SQLiteDatabase): Promise<void> {
+  const columns = await db.getAllAsync<{ name: string }>('PRAGMA table_info(todos)');
+  if (columns.some((column) => column.name === 'parent_id')) return;
+
+  await db.execAsync('ALTER TABLE todos ADD COLUMN parent_id TEXT');
 }
 
 async function migrateListIdColumn(db: SQLite.SQLiteDatabase): Promise<void> {

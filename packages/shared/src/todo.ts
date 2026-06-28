@@ -8,6 +8,7 @@ export type Todo = {
   completed: boolean;
   source: TodoSource;
   listId: string;
+  parentId?: string;
   createdAt: string;
   sortOrder: number;
   updatedAt?: string;

@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import { AddSubtaskDialog } from '@/components/add-subtask-dialog';
 import { AppShell, HeaderAddButton } from '@/components/app-shell';
 import { ManageListsDialog } from '@/components/manage-lists-dialog';
 import { SetDueDateDialog } from '@/components/set-due-date-dialog';
@@ -34,6 +35,7 @@ export function TodosPageClient() {
     toggleTodo,
     deleteTodo,
     addTodo,
+    addSubtask,
     reorderTodos,
     setReminder,
     setDueDate,
@@ -47,6 +49,7 @@ export function TodosPageClient() {
   const [dueDateTodo, setDueDateTodo] = useState<Todo | null>(null);
   const [priorityTodo, setPriorityTodo] = useState<Todo | null>(null);
   const [tagsTodo, setTagsTodo] = useState<Todo | null>(null);
+  const [subtaskParent, setSubtaskParent] = useState<Todo | null>(null);
   const [newTitle, setNewTitle] = useState('');
 
   const activeList = useMemo(
@@ -97,6 +100,7 @@ export function TodosPageClient() {
             onSetDueDate={setDueDateTodo}
             onSetPriority={setPriorityTodo}
             onSetTags={setTagsTodo}
+            onAddSubtask={setSubtaskParent}
             onReorder={(todoIds) => void reorderTodos(todoIds)}
           />
         )}
@@ -157,6 +161,21 @@ export function TodosPageClient() {
           if (!open) setTagsTodo(null);
         }}
         onSave={setTags}
+      />
+
+      <AddSubtaskDialog
+        parent={subtaskParent}
+        open={Boolean(subtaskParent)}
+        onOpenChange={(open) => {
+          if (!open) setSubtaskParent(null);
+        }}
+        onSave={async (parentId, title) => {
+          try {
+            await addSubtask(parentId, title);
+          } catch (error) {
+            toast.error(error instanceof Error ? error.message : 'Could not add subtask');
+          }
+        }}
       />
     </>
   );

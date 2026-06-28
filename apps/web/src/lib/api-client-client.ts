@@ -62,10 +62,19 @@ export async function fetchTodos(listId: string): Promise<Todo[]> {
   return data.todos;
 }
 
-export async function createTodo(title: string, listId: string): Promise<Todo> {
+export async function createTodo(
+  title: string,
+  listId: string,
+  options?: { parentId?: string }
+): Promise<Todo> {
   const response = await apiFetch('/api/todos', {
     method: 'POST',
-    body: JSON.stringify({ title, source: 'manual', listId }),
+    body: JSON.stringify({
+      title,
+      source: 'manual',
+      listId,
+      parentId: options?.parentId,
+    }),
   });
   if (!response.ok) throw new Error(await parseApiError(response));
   const data = (await response.json()) as { todo: Todo };

@@ -4,7 +4,7 @@ import {
     reorderTodosSchema,
     updateTodoSchema,
 } from '@quick-capture/shared';
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, eq, isNull } from 'drizzle-orm';
 import { Hono } from 'hono';
 
 import { getDatabase, isDatabaseConfigured } from '../db/client.js';
@@ -56,8 +56,18 @@ todoRoutes.post('/', async (c) => {
     try {
       const created = await insertTodos(userId, batchParsed.data.listId, batchParsed.data.todos);
       return c.json({ todos: created }, 201);
-    } catch {
-      return c.json({ error: 'List not found' }, 404);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Request failed';
+      if (message === 'Parent not found') {
+        return c.json({ error: message }, 404);
+      }
+      if (message === 'Nested subtasks not supported') {
+        return c.json({ error: message }, 400);
+      }
+      if (message === 'List not found') {
+        return c.json({ error: message }, 404);
+      }
+      return c.json({ error: message }, 500);
     }
   }
 
@@ -69,8 +79,18 @@ todoRoutes.post('/', async (c) => {
   try {
     const created = await insertTodos(userId, parsed.data.listId, [parsed.data]);
     return c.json({ todo: created[0], todos: created }, 201);
-  } catch {
-    return c.json({ error: 'List not found' }, 404);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Request failed';
+    if (message === 'Parent not found') {
+      return c.json({ error: message }, 404);
+    }
+    if (message === 'Nested subtasks not supported') {
+      return c.json({ error: message }, 400);
+    }
+    if (message === 'List not found') {
+      return c.json({ error: message }, 404);
+    }
+    return c.json({ error: message }, 500);
   }
 });
 
@@ -92,7 +112,13 @@ todoRoutes.put('/reorder', async (c) => {
   const existing = await db
     .select({ id: todos.id })
     .from(todos)
-    .where(and(eq(todos.userId, userId), eq(todos.listId, parsed.data.listId)));
+    .where(
+      and(
+        eq(todos.userId, userId),
+        eq(todos.listId, parsed.data.listId),
+        isNull(todos.parentId)
+      )
+    );
 
   const existingIds = new Set(existing.map((row) => row.id));
   if (
@@ -199,6 +225,23 @@ todoRoutes.delete('/:id', async (c) => {
   return c.json({ ok: true });
 });
 
+async function getValidatedParent(userId: string, parentId: string) {
+  const db = getDatabase()!;
+  const [parent] = await db
+    .select()
+    .from(todos)
+    .where(and(eq(todos.id, parentId), eq(todos.userId, userId)))
+    .limit(1);
+
+  if (!parent) {
+    throw new Error('Parent not found');
+  }
+  if (parent.parentId) {
+    throw new Error('Nested subtasks not supported');
+  }
+  return parent;
+}
+
 async function insertTodos(
   userId: string,
   listId: string | undefined,
@@ -212,36 +255,57 @@ async function insertTodos(
   }
 
   const db = getDatabase()!;
-  const existing = await db
+  const existingTopLevel = await db
     .select({ sortOrder: todos.sortOrder })
     .from(todos)
-    .where(and(eq(todos.userId, userId), eq(todos.listId, targetListId)));
+    .where(
+      and(eq(todos.userId, userId), eq(todos.listId, targetListId), isNull(todos.parentId))
+    );
 
-  let nextSortOrder = existing.reduce((max, row) => Math.max(max, row.sortOrder), -1) + 1;
+  let nextTopLevelSortOrder =
+    existingTopLevel.reduce((max, row) => Math.max(max, row.sortOrder), -1) + 1;
   const now = new Date().toISOString();
+  const rows = [];
 
-  const rows = items
-    .filter((item) => item.title.trim())
-    .map((item) => {
-      const sortOrder = item.sortOrder ?? nextSortOrder++;
-      return {
-        id: item.clientId ?? createId(),
-        userId,
-        listId: item.listId ?? targetListId,
-        title: item.title.trim(),
-        completed: false,
-        source: item.source,
-        sortOrder,
-        createdAt: now,
-        updatedAt: now,
-        dueAt: item.dueAt ?? null,
-        priority: item.priority ?? null,
-        tags: item.tags?.length ? item.tags : null,
-        reminderAt: item.reminderAt ?? null,
-        transcript: item.transcript ?? null,
-        captureId: item.captureId ?? null,
-      };
+  for (const item of items.filter((entry) => entry.title.trim())) {
+    let parentId: string | null = null;
+    let itemListId = item.listId ?? targetListId;
+    let sortOrder = item.sortOrder;
+
+    if (item.parentId) {
+      const parent = await getValidatedParent(userId, item.parentId);
+      parentId = parent.id;
+      itemListId = parent.listId;
+      if (sortOrder === undefined) {
+        const siblings = await db
+          .select({ sortOrder: todos.sortOrder })
+          .from(todos)
+          .where(and(eq(todos.userId, userId), eq(todos.parentId, parentId)));
+        sortOrder = siblings.reduce((max, row) => Math.max(max, row.sortOrder), -1) + 1;
+      }
+    } else if (sortOrder === undefined) {
+      sortOrder = nextTopLevelSortOrder++;
+    }
+
+    rows.push({
+      id: item.clientId ?? createId(),
+      userId,
+      listId: itemListId,
+      parentId,
+      title: item.title.trim(),
+      completed: false,
+      source: item.source,
+      sortOrder,
+      createdAt: now,
+      updatedAt: now,
+      dueAt: item.dueAt ?? null,
+      priority: item.priority ?? null,
+      tags: item.tags?.length ? item.tags : null,
+      reminderAt: item.reminderAt ?? null,
+      transcript: item.transcript ?? null,
+      captureId: item.captureId ?? null,
     });
+  }
 
   if (rows.length === 0) {
     return [];

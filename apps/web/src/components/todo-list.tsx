@@ -17,9 +17,9 @@ import {
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import type { Todo } from '@quick-capture/shared';
+import { getTopLevelTodos, groupSubtasksByParent, type Todo } from '@quick-capture/shared';
 import { GripVertical } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 import { TodoItem } from '@/components/todo-item';
 
@@ -33,27 +33,34 @@ type TodoListProps = {
   onSetDueDate: (todo: Todo) => void;
   onSetPriority: (todo: Todo) => void;
   onSetTags: (todo: Todo) => void;
+  onAddSubtask: (todo: Todo) => void;
   onReorder: (todoIds: string[]) => void;
 };
 
-function SortableTodoRow({
+function SortableParentRow({
   todo,
+  subtasks,
   highlighted,
+  highlightTodoId,
   onToggle,
   onDelete,
   onSetReminder,
   onSetDueDate,
   onSetPriority,
   onSetTags,
+  onAddSubtask,
 }: {
   todo: Todo;
+  subtasks: Todo[];
   highlighted: boolean;
+  highlightTodoId?: string | null;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onSetReminder: (todo: Todo) => void;
   onSetDueDate: (todo: Todo) => void;
   onSetPriority: (todo: Todo) => void;
   onSetTags: (todo: Todo) => void;
+  onAddSubtask: (todo: Todo) => void;
 }) {
   const rowRef = useRef<HTMLDivElement>(null);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -77,28 +84,48 @@ function SortableTodoRow({
   };
 
   return (
-    <div ref={setRefs} style={style} className="flex items-stretch gap-1">
-      <button
-        type="button"
-        className="mt-4 flex shrink-0 touch-none items-start px-1 text-muted-foreground"
-        {...attributes}
-        {...listeners}
-        aria-label="Reorder todo"
-      >
-        <GripVertical className="size-4" />
-      </button>
-      <div className="min-w-0 flex-1">
-        <TodoItem
-          todo={todo}
-          highlighted={highlighted}
-          onToggle={onToggle}
-          onDelete={onDelete}
-          onSetReminder={onSetReminder}
-          onSetDueDate={onSetDueDate}
-          onSetPriority={onSetPriority}
-          onSetTags={onSetTags}
-        />
+    <div ref={setRefs} style={style} className="space-y-3">
+      <div className="flex items-stretch gap-1">
+        <button
+          type="button"
+          className="mt-4 flex shrink-0 touch-none items-start px-1 text-muted-foreground"
+          {...attributes}
+          {...listeners}
+          aria-label="Reorder todo"
+        >
+          <GripVertical className="size-4" />
+        </button>
+        <div className="min-w-0 flex-1">
+          <TodoItem
+            todo={todo}
+            highlighted={highlighted}
+            canAddSubtask
+            onToggle={onToggle}
+            onDelete={onDelete}
+            onSetReminder={onSetReminder}
+            onSetDueDate={onSetDueDate}
+            onSetPriority={onSetPriority}
+            onSetTags={onSetTags}
+            onAddSubtask={onAddSubtask}
+          />
+        </div>
       </div>
+      {subtasks.map((subtask) => (
+        <div key={subtask.id} className="ml-8">
+          <TodoItem
+            todo={subtask}
+            depth={1}
+            highlighted={subtask.id === highlightTodoId}
+            onToggle={onToggle}
+            onDelete={onDelete}
+            onSetReminder={onSetReminder}
+            onSetDueDate={onSetDueDate}
+            onSetPriority={onSetPriority}
+            onSetTags={onSetTags}
+            onAddSubtask={onAddSubtask}
+          />
+        </div>
+      ))}
     </div>
   );
 }
@@ -113,8 +140,12 @@ export function TodoList({
   onSetDueDate,
   onSetPriority,
   onSetTags,
+  onAddSubtask,
   onReorder,
 }: TodoListProps) {
+  const topLevelTodos = useMemo(() => getTopLevelTodos(todos), [todos]);
+  const subtasksByParent = useMemo(() => groupSubtasksByParent(todos), [todos]);
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -137,29 +168,35 @@ export function TodoList({
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    const oldIndex = todos.findIndex((todo) => todo.id === active.id);
-    const newIndex = todos.findIndex((todo) => todo.id === over.id);
+    const oldIndex = topLevelTodos.findIndex((todo) => todo.id === active.id);
+    const newIndex = topLevelTodos.findIndex((todo) => todo.id === over.id);
     if (oldIndex < 0 || newIndex < 0) return;
 
-    const reordered = arrayMove(todos, oldIndex, newIndex);
+    const reordered = arrayMove(topLevelTodos, oldIndex, newIndex);
     onReorder(reordered.map((todo) => todo.id));
   };
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <SortableContext items={todos.map((todo) => todo.id)} strategy={verticalListSortingStrategy}>
+      <SortableContext
+        items={topLevelTodos.map((todo) => todo.id)}
+        strategy={verticalListSortingStrategy}
+      >
         <div className="space-y-3 p-4">
-          {todos.map((todo) => (
-            <SortableTodoRow
+          {topLevelTodos.map((todo) => (
+            <SortableParentRow
               key={todo.id}
               todo={todo}
+              subtasks={subtasksByParent.get(todo.id) ?? []}
               highlighted={todo.id === highlightTodoId}
+              highlightTodoId={highlightTodoId}
               onToggle={onToggle}
               onDelete={onDelete}
               onSetReminder={onSetReminder}
               onSetDueDate={onSetDueDate}
               onSetPriority={onSetPriority}
               onSetTags={onSetTags}
+              onAddSubtask={onAddSubtask}
             />
           ))}
         </div>

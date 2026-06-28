@@ -33,7 +33,8 @@ export function useTodos(listId: string) {
   });
 
   const addMutation = useMutation({
-    mutationFn: (title: string) => createTodo(title, listId),
+    mutationFn: ({ title, parentId }: { title: string; parentId?: string }) =>
+      createTodo(title, listId, parentId ? { parentId } : undefined),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos', listId] }),
   });
 
@@ -87,7 +88,12 @@ export function useTodos(listId: string) {
       await toggleMutation.mutateAsync({ id, completed: !todo.completed });
     },
     deleteTodo: deleteMutation.mutateAsync,
-    addTodo: addMutation.mutateAsync,
+    addTodo: async (title: string) => {
+      await addMutation.mutateAsync({ title });
+    },
+    addSubtask: async (parentId: string, title: string) => {
+      await addMutation.mutateAsync({ title, parentId });
+    },
     addTodos: addBatchMutation.mutateAsync,
     reorderTodos: reorderMutation.mutateAsync,
     setReminder: async (id: string, reminderAt: string | null) => {

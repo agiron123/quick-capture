@@ -13,9 +13,14 @@ import {
 type AddTodoFormProps = {
   onSubmit: (title: string) => void;
   submitLabel?: string;
+  placeholder?: string;
 };
 
-export function AddTodoForm({ onSubmit, submitLabel = 'Add Todo' }: AddTodoFormProps) {
+export function AddTodoForm({
+  onSubmit,
+  submitLabel = 'Add Todo',
+  placeholder = 'What needs to get done?',
+}: AddTodoFormProps) {
   const [title, setTitle] = useState('');
 
   const handleSubmit = async () => {
@@ -32,7 +37,7 @@ export function AddTodoForm({ onSubmit, submitLabel = 'Add Todo' }: AddTodoFormP
         <TextInput
           value={title}
           onChangeText={setTitle}
-          placeholder="What needs to get done?"
+          placeholder={placeholder}
           placeholderTextColor={PlatformColor('placeholderText')}
           returnKeyType="done"
           onSubmitEditing={handleSubmit}

@@ -6,6 +6,7 @@ import {
     text,
     timestamp,
     uuid,
+    type AnyPgColumn,
 } from 'drizzle-orm/pg-core';
 
 export const todoLists = pgTable(
@@ -49,6 +50,9 @@ export const todos = pgTable(
     listId: text('list_id')
       .notNull()
       .references(() => todoLists.id, { onDelete: 'cascade' }),
+    parentId: text('parent_id').references((): AnyPgColumn => todos.id, {
+      onDelete: 'cascade',
+    }),
     title: text('title').notNull(),
     completed: boolean('completed').notNull().default(false),
     source: text('source').notNull(),
@@ -75,6 +79,7 @@ export const todos = pgTable(
   (table) => [
     index('idx_todos_user_id').on(table.userId),
     index('idx_todos_list_id').on(table.listId),
+    index('idx_todos_parent_id').on(table.parentId),
     index('idx_todos_sort_order').on(table.sortOrder),
   ]
 );

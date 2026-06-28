@@ -1,4 +1,5 @@
 import * as Haptics from 'expo-haptics';
+import { groupSubtasksByParent, getTopLevelTodos } from '@quick-capture/shared';
 import { PlatformColor, Text, View } from 'react-native';
 import DraggableFlatList, {
   RenderItemParams,
@@ -17,28 +18,45 @@ type TodoListProps = {
   onReorder: (todos: Todo[]) => void;
 };
 
-function DraggableTodoRow({
+function DraggableParentRow({
   item,
   drag,
   isActive,
   highlighted,
+  highlightTodoId,
+  subtasks,
   onToggle,
   onDelete,
 }: RenderItemParams<Todo> & {
   highlighted: boolean;
+  highlightTodoId?: string | null;
+  subtasks: Todo[];
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
 }) {
   return (
-    <ScaleDecorator activeScale={1.03}>
-      <TodoItem
-        todo={item}
-        highlighted={highlighted}
-        onToggle={onToggle}
-        onDelete={onDelete}
-        onDrag={drag}
-        isDragging={isActive}
-      />
+    <ScaleDecorator activeScale={1.02}>
+      <View style={{ gap: 12 }}>
+        <TodoItem
+          todo={item}
+          highlighted={highlighted}
+          onToggle={onToggle}
+          onDelete={onDelete}
+          onDrag={drag}
+          isDragging={isActive}
+          canAddSubtask
+        />
+        {subtasks.map((subtask) => (
+          <TodoItem
+            key={subtask.id}
+            todo={subtask}
+            depth={1}
+            highlighted={subtask.id === highlightTodoId}
+            onToggle={onToggle}
+            onDelete={onDelete}
+          />
+        ))}
+      </View>
     </ScaleDecorator>
   );
 }
@@ -51,6 +69,9 @@ export function TodoList({
   onDelete,
   onReorder,
 }: TodoListProps) {
+  const topLevelTodos = getTopLevelTodos(todos);
+  const subtasksByParent = groupSubtasksByParent(todos);
+
   if (todos.length === 0) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, gap: 8 }}>
@@ -73,15 +94,17 @@ export function TodoList({
 
   return (
     <DraggableFlatList
-      data={todos}
+      data={topLevelTodos}
       keyExtractor={(item) => item.id}
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{ padding: 16, gap: 12 }}
       onDragEnd={handleDragEnd}
       renderItem={(params) => (
-        <DraggableTodoRow
+        <DraggableParentRow
           {...params}
           highlighted={params.item.id === highlightTodoId}
+          highlightTodoId={highlightTodoId}
+          subtasks={subtasksByParent.get(params.item.id) ?? []}
           onToggle={onToggle}
           onDelete={onDelete}
         />

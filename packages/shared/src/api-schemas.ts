@@ -23,6 +23,7 @@ export const createTodoSchema = z.object({
   title: z.string().trim().min(1),
   source: todoSourceSchema.default('manual'),
   listId: z.string().min(1).optional(),
+  parentId: z.string().min(1).optional(),
   sortOrder: z.number().int().nonnegative().optional(),
   captureId: z.string().uuid().optional(),
   clientId: z.string().optional(),
