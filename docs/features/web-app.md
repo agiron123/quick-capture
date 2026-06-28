@@ -75,7 +75,7 @@ Key client modules:
 ### Next slices
 
 - [ ] Object storage (R2) for capture media in production
-- [ ] Notification click deep link to highlighted todo
+- [x] Notification click deep link to highlighted todo
 - [ ] OAuth sign-in buttons (Google, GitHub) once configured in Neon Console
 
 ## Related

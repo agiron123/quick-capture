@@ -19,12 +19,14 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import type { Todo } from '@quick-capture/shared';
 import { GripVertical } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 
 import { TodoItem } from '@/components/todo-item';
 
 type TodoListProps = {
   listName?: string;
   todos: Todo[];
+  highlightTodoId?: string | null;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onSetReminder: (todo: Todo) => void;
@@ -33,18 +35,26 @@ type TodoListProps = {
 
 function SortableTodoRow({
   todo,
+  highlighted,
   onToggle,
   onDelete,
   onSetReminder,
 }: {
   todo: Todo;
+  highlighted: boolean;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onSetReminder: (todo: Todo) => void;
 }) {
+  const rowRef = useRef<HTMLDivElement>(null);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: todo.id,
   });
+
+  useEffect(() => {
+    if (!highlighted) return;
+    rowRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [highlighted]);
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -52,8 +62,13 @@ function SortableTodoRow({
     opacity: isDragging ? 0.9 : 1,
   };
 
+  const setRefs = (node: HTMLDivElement | null) => {
+    setNodeRef(node);
+    rowRef.current = node;
+  };
+
   return (
-    <div ref={setNodeRef} style={style} className="flex items-stretch gap-1">
+    <div ref={setRefs} style={style} className="flex items-stretch gap-1">
       <button
         type="button"
         className="mt-4 flex shrink-0 touch-none items-start px-1 text-muted-foreground"
@@ -66,6 +81,7 @@ function SortableTodoRow({
       <div className="min-w-0 flex-1">
         <TodoItem
           todo={todo}
+          highlighted={highlighted}
           onToggle={onToggle}
           onDelete={onDelete}
           onSetReminder={onSetReminder}
@@ -78,6 +94,7 @@ function SortableTodoRow({
 export function TodoList({
   listName,
   todos,
+  highlightTodoId,
   onToggle,
   onDelete,
   onSetReminder,
@@ -121,6 +138,7 @@ export function TodoList({
             <SortableTodoRow
               key={todo.id}
               todo={todo}
+              highlighted={todo.id === highlightTodoId}
               onToggle={onToggle}
               onDelete={onDelete}
               onSetReminder={onSetReminder}

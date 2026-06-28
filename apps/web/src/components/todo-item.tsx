@@ -21,14 +21,23 @@ function sourceLabel(source: Todo['source']): string {
 
 type TodoItemProps = {
   todo: Todo;
+  highlighted?: boolean;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onSetReminder: (todo: Todo) => void;
 };
 
-export function TodoItem({ todo, onToggle, onDelete, onSetReminder }: TodoItemProps) {
+export function TodoItem({
+  todo,
+  highlighted = false,
+  onToggle,
+  onDelete,
+  onSetReminder,
+}: TodoItemProps) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border bg-card p-4">
+    <div
+      className={`flex items-center gap-3 rounded-xl border bg-card p-4 ${highlighted ? 'ring-2 ring-orange-500' : ''}`}
+    >
       <Checkbox
         checked={todo.completed}
         onCheckedChange={() => onToggle(todo.id)}

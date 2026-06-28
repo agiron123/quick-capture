@@ -11,6 +11,7 @@ import type { Todo } from '@/types/todo';
 type TodoListProps = {
   listName?: string;
   todos: Todo[];
+  highlightTodoId?: string | null;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onReorder: (todos: Todo[]) => void;
@@ -20,9 +21,11 @@ function DraggableTodoRow({
   item,
   drag,
   isActive,
+  highlighted,
   onToggle,
   onDelete,
 }: RenderItemParams<Todo> & {
+  highlighted: boolean;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
 }) {
@@ -30,6 +33,7 @@ function DraggableTodoRow({
     <ScaleDecorator activeScale={1.03}>
       <TodoItem
         todo={item}
+        highlighted={highlighted}
         onToggle={onToggle}
         onDelete={onDelete}
         onDrag={drag}
@@ -39,7 +43,14 @@ function DraggableTodoRow({
   );
 }
 
-export function TodoList({ listName, todos, onToggle, onDelete, onReorder }: TodoListProps) {
+export function TodoList({
+  listName,
+  todos,
+  highlightTodoId,
+  onToggle,
+  onDelete,
+  onReorder,
+}: TodoListProps) {
   if (todos.length === 0) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, gap: 8 }}>
@@ -68,7 +79,12 @@ export function TodoList({ listName, todos, onToggle, onDelete, onReorder }: Tod
       contentContainerStyle={{ padding: 16, gap: 12 }}
       onDragEnd={handleDragEnd}
       renderItem={(params) => (
-        <DraggableTodoRow {...params} onToggle={onToggle} onDelete={onDelete} />
+        <DraggableTodoRow
+          {...params}
+          highlighted={params.item.id === highlightTodoId}
+          onToggle={onToggle}
+          onDelete={onDelete}
+        />
       )}
     />
   );

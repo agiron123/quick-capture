@@ -18,11 +18,13 @@ import {
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLists } from '@/hooks/use-lists';
+import { useNotificationHighlight } from '@/hooks/use-notification-highlight';
 import { useTodos } from '@/hooks/use-todos';
 import type { Todo } from '@quick-capture/shared';
 
 export function TodosPageClient() {
-  const { lists, activeListId, isLoading: listsLoading } = useLists();
+  const { lists, activeListId, setActiveListId, isLoading: listsLoading } = useLists();
+  const highlightTodoId = useNotificationHighlight(setActiveListId);
   const {
     todos,
     isLoading,
@@ -79,6 +81,7 @@ export function TodosPageClient() {
           <TodoList
             listName={activeList?.name}
             todos={todos}
+            highlightTodoId={highlightTodoId}
             onToggle={(id) => void toggleTodo(id)}
             onDelete={(id) => void deleteTodo(id)}
             onSetReminder={setReminderTodo}

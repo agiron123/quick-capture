@@ -59,7 +59,7 @@ export async function scheduleReminder(todo: Todo): Promise<string | null> {
     content: {
       title: 'Todo reminder',
       body: todo.title,
-      data: { todoId: todo.id },
+      data: { todoId: todo.id, listId: todo.listId },
       ...(Platform.OS === 'android' ? { channelId: REMINDER_CHANNEL_ID } : {}),
     },
     trigger: {

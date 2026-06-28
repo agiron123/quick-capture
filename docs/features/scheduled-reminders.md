@@ -77,7 +77,7 @@ Postgres columns: `reminder_at`, `reminder_sent_at`
 
 ### Phase B — Polish
 
-- [ ] Notification tap deep link (mobile + web)
+- [x] Notification tap deep link (mobile + web) — highlights todo, switches list
 - [ ] Expired reminder UX
 - [ ] AI-suggested reminders from capture
 

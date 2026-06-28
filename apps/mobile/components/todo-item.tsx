@@ -9,13 +9,21 @@ import { formatReminderLabel } from '@/utils/format-reminder';
 
 type TodoItemProps = {
   todo: Todo;
+  highlighted?: boolean;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onDrag?: () => void;
   isDragging?: boolean;
 };
 
-export function TodoItem({ todo, onToggle, onDelete, onDrag, isDragging }: TodoItemProps) {
+export function TodoItem({
+  todo,
+  highlighted = false,
+  onToggle,
+  onDelete,
+  onDrag,
+  isDragging,
+}: TodoItemProps) {
   const handleToggle = async () => {
     await Haptics.selectionAsync();
     onToggle(todo.id);
@@ -38,6 +46,8 @@ export function TodoItem({ todo, onToggle, onDelete, onDrag, isDragging }: TodoI
       style={{
         backgroundColor: PlatformColor('secondarySystemBackground'),
         borderRadius: 14,
+        borderWidth: highlighted ? 2 : 0,
+        borderColor: highlighted ? '#FF9500' : 'transparent',
         borderCurve: 'continuous',
         padding: 14,
         gap: 10,

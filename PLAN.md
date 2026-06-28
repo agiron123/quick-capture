@@ -43,6 +43,7 @@ Input (voice / photo / text)
 - [x] Create `packages/shared` and `packages/typescript-config`
 - [x] Scaffold `apps/api` (Hono)
 - [x] Document dev workflow in [docs/monorepo.md](./docs/monorepo.md)
+- [ ] Root `dev:web-api` script — run API (`:3000`) + web (`:3001`) together without mobile; today use two terminals (`npm run dev:api` + `npm run dev:web`) or `npx turbo run dev --filter=@quick-capture/api --filter=@quick-capture/web`
 
 ### Phase 1 — Core capture
 
@@ -109,7 +110,7 @@ Phase 3 core is shipped. Remaining priorities:
 1. **Production capture storage** — R2 (or S3-compatible) instead of local disk on Railway
 2. **OAuth providers** — Google + GitHub in Neon Console
 3. **Unified review modal** — one component for camera and voice on mobile
-4. **Push polish** — notification tap deep links, snooze, expired-token pruning
+4. **Production capture storage** — R2 instead of local disk on Railway
 
 Specs:
 - [docs/features/auth.md](./docs/features/auth.md)

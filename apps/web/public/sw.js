@@ -22,7 +22,11 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
   const todoId = event.notification.data?.todoId;
-  const url = todoId ? `/?highlight=${encodeURIComponent(todoId)}` : '/';
+  const listId = event.notification.data?.listId;
+  const params = new URLSearchParams();
+  if (todoId) params.set('highlight', todoId);
+  if (listId) params.set('listId', listId);
+  const url = params.toString() ? `/?${params.toString()}` : '/';
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {

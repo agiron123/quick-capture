@@ -150,7 +150,7 @@ Runs in `apps/api` on startup (`startReminderWorker`):
 - [x] When synced: skip local `scheduleReminder` (`isServerRemindersEnabled()`)
 - [x] `reminderAt` changes sync via `PATCH /api/todos/:id`
 - [x] Local scheduler remains for offline-only users
-- [ ] Handle incoming push tap → deep link to todo
+- [x] Handle incoming push tap → navigate to todos tab and highlight todo
 
 Key files: `services/register-push-device.ts`, `services/reminder-scheduler.ts`, `services/sync-mode.ts`
 
@@ -160,7 +160,7 @@ Key files: `services/register-push-device.ts`, `services/reminder-scheduler.ts`,
 - [x] Register subscription with API (`pushProvider: 'web-push'`)
 - [x] Auto-subscribe after sign-in (`PushRegistration` component)
 - [x] Device management UI at `/devices`
-- [ ] Notification click → open highlighted todo on `/`
+- [x] Notification click → open `/` with highlighted todo (includes `listId` when available)
 
 Key files: `lib/push-notifications.ts`, `components/push-registration.tsx`, `components/devices-page-client.tsx`
 
