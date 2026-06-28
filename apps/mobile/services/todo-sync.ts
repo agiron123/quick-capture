@@ -1,3 +1,5 @@
+import { todoTagsEqual } from '@quick-capture/shared';
+
 import { DEFAULT_LIST_ID } from '@/constants/lists';
 import type { Todo } from '@/types/todo';
 import {
@@ -79,6 +81,7 @@ function localTodoDiffers(local: Todo, server: Todo, mappedListId: string): bool
     local.completed !== server.completed ||
     (local.dueAt ?? null) !== (server.dueAt ?? null) ||
     (local.priority ?? null) !== (server.priority ?? null) ||
+    !todoTagsEqual(local.tags, server.tags) ||
     (local.reminderAt ?? null) !== (server.reminderAt ?? null) ||
     mappedListId !== server.listId ||
     local.sortOrder !== server.sortOrder
@@ -96,21 +99,30 @@ async function pushNewTodosForList(listId: string, todos: Todo[]): Promise<void>
       clientId: todo.id,
       transcript: todo.transcript,
       reminderAt: todo.reminderAt,
+      dueAt: todo.dueAt,
+      priority: todo.priority,
+      tags: todo.tags,
       sortOrder: todo.sortOrder,
     }))
   );
 
   await Promise.all(
     todos.map(async (todo) => {
-      if (!todo.completed && !todo.reminderAt) return;
+      if (!todo.completed && !todo.reminderAt && !todo.dueAt && !todo.priority && !todo.tags?.length) return;
 
       const patch: {
         completed?: boolean;
         reminderAt?: string | null;
+        dueAt?: string | null;
+        priority?: Todo['priority'] | null;
+        tags?: string[];
         baseUpdatedAt?: string;
       } = {};
       if (todo.completed) patch.completed = true;
       if (todo.reminderAt) patch.reminderAt = todo.reminderAt;
+      if (todo.dueAt) patch.dueAt = todo.dueAt;
+      if (todo.priority) patch.priority = todo.priority;
+      if (todo.tags?.length) patch.tags = todo.tags;
 
       await updateTodoOnApi(todo.id, patch);
     })
@@ -130,6 +142,7 @@ async function pushExistingTodoChanges(
       completed: local.completed,
       dueAt: local.dueAt ?? null,
       priority: local.priority ?? null,
+      tags: local.tags ?? [],
       reminderAt: local.reminderAt ?? null,
       listId: mappedListId,
       sortOrder: local.sortOrder,

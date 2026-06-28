@@ -72,6 +72,11 @@ export function useTodos(listId: string) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos', listId] }),
   });
 
+  const tagsMutation = useMutation({
+    mutationFn: ({ id, tags }: { id: string; tags: string[] }) => updateTodo(id, { tags }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos', listId] }),
+  });
+
   return {
     todos: todosQuery.data ?? [],
     isLoading: todosQuery.isLoading,
@@ -93,6 +98,9 @@ export function useTodos(listId: string) {
     },
     setPriority: async (id: string, priority: import('@quick-capture/shared').TodoPriority | null) => {
       await priorityMutation.mutateAsync({ id, priority });
+    },
+    setTags: async (id: string, tags: string[]) => {
+      await tagsMutation.mutateAsync({ id, tags });
     },
   };
 }

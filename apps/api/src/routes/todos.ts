@@ -157,6 +157,9 @@ todoRoutes.patch('/:id', async (c) => {
       updates.reminderSentAt = null;
     }
   }
+  if (parsed.data.tags !== undefined) {
+    updates.tags = parsed.data.tags.length > 0 ? parsed.data.tags : null;
+  }
   if (parsed.data.priority !== undefined) {
     updates.priority = parsed.data.priority;
   }
@@ -233,6 +236,7 @@ async function insertTodos(
         updatedAt: now,
         dueAt: item.dueAt ?? null,
         priority: item.priority ?? null,
+        tags: item.tags?.length ? item.tags : null,
         reminderAt: item.reminderAt ?? null,
         transcript: item.transcript ?? null,
         captureId: item.captureId ?? null,

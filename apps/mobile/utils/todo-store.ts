@@ -6,10 +6,12 @@ import {
     reorderTodosOnApi,
     updateTodoDueDateOnApi,
     updateTodoPriorityOnApi,
+    updateTodoTagsOnApi,
     updateTodoOnApi,
     updateTodoReminderOnApi,
 } from '@/services/sync-api-client';
 import { isServerRemindersEnabled } from '@/services/sync-mode';
+import { normalizeTodoTags } from '@quick-capture/shared';
 import type { Todo } from '@/types/todo';
 import { getDatabase } from '@/utils/db';
 import { initListStore } from '@/utils/list-store';
@@ -277,6 +279,36 @@ export async function setPriorityInStore(
       ? {
           ...item,
           priority: priority ?? undefined,
+          ...(serverUpdatedAt ? { updatedAt: serverUpdatedAt } : {}),
+        }
+      : item
+  );
+  notifyListeners();
+}
+
+export async function setTagsInStore(id: string, tags: string[]): Promise<void> {
+  const todo = cache.find((item) => item.id === id);
+  if (!todo) return;
+
+  const normalized = normalizeTodoTags(tags);
+  let serverUpdatedAt: string | undefined;
+
+  if (isServerRemindersEnabled()) {
+    const updated = await updateTodoTagsOnApi(id, normalized, todo.updatedAt);
+    serverUpdatedAt = updated.updatedAt;
+    await todoRepository.updateTodoTags(id, normalized.length > 0 ? normalized : null);
+    if (serverUpdatedAt) {
+      await todoRepository.updateTodoUpdatedAt(id, serverUpdatedAt);
+    }
+  } else {
+    await todoRepository.updateTodoTags(id, normalized.length > 0 ? normalized : null);
+  }
+
+  cache = cache.map((item) =>
+    item.id === id
+      ? {
+          ...item,
+          tags: normalized.length > 0 ? normalized : undefined,
           ...(serverUpdatedAt ? { updatedAt: serverUpdatedAt } : {}),
         }
       : item

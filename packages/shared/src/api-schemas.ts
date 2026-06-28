@@ -1,5 +1,12 @@
 import { z } from 'zod';
 
+import { normalizeTodoTags } from './todo-tags';
+
+export const todoTagsSchema = z
+  .array(z.string().trim().min(1).max(40))
+  .max(20)
+  .transform((tags) => normalizeTodoTags(tags));
+
 export const todoSourceSchema = z.enum(['manual', 'capture', 'voice', 'watch']);
 
 export const todoPrioritySchema = z.enum(['low', 'medium', 'high']);
@@ -22,6 +29,7 @@ export const createTodoSchema = z.object({
   reminderAt: z.string().datetime().optional(),
   dueAt: z.string().datetime().optional(),
   priority: todoPrioritySchema.optional(),
+  tags: todoTagsSchema.optional(),
   noteImageUri: z.string().optional(),
   noteAudioUri: z.string().optional(),
   transcript: z.string().optional(),
@@ -38,6 +46,7 @@ export const updateTodoSchema = z.object({
   reminderAt: z.string().datetime().nullable().optional(),
   dueAt: z.string().datetime().nullable().optional(),
   priority: todoPrioritySchema.nullable().optional(),
+  tags: todoTagsSchema.optional(),
   listId: z.string().min(1).optional(),
   sortOrder: z.number().int().nonnegative().optional(),
   baseUpdatedAt: z.string().datetime().optional(),

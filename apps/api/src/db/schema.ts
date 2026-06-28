@@ -61,6 +61,7 @@ export const todos = pgTable(
       .defaultNow(),
     dueAt: timestamp('due_at', { withTimezone: true, mode: 'string' }),
     priority: text('priority'),
+    tags: text('tags').array(),
     reminderAt: timestamp('reminder_at', { withTimezone: true, mode: 'string' }),
     reminderSentAt: timestamp('reminder_sent_at', {
       withTimezone: true,

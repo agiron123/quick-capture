@@ -1,7 +1,7 @@
 'use client';
 
 import type { Todo } from '@quick-capture/shared';
-import { Bell, Calendar, Flag, Trash2 } from 'lucide-react';
+import { Bell, Calendar, Flag, Hash, Trash2 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { formatDueDateLabel, isDueOverdue } from '@/lib/format-due-date';
 import { formatPriorityLabel, priorityBadgeClass, priorityIconClass } from '@/lib/format-priority';
 import { formatReminderLabel } from '@/lib/format-reminder';
+import { formatTagsLabel } from '@/lib/format-tags';
 
 function sourceLabel(source: Todo['source']): string {
   switch (source) {
@@ -29,6 +30,7 @@ type TodoItemProps = {
   onSetReminder: (todo: Todo) => void;
   onSetDueDate: (todo: Todo) => void;
   onSetPriority: (todo: Todo) => void;
+  onSetTags: (todo: Todo) => void;
 };
 
 export function TodoItem({
@@ -39,6 +41,7 @@ export function TodoItem({
   onSetReminder,
   onSetDueDate,
   onSetPriority,
+  onSetTags,
 }: TodoItemProps) {
   const dueOverdue = todo.dueAt ? isDueOverdue(todo.dueAt, todo.completed) : false;
 
@@ -57,6 +60,11 @@ export function TodoItem({
         >
           {todo.title}
         </p>
+        {todo.tags?.length ? (
+          <Badge variant="secondary" className="text-purple-600">
+            {formatTagsLabel(todo.tags)}
+          </Badge>
+        ) : null}
         {todo.priority ? (
           <Badge variant="secondary" className={priorityBadgeClass(todo.priority)}>
             {formatPriorityLabel(todo.priority)}
@@ -75,10 +83,18 @@ export function TodoItem({
             {formatReminderLabel(todo.reminderAt)}
           </Badge>
         ) : null}
-        {!todo.priority && !todo.dueAt && !todo.reminderAt ? (
+        {!todo.tags?.length && !todo.priority && !todo.dueAt && !todo.reminderAt ? (
           <p className="text-sm text-muted-foreground">{sourceLabel(todo.source)}</p>
         ) : null}
       </div>
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label={todo.tags?.length ? 'Edit tags' : 'Set tags'}
+        onClick={() => onSetTags(todo)}
+      >
+        <Hash className={`size-4 ${todo.tags?.length ? 'text-purple-600' : ''}`} />
+      </Button>
       <Button
         variant="ghost"
         size="icon"

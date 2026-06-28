@@ -7,6 +7,7 @@ import { AppShell, HeaderAddButton } from '@/components/app-shell';
 import { ManageListsDialog } from '@/components/manage-lists-dialog';
 import { SetDueDateDialog } from '@/components/set-due-date-dialog';
 import { SetPriorityDialog } from '@/components/set-priority-dialog';
+import { SetTagsDialog } from '@/components/set-tags-dialog';
 import { SetReminderDialog } from '@/components/set-reminder-dialog';
 import { TodoList } from '@/components/todo-list';
 import { Button } from '@/components/ui/button';
@@ -37,6 +38,7 @@ export function TodosPageClient() {
     setReminder,
     setDueDate,
     setPriority,
+    setTags,
   } = useTodos(activeListId);
 
   const [addOpen, setAddOpen] = useState(false);
@@ -44,6 +46,7 @@ export function TodosPageClient() {
   const [reminderTodo, setReminderTodo] = useState<Todo | null>(null);
   const [dueDateTodo, setDueDateTodo] = useState<Todo | null>(null);
   const [priorityTodo, setPriorityTodo] = useState<Todo | null>(null);
+  const [tagsTodo, setTagsTodo] = useState<Todo | null>(null);
   const [newTitle, setNewTitle] = useState('');
 
   const activeList = useMemo(
@@ -93,6 +96,7 @@ export function TodosPageClient() {
             onSetReminder={setReminderTodo}
             onSetDueDate={setDueDateTodo}
             onSetPriority={setPriorityTodo}
+            onSetTags={setTagsTodo}
             onReorder={(todoIds) => void reorderTodos(todoIds)}
           />
         )}
@@ -144,6 +148,15 @@ export function TodosPageClient() {
           if (!open) setPriorityTodo(null);
         }}
         onSave={setPriority}
+      />
+
+      <SetTagsDialog
+        todo={tagsTodo}
+        open={Boolean(tagsTodo)}
+        onOpenChange={(open) => {
+          if (!open) setTagsTodo(null);
+        }}
+        onSave={setTags}
       />
     </>
   );

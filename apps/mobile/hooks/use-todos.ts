@@ -12,6 +12,7 @@ import {
     reorderTodosInStore,
     setDueDateInStore,
     setPriorityInStore,
+    setTagsInStore,
     setReminderInStore,
     subscribeTodos,
     toggleTodoInStore,
@@ -41,6 +42,7 @@ export function useTodos(): {
   setReminder: (id: string, reminderAt: string | null) => Promise<boolean>;
   setDueDate: (id: string, dueAt: string | null) => Promise<void>;
   setPriority: (id: string, priority: import('@quick-capture/shared').TodoPriority | null) => Promise<void>;
+  setTags: (id: string, tags: string[]) => Promise<void>;
 } {
   const activeListId = useActiveListId();
   const allTodos = useSyncExternalStore(
@@ -138,6 +140,10 @@ export function useTodos(): {
     []
   );
 
+  const setTags = useCallback((id: string, tags: string[]) => {
+    return setTagsInStore(id, tags);
+  }, []);
+
   return {
     todos,
     getTodoById,
@@ -149,5 +155,6 @@ export function useTodos(): {
     setReminder,
     setDueDate,
     setPriority,
+    setTags,
   };
 }

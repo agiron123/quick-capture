@@ -108,6 +108,7 @@ export async function updateTodo(
     reminderAt?: string | null;
     dueAt?: string | null;
     priority?: import('@quick-capture/shared').TodoPriority | null;
+    tags?: string[];
   }
 ): Promise<Todo> {
   const response = await apiFetch(`/api/todos/${id}`, {

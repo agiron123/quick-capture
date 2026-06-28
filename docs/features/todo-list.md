@@ -42,6 +42,7 @@ When signed in (Neon Auth), todos sync to Postgres via `apps/api`:
 - **Lists:** Multiple lists with picker, manage dialog, reorder (mobile + web)
 - **Due dates:** Optional `dueAt` per todo (calendar affordance; synced)
 - **Priority:** Optional `low` / `medium` / `high` (flag affordance; synced)
+- **Tags:** Optional string labels (hash affordance; synced)
 - **Default list:** `list-inbox` (Inbox)
 
 See [auth.md](./auth.md) and [web-app.md](./web-app.md).

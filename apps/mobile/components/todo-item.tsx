@@ -8,6 +8,7 @@ import type { Todo } from '@/types/todo';
 import { formatDueDateLabel, isDueOverdue } from '@/utils/format-due-date';
 import { formatPriorityLabel, priorityAccentColor } from '@/utils/format-priority';
 import { formatReminderLabel } from '@/utils/format-reminder';
+import { formatTagsLabel } from '@/utils/format-tags';
 
 type TodoItemProps = {
   todo: Todo;
@@ -51,9 +52,15 @@ export function TodoItem({
     router.push({ pathname: '/set-priority', params: { todoId: todo.id } } as Href);
   };
 
+  const openTags = async () => {
+    await Haptics.selectionAsync();
+    router.push({ pathname: '/set-tags', params: { todoId: todo.id } } as Href);
+  };
+
   const hasReminder = Boolean(todo.reminderAt);
   const hasDueDate = Boolean(todo.dueAt);
   const hasPriority = Boolean(todo.priority);
+  const hasTags = Boolean(todo.tags?.length);
   const dueOverdue = hasDueDate && isDueOverdue(todo.dueAt!, todo.completed);
 
   return (
@@ -113,6 +120,11 @@ export function TodoItem({
           }}>
           {todo.title}
         </Text>
+        {hasTags ? (
+          <Text selectable style={{ color: PlatformColor('secondaryLabel'), fontSize: 13 }}>
+            {formatTagsLabel(todo.tags!)}
+          </Text>
+        ) : null}
         {hasPriority ? (
           <Text
             selectable
@@ -139,7 +151,7 @@ export function TodoItem({
             {formatReminderLabel(todo.reminderAt!)}
           </Text>
         ) : null}
-        {!hasDueDate && !hasReminder && !hasPriority ? (
+        {!hasDueDate && !hasReminder && !hasPriority && !hasTags ? (
           <Text selectable style={{ color: PlatformColor('secondaryLabel'), fontSize: 13 }}>
             {todo.source === 'capture'
               ? 'From note capture'
@@ -149,6 +161,23 @@ export function TodoItem({
           </Text>
         ) : null}
       </View>
+
+      <Pressable
+        onPress={openTags}
+        accessibilityRole="button"
+        accessibilityLabel={hasTags ? 'Edit tags' : 'Set tags'}
+        hitSlop={8}
+        style={{ padding: 4 }}>
+        <SymbolView
+          name={{
+            ios: hasTags ? 'number.circle.fill' : 'number',
+            android: 'label',
+            web: 'label',
+          }}
+          tintColor={hasTags ? PlatformColor('systemPurple') : PlatformColor('tertiaryLabel')}
+          size={20}
+        />
+      </Pressable>
 
       <Pressable
         onPress={openPriority}

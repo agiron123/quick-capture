@@ -19,6 +19,7 @@ export type Todo = {
   noteImageUri?: string;
   noteAudioUri?: string;
   transcript?: string;
+  tags?: string[];
 };
 
 export type ExtractedTodo = {

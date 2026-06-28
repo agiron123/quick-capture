@@ -1,3 +1,5 @@
+import { normalizeTodoTags } from '@quick-capture/shared';
+
 import type { Todo, TodoPriority, TodoSource } from '@/types/todo';
 import { getDatabase } from '@/utils/db';
 
@@ -17,7 +19,25 @@ type TodoRow = {
   note_image_uri: string | null;
   note_audio_uri: string | null;
   transcript: string | null;
+  tags: string | null;
 };
+
+function parseTags(value: string | null): string[] | undefined {
+  if (!value) return undefined;
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    if (!Array.isArray(parsed)) return undefined;
+    const tags = normalizeTodoTags(parsed.filter((tag): tag is string => typeof tag === 'string'));
+    return tags.length > 0 ? tags : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function tagsToJson(tags?: string[]): string | null {
+  if (!tags?.length) return null;
+  return JSON.stringify(tags);
+}
 
 function parsePriority(value: string | null): TodoPriority | undefined {
   if (value === 'low' || value === 'medium' || value === 'high') return value;
@@ -41,6 +61,7 @@ function rowToTodo(row: TodoRow): Todo {
     noteImageUri: row.note_image_uri ?? undefined,
     noteAudioUri: row.note_audio_uri ?? undefined,
     transcript: row.transcript ?? undefined,
+    tags: parseTags(row.tags),
   };
 }
 
@@ -58,8 +79,8 @@ export async function insertTodo(todo: Todo): Promise<void> {
     `INSERT INTO todos (
       id, title, completed, source, list_id, created_at, updated_at, due_at, priority, sort_order,
       reminder_at, notification_id,
-      note_image_uri, note_audio_uri, transcript
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      note_image_uri, note_audio_uri, transcript, tags
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       todo.id,
       todo.title,
@@ -76,6 +97,7 @@ export async function insertTodo(todo: Todo): Promise<void> {
       todo.noteImageUri ?? null,
       todo.noteAudioUri ?? null,
       todo.transcript ?? null,
+      tagsToJson(todo.tags),
     ]
   );
 }
@@ -89,8 +111,8 @@ export async function insertTodos(todos: Todo[]): Promise<void> {
         `INSERT INTO todos (
           id, title, completed, source, list_id, created_at, updated_at, due_at, priority, sort_order,
           reminder_at, notification_id,
-          note_image_uri, note_audio_uri, transcript
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          note_image_uri, note_audio_uri, transcript, tags
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           todo.id,
           todo.title,
@@ -107,10 +129,16 @@ export async function insertTodos(todos: Todo[]): Promise<void> {
           todo.noteImageUri ?? null,
           todo.noteAudioUri ?? null,
           todo.transcript ?? null,
+          tagsToJson(todo.tags),
         ]
       );
     }
   });
+}
+
+export async function updateTodoTags(id: string, tags: string[] | null): Promise<void> {
+  const db = await getDatabase();
+  await db.runAsync('UPDATE todos SET tags = ? WHERE id = ?', [tags ? JSON.stringify(tags) : null, id]);
 }
 
 export async function updateTodoPriority(id: string, priority: string | null): Promise<void> {
@@ -189,8 +217,8 @@ export async function replaceAllTodos(todos: Todo[]): Promise<void> {
         `INSERT INTO todos (
           id, title, completed, source, list_id, created_at, updated_at, due_at, priority, sort_order,
           reminder_at, notification_id,
-          note_image_uri, note_audio_uri, transcript
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          note_image_uri, note_audio_uri, transcript, tags
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           todo.id,
           todo.title,
@@ -207,6 +235,7 @@ export async function replaceAllTodos(todos: Todo[]): Promise<void> {
           todo.noteImageUri ?? null,
           todo.noteAudioUri ?? null,
           todo.transcript ?? null,
+          tagsToJson(todo.tags),
         ]
       );
     }

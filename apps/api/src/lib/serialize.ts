@@ -33,6 +33,7 @@ export function serializeTodo(row: TodoRow): Todo {
     reminderAt: row.reminderAt ?? undefined,
     transcript: row.transcript ?? undefined,
     captureId: row.captureId ?? undefined,
+    tags: row.tags?.length ? row.tags : undefined,
   };
 }
 
