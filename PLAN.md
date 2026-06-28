@@ -74,7 +74,7 @@ Input (voice / photo / text)
   - [x] Email/password sign-in (web + mobile)
   - [ ] Google + GitHub OAuth (configure in Neon Console)
   - [x] Mobile + web clients: Neon Auth SDK; API: JWT verification via JWKS in Hono
-  - [ ] Branch-aware auth for preview/staging environments
+  - [x] Branch-aware auth for preview/staging environments ([auth.md](./docs/features/auth.md#preview--staging-branches))
 - [x] Neon Postgres + Drizzle migrations (`todo_lists`, `todos`, `captures`, `user_devices`)
 - [x] Lists + todos REST API (`apps/api`)
 - [x] Capture upload API (local disk; R2 planned for production)
@@ -109,7 +109,7 @@ Input (voice / photo / text)
 Phase 3 core is shipped. Remaining priorities:
 
 1. **OAuth providers** — Google + GitHub in Neon Console
-2. **Branch-aware auth** — preview/staging Neon branches
+2. **Due dates, priority, tags** — extend todo model
 
 Specs:
 - [docs/features/auth.md](./docs/features/auth.md)

@@ -24,8 +24,8 @@ Next.js web companion at `apps/web` with Neon Auth, shadcn/ui, and Tailwind. Rea
 5. Start API + web:
 
 ```bash
-npm run dev:api   # http://localhost:3000
-npm run dev:web   # http://localhost:3001
+npm run dev:web-api   # API :3000 + web :3001 (recommended)
+# or separately: npm run dev:api && npm run dev:web
 ```
 
 ## Routes

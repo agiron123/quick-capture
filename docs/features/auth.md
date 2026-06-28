@@ -128,6 +128,30 @@ public.user_devices
 
 Use database branches for preview environments; each branch gets its own Auth URL and isolated users.
 
+## Preview / staging branches
+
+Neon Auth is **branch-aware**: when you create a database branch (preview, staging, CI), Neon clones `neon_auth` and issues a **branch-specific Auth URL**. Point every client and the API at that branch’s URLs — never mix a preview `DATABASE_URL` with production auth.
+
+### Per-environment variables
+
+| Variable | Must match branch |
+| --- | --- |
+| `DATABASE_URL` | Same Neon branch |
+| `NEON_AUTH_URL` | Auth URL for that branch (API JWKS) |
+| `NEON_AUTH_BASE_URL` / `NEXT_PUBLIC_NEON_AUTH_URL` | Same branch (web) |
+| `EXPO_PUBLIC_NEON_AUTH_URL` | Same branch (mobile builds for that env) |
+
+### Vercel preview (web)
+
+1. Create a Neon **preview branch** per PR or use a shared staging branch.
+2. In Vercel → Project → Environment Variables → **Preview**, set branch-specific `DATABASE_URL`, `NEON_AUTH_*`, and `NEXT_PUBLIC_*` values.
+3. Set `CORS_ORIGINS` on the API deployment to include the Vercel preview origin (`https://*.vercel.app` or a fixed preview URL).
+4. Run migrations against the preview branch before testing: `DATABASE_URL=<preview> npm run db:migrate --workspace=@quick-capture/api`
+
+### Local against a non-main branch
+
+Copy the branch connection string and Auth URL from Neon Console into `.env`. All three apps read from the same root `.env` in development.
+
 ## Environment variables
 
 | Variable | App | Purpose |
