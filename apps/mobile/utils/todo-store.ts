@@ -1,4 +1,6 @@
 import { cancelReminder, reconcileAllReminders, rescheduleReminder } from '@/services/reminder-scheduler';
+import { isServerRemindersEnabled } from '@/services/sync-mode';
+import { updateTodoReminderOnApi } from '@/services/sync-api-client';
 import type { Todo } from '@/types/todo';
 import { getDatabase } from '@/utils/db';
 import { initListStore } from '@/utils/list-store';
@@ -110,6 +112,28 @@ export async function setReminderInStore(id: string, reminderAt: string | null):
 
   if (todo.notificationId) {
     await cancelReminder(todo.notificationId);
+  }
+
+  if (isServerRemindersEnabled()) {
+    try {
+      await updateTodoReminderOnApi(id, reminderAt);
+    } catch (error) {
+      console.error('Failed to sync reminder to API', error);
+      return false;
+    }
+
+    await todoRepository.updateTodoReminder(id, reminderAt, null);
+    cache = cache.map((item) =>
+      item.id === id
+        ? {
+            ...item,
+            reminderAt: reminderAt ?? undefined,
+            notificationId: undefined,
+          }
+        : item
+    );
+    notifyListeners();
+    return Boolean(reminderAt);
   }
 
   let notificationId: string | undefined;

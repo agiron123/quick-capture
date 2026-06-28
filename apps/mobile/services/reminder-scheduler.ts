@@ -2,6 +2,7 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import { REMINDER_CHANNEL_ID } from '@/constants/reminders';
+import { isServerRemindersEnabled } from '@/services/sync-mode';
 import type { Todo } from '@/types/todo';
 
 export function configureNotificationHandler(): void {
@@ -43,6 +44,7 @@ export async function cancelReminder(notificationId: string): Promise<void> {
 }
 
 export async function scheduleReminder(todo: Todo): Promise<string | null> {
+  if (isServerRemindersEnabled()) return null;
   if (!todo.reminderAt || todo.completed) return null;
 
   const triggerDate = new Date(todo.reminderAt);
@@ -78,6 +80,8 @@ export async function reconcileAllReminders(
   todos: Todo[],
   onNotificationIdUpdated: (todoId: string, notificationId: string | null) => Promise<void>
 ): Promise<void> {
+  if (isServerRemindersEnabled()) return;
+
   const scheduled = await Notifications.getAllScheduledNotificationsAsync();
   for (const notification of scheduled) {
     await Notifications.cancelScheduledNotificationAsync(notification.identifier);
@@ -95,5 +99,12 @@ export async function reconcileAllReminders(
     if (notificationId !== (todo.notificationId ?? null)) {
       await onNotificationIdUpdated(todo.id, notificationId);
     }
+  }
+}
+
+export async function clearAllLocalReminders(): Promise<void> {
+  const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+  for (const notification of scheduled) {
+    await Notifications.cancelScheduledNotificationAsync(notification.identifier);
   }
 }

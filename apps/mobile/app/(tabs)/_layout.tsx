@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 
+import { AccountHeaderButton } from '@/components/account-header-button';
 import { AddTodoHeaderButton } from '@/components/add-todo-header-button';
 import { ListPickerHeaderButton } from '@/components/list-picker-header-button';
 import { TabBarWithMic } from '@/components/tab-bar-with-mic';
@@ -22,6 +23,7 @@ export default function TabLayout() {
         name="index"
         options={{
           headerTitle: () => <ListPickerHeaderButton />,
+          headerLeft: () => <AccountHeaderButton />,
           headerRight: () => <AddTodoHeaderButton />,
           tabBarIcon: ({ color }) => (
             <SymbolView

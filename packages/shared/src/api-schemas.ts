@@ -63,6 +63,16 @@ export const syncPayloadSchema = z.object({
   ),
 });
 
+export const devicePlatformSchema = z.enum(['ios', 'android', 'web']);
+export const pushProviderSchema = z.enum(['expo', 'web-push']);
+
+export const registerDeviceSchema = z.object({
+  platform: devicePlatformSchema,
+  pushToken: z.string().min(1),
+  pushProvider: pushProviderSchema,
+  deviceName: z.string().trim().max(120).optional(),
+});
+
 export type CreateListInput = z.infer<typeof createListSchema>;
 export type UpdateListInput = z.infer<typeof updateListSchema>;
 export type CreateTodoInput = z.infer<typeof createTodoSchema>;
@@ -71,3 +81,4 @@ export type UpdateTodoInput = z.infer<typeof updateTodoSchema>;
 export type ReorderTodosInput = z.infer<typeof reorderTodosSchema>;
 export type CreateCaptureInput = z.infer<typeof createCaptureSchema>;
 export type SyncPayload = z.infer<typeof syncPayloadSchema>;
+export type RegisterDeviceInput = z.infer<typeof registerDeviceSchema>;

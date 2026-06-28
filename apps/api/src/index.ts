@@ -7,8 +7,10 @@ import { cors } from 'hono/cors';
 
 import { aiRoutes } from './routes/ai.js';
 import { captureRoutes } from './routes/captures.js';
+import { deviceRoutes } from './routes/devices.js';
 import { listRoutes } from './routes/lists.js';
 import { todoRoutes } from './routes/todos.js';
+import { startReminderWorker } from './services/reminder-worker.js';
 
 const app = new Hono();
 
@@ -57,6 +59,7 @@ app.post('/api/todos/validate', async (c) => {
 
 app.route('/api/ai', aiRoutes);
 app.route('/api/captures', captureRoutes);
+app.route('/api/devices', deviceRoutes);
 app.route('/api/lists', listRoutes);
 app.route('/api/todos', todoRoutes);
 
@@ -64,4 +67,5 @@ const port = Number(process.env.PORT ?? 3000);
 
 serve({ fetch: app.fetch, port }, () => {
   console.log(`API listening on http://localhost:${port}`);
+  startReminderWorker();
 });

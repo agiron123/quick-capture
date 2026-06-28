@@ -8,6 +8,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
+import { AuthProvider } from '@/contexts/auth-provider';
 import { initNotificationHandlers } from '@/services/notification-handler';
 import { initTodoStore } from '@/utils/todo-store';
 
@@ -57,16 +58,19 @@ function RootLayoutNav() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="add-todo" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="review-todos" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="voice-record" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="manage-lists" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="set-reminder" options={{ presentation: 'modal' }} />
-        </Stack>
-      </ThemeProvider>
+      <AuthProvider>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="add-todo" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="review-todos" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="voice-record" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="manage-lists" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="set-reminder" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="sign-in" options={{ presentation: 'modal', title: 'Account' }} />
+          </Stack>
+        </ThemeProvider>
+      </AuthProvider>
     </GestureHandlerRootView>
   );
 }

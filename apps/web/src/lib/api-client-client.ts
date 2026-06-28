@@ -182,3 +182,40 @@ export async function uploadCapture(input: {
 export function getCaptureMediaUrl(captureId: string): string {
   return `${getApiBaseUrl()}/api/captures/${captureId}/media`;
 }
+
+export type UserDeviceRecord = {
+  id: string;
+  userId: string;
+  platform: 'ios' | 'android' | 'web';
+  pushProvider: 'expo' | 'web-push';
+  deviceName?: string;
+  lastSeenAt: string;
+  createdAt: string;
+};
+
+export async function registerDevice(input: {
+  platform: 'ios' | 'android' | 'web';
+  pushProvider: 'expo' | 'web-push';
+  pushToken: string;
+  deviceName?: string;
+}): Promise<UserDeviceRecord> {
+  const response = await apiFetch('/api/devices/register', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) throw new Error(await parseApiError(response));
+  const data = (await response.json()) as { device: UserDeviceRecord };
+  return data.device;
+}
+
+export async function fetchDevices(): Promise<UserDeviceRecord[]> {
+  const response = await apiFetch('/api/devices');
+  if (!response.ok) throw new Error(await parseApiError(response));
+  const data = (await response.json()) as { devices: UserDeviceRecord[] };
+  return data.devices;
+}
+
+export async function deleteDevice(deviceId: string): Promise<void> {
+  const response = await apiFetch(`/api/devices/${deviceId}`, { method: 'DELETE' });
+  if (!response.ok) throw new Error(await parseApiError(response));
+}

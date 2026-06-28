@@ -146,6 +146,10 @@ todoRoutes.patch('/:id', async (c) => {
   if (parsed.data.title !== undefined) updates.title = parsed.data.title;
   if (parsed.data.completed !== undefined) {
     updates.completed = parsed.data.completed;
+    if (parsed.data.completed) {
+      updates.reminderAt = null;
+      updates.reminderSentAt = null;
+    }
   }
   if (parsed.data.reminderAt !== undefined) {
     updates.reminderAt = parsed.data.reminderAt;
