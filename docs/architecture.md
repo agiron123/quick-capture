@@ -172,6 +172,11 @@ Multi-device: one reminder → notification on every active registered device.
 | `DATABASE_URL` | api | Neon Postgres |
 | `NEON_AUTH_URL` | api | JWKS issuer |
 | `CORS_ORIGINS` | api | Web + Expo origins |
+| `CAPTURE_STORAGE_PROVIDER` | api | `local` or `s3`/`r2` |
+| `CAPTURE_STORAGE_ENDPOINT` | api | S3-compatible endpoint (R2 URL) |
+| `CAPTURE_STORAGE_BUCKET` | api | Bucket name |
+| `CAPTURE_STORAGE_ACCESS_KEY_ID` | api | Object storage access key |
+| `CAPTURE_STORAGE_SECRET_ACCESS_KEY` | api | Object storage secret |
 | `VAPID_*` | api | Web Push keys |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | web | Browser subscription |
 | `EXPO_PUBLIC_API_URL` | mobile | API base URL |

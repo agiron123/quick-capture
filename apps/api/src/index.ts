@@ -11,6 +11,7 @@ import { deviceRoutes } from './routes/devices.js';
 import { listRoutes } from './routes/lists.js';
 import { todoRoutes } from './routes/todos.js';
 import { startReminderWorker } from './services/reminder-worker.js';
+import { getCaptureStorageProvider } from './services/capture-storage.js';
 
 const app = new Hono();
 
@@ -44,6 +45,7 @@ app.get('/api', (c) =>
       ai: true,
       sync: Boolean(process.env.DATABASE_URL?.trim()),
       auth: Boolean(process.env.NEON_AUTH_URL?.trim() ?? process.env.NEON_AUTH_BASE_URL?.trim()),
+      captureStorage: getCaptureStorageProvider(),
     },
   })
 );

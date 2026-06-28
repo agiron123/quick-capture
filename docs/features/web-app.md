@@ -61,7 +61,7 @@ Key client modules:
 - [x] Drizzle schema + migrations in `apps/api`
 - [x] JWT auth middleware (JWKS)
 - [x] Lists + todos REST API
-- [x] Capture upload API (local disk storage; R2 planned)
+- [x] Capture upload API (local disk or S3/R2 — see [capture-storage.md](./capture-storage.md))
 - [x] Scaffold `apps/web` with Neon Auth + shadcn
 - [x] Sign-in / sign-up pages
 - [x] Todo list UI (add, toggle, delete, drag reorder)
@@ -74,7 +74,6 @@ Key client modules:
 
 ### Next slices
 
-- [ ] Object storage (R2) for capture media in production
 - [x] Notification click deep link to highlighted todo
 - [ ] OAuth sign-in buttons (Google, GitHub) once configured in Neon Console
 
