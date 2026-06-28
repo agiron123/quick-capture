@@ -55,6 +55,14 @@ export async function fetchTodosFromApi(listId: string): Promise<Todo[]> {
   return data.todos;
 }
 
+export async function updateTodoDueDateOnApi(
+  id: string,
+  dueAt: string | null,
+  baseUpdatedAt?: string
+): Promise<Todo> {
+  return updateTodoOnApi(id, { dueAt, baseUpdatedAt });
+}
+
 export async function updateTodoReminderOnApi(
   id: string,
   reminderAt: string | null,
@@ -129,6 +137,7 @@ export async function updateTodoOnApi(
     title?: string;
     completed?: boolean;
     reminderAt?: string | null;
+    dueAt?: string | null;
     listId?: string;
     sortOrder?: number;
     baseUpdatedAt?: string;

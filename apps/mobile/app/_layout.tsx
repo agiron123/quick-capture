@@ -67,6 +67,7 @@ function RootLayoutNav() {
             <Stack.Screen name="voice-record" options={{ presentation: 'modal' }} />
             <Stack.Screen name="manage-lists" options={{ presentation: 'modal' }} />
             <Stack.Screen name="set-reminder" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="set-due-date" options={{ presentation: 'modal' }} />
             <Stack.Screen name="sign-in" options={{ presentation: 'modal', title: 'Account' }} />
           </Stack>
         </ThemeProvider>

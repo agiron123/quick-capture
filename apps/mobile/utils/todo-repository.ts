@@ -9,6 +9,7 @@ type TodoRow = {
   list_id: string;
   created_at: string;
   updated_at: string | null;
+  due_at: string | null;
   sort_order: number;
   reminder_at: string | null;
   notification_id: string | null;
@@ -26,6 +27,7 @@ function rowToTodo(row: TodoRow): Todo {
     listId: row.list_id,
     createdAt: row.created_at,
     updatedAt: row.updated_at ?? row.created_at,
+    dueAt: row.due_at ?? undefined,
     sortOrder: row.sort_order,
     reminderAt: row.reminder_at ?? undefined,
     notificationId: row.notification_id ?? undefined,
@@ -47,10 +49,10 @@ export async function insertTodo(todo: Todo): Promise<void> {
   const db = await getDatabase();
   await db.runAsync(
     `INSERT INTO todos (
-      id, title, completed, source, list_id, created_at, updated_at, sort_order,
+      id, title, completed, source, list_id, created_at, updated_at, due_at, sort_order,
       reminder_at, notification_id,
       note_image_uri, note_audio_uri, transcript
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       todo.id,
       todo.title,
@@ -59,6 +61,7 @@ export async function insertTodo(todo: Todo): Promise<void> {
       todo.listId,
       todo.createdAt,
       todo.updatedAt ?? todo.createdAt,
+      todo.dueAt ?? null,
       todo.sortOrder,
       todo.reminderAt ?? null,
       todo.notificationId ?? null,
@@ -76,10 +79,10 @@ export async function insertTodos(todos: Todo[]): Promise<void> {
     for (const todo of todos) {
       await db.runAsync(
         `INSERT INTO todos (
-          id, title, completed, source, list_id, created_at, updated_at, sort_order,
+          id, title, completed, source, list_id, created_at, updated_at, due_at, sort_order,
           reminder_at, notification_id,
           note_image_uri, note_audio_uri, transcript
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           todo.id,
           todo.title,
@@ -88,6 +91,7 @@ export async function insertTodos(todos: Todo[]): Promise<void> {
           todo.listId,
           todo.createdAt,
           todo.updatedAt ?? todo.createdAt,
+          todo.dueAt ?? null,
           todo.sortOrder,
           todo.reminderAt ?? null,
           todo.notificationId ?? null,
@@ -98,6 +102,11 @@ export async function insertTodos(todos: Todo[]): Promise<void> {
       );
     }
   });
+}
+
+export async function updateTodoDueAt(id: string, dueAt: string | null): Promise<void> {
+  const db = await getDatabase();
+  await db.runAsync('UPDATE todos SET due_at = ? WHERE id = ?', [dueAt, id]);
 }
 
 export async function updateTodoUpdatedAt(id: string, updatedAt: string): Promise<void> {
@@ -164,10 +173,10 @@ export async function replaceAllTodos(todos: Todo[]): Promise<void> {
     for (const todo of todos) {
       await db.runAsync(
         `INSERT INTO todos (
-          id, title, completed, source, list_id, created_at, updated_at, sort_order,
+          id, title, completed, source, list_id, created_at, updated_at, due_at, sort_order,
           reminder_at, notification_id,
           note_image_uri, note_audio_uri, transcript
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           todo.id,
           todo.title,
@@ -176,6 +185,7 @@ export async function replaceAllTodos(todos: Todo[]): Promise<void> {
           todo.listId,
           todo.createdAt,
           todo.updatedAt ?? todo.createdAt,
+          todo.dueAt ?? null,
           todo.sortOrder,
           todo.reminderAt ?? null,
           todo.notificationId ?? null,

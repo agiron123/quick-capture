@@ -157,6 +157,9 @@ todoRoutes.patch('/:id', async (c) => {
       updates.reminderSentAt = null;
     }
   }
+  if (parsed.data.dueAt !== undefined) {
+    updates.dueAt = parsed.data.dueAt;
+  }
   if (parsed.data.reminderAt !== undefined) {
     updates.reminderAt = parsed.data.reminderAt;
     updates.reminderSentAt = null;
@@ -225,6 +228,7 @@ async function insertTodos(
         sortOrder,
         createdAt: now,
         updatedAt: now,
+        dueAt: item.dueAt ?? null,
         reminderAt: item.reminderAt ?? null,
         transcript: item.transcript ?? null,
         captureId: item.captureId ?? null,

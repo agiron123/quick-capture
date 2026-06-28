@@ -77,6 +77,7 @@ function localTodoDiffers(local: Todo, server: Todo, mappedListId: string): bool
   return (
     local.title !== server.title ||
     local.completed !== server.completed ||
+    (local.dueAt ?? null) !== (server.dueAt ?? null) ||
     (local.reminderAt ?? null) !== (server.reminderAt ?? null) ||
     mappedListId !== server.listId ||
     local.sortOrder !== server.sortOrder
@@ -126,6 +127,7 @@ async function pushExistingTodoChanges(
     await updateTodoOnApi(local.id, {
       title: local.title,
       completed: local.completed,
+      dueAt: local.dueAt ?? null,
       reminderAt: local.reminderAt ?? null,
       listId: mappedListId,
       sortOrder: local.sortOrder,

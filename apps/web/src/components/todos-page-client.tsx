@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 
 import { AppShell, HeaderAddButton } from '@/components/app-shell';
 import { ManageListsDialog } from '@/components/manage-lists-dialog';
+import { SetDueDateDialog } from '@/components/set-due-date-dialog';
 import { SetReminderDialog } from '@/components/set-reminder-dialog';
 import { TodoList } from '@/components/todo-list';
 import { Button } from '@/components/ui/button';
@@ -33,11 +34,13 @@ export function TodosPageClient() {
     addTodo,
     reorderTodos,
     setReminder,
+    setDueDate,
   } = useTodos(activeListId);
 
   const [addOpen, setAddOpen] = useState(false);
   const [manageOpen, setManageOpen] = useState(false);
   const [reminderTodo, setReminderTodo] = useState<Todo | null>(null);
+  const [dueDateTodo, setDueDateTodo] = useState<Todo | null>(null);
   const [newTitle, setNewTitle] = useState('');
 
   const activeList = useMemo(
@@ -85,6 +88,7 @@ export function TodosPageClient() {
             onToggle={(id) => void toggleTodo(id)}
             onDelete={(id) => void deleteTodo(id)}
             onSetReminder={setReminderTodo}
+            onSetDueDate={setDueDateTodo}
             onReorder={(todoIds) => void reorderTodos(todoIds)}
           />
         )}
@@ -118,6 +122,15 @@ export function TodosPageClient() {
           if (!open) setReminderTodo(null);
         }}
         onSave={setReminder}
+      />
+
+      <SetDueDateDialog
+        todo={dueDateTodo}
+        open={Boolean(dueDateTodo)}
+        onOpenChange={(open) => {
+          if (!open) setDueDateTodo(null);
+        }}
+        onSave={setDueDate}
       />
     </>
   );

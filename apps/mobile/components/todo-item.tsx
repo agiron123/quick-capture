@@ -5,6 +5,7 @@ import { SymbolView } from 'expo-symbols';
 import { PlatformColor, Pressable, Text, View } from 'react-native';
 
 import type { Todo } from '@/types/todo';
+import { formatDueDateLabel, isDueOverdue } from '@/utils/format-due-date';
 import { formatReminderLabel } from '@/utils/format-reminder';
 
 type TodoItemProps = {
@@ -39,7 +40,14 @@ export function TodoItem({
     router.push({ pathname: '/set-reminder', params: { todoId: todo.id } } as Href);
   };
 
+  const openDueDate = async () => {
+    await Haptics.selectionAsync();
+    router.push({ pathname: '/set-due-date', params: { todoId: todo.id } } as Href);
+  };
+
   const hasReminder = Boolean(todo.reminderAt);
+  const hasDueDate = Boolean(todo.dueAt);
+  const dueOverdue = hasDueDate && isDueOverdue(todo.dueAt!, todo.completed);
 
   return (
     <View
@@ -98,11 +106,22 @@ export function TodoItem({
           }}>
           {todo.title}
         </Text>
+        {hasDueDate ? (
+          <Text
+            selectable
+            style={{
+              color: dueOverdue ? PlatformColor('systemRed') : PlatformColor('systemBlue'),
+              fontSize: 13,
+            }}>
+            {formatDueDateLabel(todo.dueAt!, todo.completed)}
+          </Text>
+        ) : null}
         {hasReminder ? (
           <Text selectable style={{ color: PlatformColor('systemOrange'), fontSize: 13 }}>
             {formatReminderLabel(todo.reminderAt!)}
           </Text>
-        ) : (
+        ) : null}
+        {!hasDueDate && !hasReminder ? (
           <Text selectable style={{ color: PlatformColor('secondaryLabel'), fontSize: 13 }}>
             {todo.source === 'capture'
               ? 'From note capture'
@@ -110,8 +129,31 @@ export function TodoItem({
                 ? 'From voice note'
                 : 'Added manually'}
           </Text>
-        )}
+        ) : null}
       </View>
+
+      <Pressable
+        onPress={openDueDate}
+        accessibilityRole="button"
+        accessibilityLabel={hasDueDate ? 'Edit due date' : 'Set due date'}
+        hitSlop={8}
+        style={{ padding: 4 }}>
+        <SymbolView
+          name={{
+            ios: hasDueDate ? 'calendar.circle.fill' : 'calendar',
+            android: 'event',
+            web: 'event',
+          }}
+          tintColor={
+            dueOverdue
+              ? PlatformColor('systemRed')
+              : hasDueDate
+                ? PlatformColor('systemBlue')
+                : PlatformColor('tertiaryLabel')
+          }
+          size={20}
+        />
+      </Pressable>
 
       <Pressable
         onPress={openReminder}

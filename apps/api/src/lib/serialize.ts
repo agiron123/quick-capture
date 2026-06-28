@@ -25,6 +25,7 @@ export function serializeTodo(row: TodoRow): Todo {
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     sortOrder: row.sortOrder,
+    dueAt: row.dueAt ?? undefined,
     reminderAt: row.reminderAt ?? undefined,
     transcript: row.transcript ?? undefined,
     captureId: row.captureId ?? undefined,

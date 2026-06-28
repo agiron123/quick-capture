@@ -1,11 +1,12 @@
 'use client';
 
 import type { Todo } from '@quick-capture/shared';
-import { Bell, Trash2 } from 'lucide-react';
+import { Bell, Calendar, Trash2 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { formatDueDateLabel, isDueOverdue } from '@/lib/format-due-date';
 import { formatReminderLabel } from '@/lib/format-reminder';
 
 function sourceLabel(source: Todo['source']): string {
@@ -25,6 +26,7 @@ type TodoItemProps = {
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onSetReminder: (todo: Todo) => void;
+  onSetDueDate: (todo: Todo) => void;
 };
 
 export function TodoItem({
@@ -33,7 +35,10 @@ export function TodoItem({
   onToggle,
   onDelete,
   onSetReminder,
+  onSetDueDate,
 }: TodoItemProps) {
+  const dueOverdue = todo.dueAt ? isDueOverdue(todo.dueAt, todo.completed) : false;
+
   return (
     <div
       className={`flex items-center gap-3 rounded-xl border bg-card p-4 ${highlighted ? 'ring-2 ring-orange-500' : ''}`}
@@ -49,14 +54,31 @@ export function TodoItem({
         >
           {todo.title}
         </p>
+        {todo.dueAt ? (
+          <Badge
+            variant="secondary"
+            className={dueOverdue ? 'text-destructive' : 'text-blue-600'}
+          >
+            {formatDueDateLabel(todo.dueAt, todo.completed)}
+          </Badge>
+        ) : null}
         {todo.reminderAt ? (
           <Badge variant="secondary" className="text-orange-600">
             {formatReminderLabel(todo.reminderAt)}
           </Badge>
-        ) : (
+        ) : null}
+        {!todo.dueAt && !todo.reminderAt ? (
           <p className="text-sm text-muted-foreground">{sourceLabel(todo.source)}</p>
-        )}
+        ) : null}
       </div>
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label={todo.dueAt ? 'Edit due date' : 'Set due date'}
+        onClick={() => onSetDueDate(todo)}
+      >
+        <Calendar className={`size-4 ${todo.dueAt ? (dueOverdue ? 'text-destructive' : 'text-blue-600') : ''}`} />
+      </Button>
       <Button
         variant="ghost"
         size="icon"

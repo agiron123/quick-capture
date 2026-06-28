@@ -11,6 +11,7 @@ import {
     getTodosSnapshot,
     reorderTodosInStore,
     setReminderInStore,
+    setDueDateInStore,
     subscribeTodos,
     toggleTodoInStore,
 } from '@/utils/todo-store';
@@ -37,6 +38,7 @@ export function useTodos(): {
   deleteTodo: (id: string) => void;
   reorderTodos: (todos: Todo[]) => void;
   setReminder: (id: string, reminderAt: string | null) => Promise<boolean>;
+  setDueDate: (id: string, dueAt: string | null) => Promise<void>;
 } {
   const activeListId = useActiveListId();
   const allTodos = useSyncExternalStore(
@@ -123,6 +125,10 @@ export function useTodos(): {
     return setReminderInStore(id, reminderAt);
   }, []);
 
+  const setDueDate = useCallback((id: string, dueAt: string | null) => {
+    return setDueDateInStore(id, dueAt);
+  }, []);
+
   return {
     todos,
     getTodoById,
@@ -132,5 +138,6 @@ export function useTodos(): {
     deleteTodo,
     reorderTodos,
     setReminder,
+    setDueDate,
   };
 }

@@ -59,6 +59,7 @@ export const todos = pgTable(
     updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' })
       .notNull()
       .defaultNow(),
+    dueAt: timestamp('due_at', { withTimezone: true, mode: 'string' }),
     reminderAt: timestamp('reminder_at', { withTimezone: true, mode: 'string' }),
     reminderSentAt: timestamp('reminder_sent_at', {
       withTimezone: true,

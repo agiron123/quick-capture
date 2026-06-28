@@ -9,6 +9,7 @@ export type Todo = {
   createdAt: string;
   sortOrder: number;
   updatedAt?: string;
+  dueAt?: string;
   reminderAt?: string;
   notificationId?: string;
   captureId?: string;

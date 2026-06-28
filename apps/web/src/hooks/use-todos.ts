@@ -55,6 +55,12 @@ export function useTodos(listId: string) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos', listId] }),
   });
 
+  const dueDateMutation = useMutation({
+    mutationFn: ({ id, dueAt }: { id: string; dueAt: string | null }) =>
+      updateTodo(id, { dueAt }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos', listId] }),
+  });
+
   return {
     todos: todosQuery.data ?? [],
     isLoading: todosQuery.isLoading,
@@ -70,6 +76,9 @@ export function useTodos(listId: string) {
     reorderTodos: reorderMutation.mutateAsync,
     setReminder: async (id: string, reminderAt: string | null) => {
       await reminderMutation.mutateAsync({ id, reminderAt });
+    },
+    setDueDate: async (id: string, dueAt: string | null) => {
+      await dueDateMutation.mutateAsync({ id, dueAt });
     },
   };
 }

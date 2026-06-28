@@ -40,6 +40,7 @@ When signed in (Neon Auth), todos sync to Postgres via `apps/api`:
 - **Mobile:** SQLite remains local cache; CRUD mirrors to API; pull on sign-in
 - **Web:** Server-only at `apps/web` (no local DB)
 - **Lists:** Multiple lists with picker, manage dialog, reorder (mobile + web)
+- **Due dates:** Optional `dueAt` per todo (calendar affordance; synced)
 - **Default list:** `list-inbox` (Inbox)
 
 See [auth.md](./auth.md) and [web-app.md](./web-app.md).

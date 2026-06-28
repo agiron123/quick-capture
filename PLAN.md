@@ -20,6 +20,7 @@ Quick Capture turns messy inputs (handwritten notes, voice, manual entry) into a
 | API-backed push reminders | ✅ Shipped | [docs/features/push-notifications.md](./docs/features/push-notifications.md) |
 | Mobile cloud sync | ✅ Shipped | [docs/features/auth.md](./docs/features/auth.md) |
 | Sync conflict resolution | ✅ Shipped | [docs/features/sync-conflicts.md](./docs/features/sync-conflicts.md) |
+| Due dates (`dueAt`) | ✅ Shipped | [docs/features/due-dates.md](./docs/features/due-dates.md) |
 
 ## Vision
 
@@ -90,7 +91,8 @@ Input (voice / photo / text)
 - [x] Object storage (R2 / S3-compatible) for capture media in production
 - [x] Notification tap deep links (mobile + web)
 - [x] Sync conflict resolution (same todo edited offline on two devices) — [spec](./docs/features/sync-conflicts.md)
-- [ ] Due dates, priority, tags, subtasks
+- [x] Due dates (`dueAt`) — [spec](./docs/features/due-dates.md)
+- [ ] Priority, tags, subtasks
 
 ### Phase 4 — Beyond todos
 
@@ -109,9 +111,10 @@ Input (voice / photo / text)
 Phase 3 core is shipped. Remaining priorities:
 
 1. **OAuth providers** — Google + GitHub in Neon Console
-2. **Due dates, priority, tags** — extend todo model
+2. **Priority, tags, subtasks** — extend todo model
 
 Specs:
+- [docs/features/due-dates.md](./docs/features/due-dates.md)
 - [docs/features/auth.md](./docs/features/auth.md)
 - [docs/features/sync-conflicts.md](./docs/features/sync-conflicts.md)
 - [docs/features/web-app.md](./docs/features/web-app.md)

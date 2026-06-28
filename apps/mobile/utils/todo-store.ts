@@ -4,6 +4,7 @@ import {
     createTodosBatchOnApi,
     deleteTodoOnApi,
     reorderTodosOnApi,
+    updateTodoDueDateOnApi,
     updateTodoOnApi,
     updateTodoReminderOnApi,
 } from '@/services/sync-api-client';
@@ -219,6 +220,35 @@ export async function setReminderInStore(id: string, reminderAt: string | null):
   notifyListeners();
 
   return Boolean(reminderAt && notificationId);
+}
+
+export async function setDueDateInStore(id: string, dueAt: string | null): Promise<void> {
+  const todo = cache.find((item) => item.id === id);
+  if (!todo) return;
+
+  let serverUpdatedAt: string | undefined;
+
+  if (isServerRemindersEnabled()) {
+    const updated = await updateTodoDueDateOnApi(id, dueAt, todo.updatedAt);
+    serverUpdatedAt = updated.updatedAt;
+    await todoRepository.updateTodoDueAt(id, dueAt);
+    if (serverUpdatedAt) {
+      await todoRepository.updateTodoUpdatedAt(id, serverUpdatedAt);
+    }
+  } else {
+    await todoRepository.updateTodoDueAt(id, dueAt);
+  }
+
+  cache = cache.map((item) =>
+    item.id === id
+      ? {
+          ...item,
+          dueAt: dueAt ?? undefined,
+          ...(serverUpdatedAt ? { updatedAt: serverUpdatedAt } : {}),
+        }
+      : item
+  );
+  notifyListeners();
 }
 
 export async function reorderTodosInStore(listId: string, todos: Todo[]): Promise<void> {
