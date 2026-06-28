@@ -8,7 +8,7 @@ Quick Capture uses [Turborepo](https://turbo.build) with npm workspaces.
 apps/
   mobile/     @quick-capture/mobile   Expo React Native app
   api/        @quick-capture/api      Hono API (Railway in production)
-  web/        (planned)               Web app — sync + Web Push (Phase 3)
+  web/        @quick-capture/web      Next.js web companion (Neon Auth)
 packages/
   shared/     @quick-capture/shared   Types + Zod schemas
   typescript-config/                    Shared tsconfig bases
@@ -27,6 +27,7 @@ Run from the repo root:
 | `npm run dev` | Start mobile + API in parallel |
 | `npm run dev:mobile` | Expo dev server only |
 | `npm run dev:api` | API dev server only (`http://localhost:3000`) |
+| `npm run dev:web` | Next.js web companion (`http://localhost:3001`) |
 | `npm run build` | Build all packages (respects dependency order) |
 | `npm run typecheck` | Typecheck all packages |
 

@@ -6,20 +6,44 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 
 import { aiRoutes } from './routes/ai.js';
+import { listRoutes } from './routes/lists.js';
+import { todoRoutes } from './routes/todos.js';
 
 const app = new Hono();
+
+const allowedOrigins = (process.env.CORS_ORIGINS ?? 'http://localhost:3001,http://localhost:8081')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 app.use(
   '*',
   cors({
-    origin: '*',
-    allowMethods: ['GET', 'POST', 'OPTIONS'],
+    origin: (origin) => {
+      if (!origin) return '*';
+      if (allowedOrigins.includes(origin)) return origin;
+      if (process.env.NODE_ENV !== 'production') return origin;
+      return allowedOrigins[0] ?? '*';
+    },
+    allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
   })
 );
 
 app.get('/health', (c) => c.json({ status: 'ok' }));
 
-app.get('/api', (c) => c.json({ name: 'quick-capture-api', version: '0.0.0' }));
+app.get('/api', (c) =>
+  c.json({
+    name: 'quick-capture-api',
+    version: '0.1.0',
+    features: {
+      ai: true,
+      sync: Boolean(process.env.DATABASE_URL?.trim()),
+      auth: Boolean(process.env.NEON_AUTH_URL?.trim() ?? process.env.NEON_AUTH_BASE_URL?.trim()),
+    },
+  })
+);
 
 app.post('/api/todos/validate', async (c) => {
   const body = await c.req.json();
@@ -31,6 +55,8 @@ app.post('/api/todos/validate', async (c) => {
 });
 
 app.route('/api/ai', aiRoutes);
+app.route('/api/lists', listRoutes);
+app.route('/api/todos', todoRoutes);
 
 const port = Number(process.env.PORT ?? 3000);
 
