@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">Quick Capture</string>
+  <string name="record_voice">Record voice</string>
+  <string name="opens_on_phone">Opens voice capture on your phone</string>
+  <string name="sending">Sending…</string>
+  <string name="no_phone">No phone connected</string>
+</resources>

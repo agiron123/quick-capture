@@ -28,6 +28,7 @@ Quick Capture turns messy inputs (handwritten notes, voice, manual entry) into a
 | Instant capture shortcuts | ✅ Shipped | [docs/features/instant-capture-shortcuts.md](./docs/features/instant-capture-shortcuts.md) |
 | CMF Watch phone shortcuts | ✅ Shipped | [docs/features/cmf-watch-android-shortcuts.md](./docs/features/cmf-watch-android-shortcuts.md) |
 | Apple Watch companion (scaffold) | ✅ Shipped | [docs/features/apple-watch.md](./docs/features/apple-watch.md) |
+| Wear OS companion (scaffold) | ✅ Shipped | [docs/features/wear-os.md](./docs/features/wear-os.md) |
 
 ## Vision
 
@@ -112,7 +113,7 @@ Input (voice / photo / text)
 ### Phase 5 — Wearable capture
 
 - [x] Apple Watch companion (`native/watch/`) — [spec](./docs/features/apple-watch.md) (v1 scaffold)
-- [ ] Wear OS module (`native/wear/`) — not CMF Watch
+- [x] Wear OS module (`native/wear/`) — [spec](./docs/features/wear-os.md) (v1 scaffold)
 - [x] CMF Android phone shortcuts — [spec](./docs/features/cmf-watch-android-shortcuts.md)
 
 ## Next up
@@ -120,11 +121,12 @@ Input (voice / photo / text)
 Phase 3 core is shipped. Remaining priorities:
 
 1. **OAuth providers** — Google + GitHub in Neon Console
-2. **Wear OS module** — `native/wear/`
-3. **Apple Watch follow-ups** — `source: watch`, complications
+2. **Apple Watch follow-ups** — `source: watch`, complications
+3. **Wear OS follow-ups** — `source: watch`, tile / complication
 
 Specs:
 - [docs/features/apple-watch.md](./docs/features/apple-watch.md)
+- [docs/features/wear-os.md](./docs/features/wear-os.md)
 - [docs/features/cmf-watch-android-shortcuts.md](./docs/features/cmf-watch-android-shortcuts.md)
 - [docs/features/instant-capture-shortcuts.md](./docs/features/instant-capture-shortcuts.md)
 - [docs/features/export-share.md](./docs/features/export-share.md)

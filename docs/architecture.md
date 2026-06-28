@@ -23,8 +23,8 @@ packages/
   shared/                 Types + Zod (@quick-capture/shared)
   typescript-config/      Shared tsconfig bases
 native/
-  wear/                   Wear OS Kotlin module (planned)
-  watch/                  Apple Watch SwiftUI (planned)
+  wear/                   Wear OS Kotlin module (scaffold)
+  watch/                  Apple Watch SwiftUI (scaffold; sources in apps/mobile/targets/watch/)
 docs/
 PLAN.md
 turbo.json

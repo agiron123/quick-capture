@@ -20,6 +20,7 @@
       }
     },
     "android": {
+      "package": "com.quickcapture.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -53,6 +54,7 @@
     },
     "plugins": [
       "@bacons/apple-targets",
+      "./plugins/with-wear-capture-bridge",
       "expo-router",
       [
         "expo-splash-screen",
