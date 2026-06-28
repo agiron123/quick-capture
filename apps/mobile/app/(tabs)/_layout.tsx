@@ -1,5 +1,7 @@
 import { Tabs } from 'expo-router';
+import { useQuickActionRouting } from 'expo-quick-actions/router';
 import { SymbolView } from 'expo-symbols';
+import { useEffect } from 'react';
 import { View } from 'react-native';
 
 import { AccountHeaderButton } from '@/components/account-header-button';
@@ -10,9 +12,15 @@ import { TabBarWithMic } from '@/components/tab-bar-with-mic';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
+import { configureCaptureQuickActions } from '@/services/quick-actions';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+
+  useQuickActionRouting();
+  useEffect(() => {
+    void configureCaptureQuickActions();
+  }, []);
 
   return (
     <Tabs

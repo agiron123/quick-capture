@@ -73,6 +73,34 @@
           "color": "#ffffff"
         }
       ],
+      [
+        "expo-quick-actions",
+        {
+          "iosActions": [
+            {
+              "id": "voice",
+              "title": "Record voice",
+              "subtitle": "Speak todos to capture",
+              "icon": "symbol:mic.fill",
+              "params": { "href": "/voice-record" }
+            },
+            {
+              "id": "camera",
+              "title": "Scan note",
+              "subtitle": "Photo to todos",
+              "icon": "symbol:camera.fill",
+              "params": { "href": "/capture" }
+            },
+            {
+              "id": "add-todo",
+              "title": "Add todo",
+              "subtitle": "Quick manual entry",
+              "icon": "symbol:plus.circle.fill",
+              "params": { "href": "/add-todo" }
+            }
+          ]
+        }
+      ],
       "@react-native-community/datetimepicker"
     ],
     "experiments": {

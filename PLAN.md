@@ -25,6 +25,7 @@ Quick Capture turns messy inputs (handwritten notes, voice, manual entry) into a
 | Todo tags | ✅ Shipped | [docs/features/todo-tags.md](./docs/features/todo-tags.md) |
 | Subtasks | ✅ Shipped | [docs/features/subtasks.md](./docs/features/subtasks.md) |
 | Export / share | ✅ Shipped | [docs/features/export-share.md](./docs/features/export-share.md) |
+| Instant capture shortcuts | ✅ Shipped | [docs/features/instant-capture-shortcuts.md](./docs/features/instant-capture-shortcuts.md) |
 
 ## Vision
 
@@ -104,7 +105,7 @@ Input (voice / photo / text)
 
 - [x] Search and filter (title search + open/done) — [spec](./docs/features/search-filter.md)
 - [x] Export / share — [spec](./docs/features/export-share.md)
-- [ ] Widget or shortcut for instant capture
+- [x] Widget or shortcut for instant capture — [spec](./docs/features/instant-capture-shortcuts.md)
 
 ### Phase 5 — Wearable capture
 
@@ -117,9 +118,11 @@ Input (voice / photo / text)
 Phase 3 core is shipped. Remaining priorities:
 
 1. **OAuth providers** — Google + GitHub in Neon Console
-2. **Widget or shortcut** — Phase 4 instant capture
+2. **Search filter follow-ups** — tag, priority, due-date filters
+3. **Wearables** — Phase 5 Apple Watch / Wear OS
 
 Specs:
+- [docs/features/instant-capture-shortcuts.md](./docs/features/instant-capture-shortcuts.md)
 - [docs/features/export-share.md](./docs/features/export-share.md)
 - [docs/features/search-filter.md](./docs/features/search-filter.md)
 - [docs/features/subtasks.md](./docs/features/subtasks.md)
