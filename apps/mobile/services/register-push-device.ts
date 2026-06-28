@@ -3,8 +3,8 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import { isAuthConfigured } from '@/services/auth-client';
-import { registerDeviceOnApi } from '@/services/sync-api-client';
 import { ensureNotificationPermissions } from '@/services/reminder-scheduler';
+import { registerDeviceOnApi } from '@/services/sync-api-client';
 
 export async function registerExpoPushDevice(): Promise<void> {
   if (!isAuthConfigured()) return;

@@ -118,3 +118,12 @@ export async function renameListInStore(listId: string, name: string): Promise<v
 export function getTodoCountForList(listId: string, todos: { listId: string }[]): number {
   return todos.filter((todo) => todo.listId === listId).length;
 }
+
+export async function refreshListsFromDb(): Promise<void> {
+  listsCache = await listRepository.fetchAllLists();
+  if (!listsCache.some((list) => list.id === activeListId) && listsCache.length > 0) {
+    activeListId = listsCache[0].id;
+    await setSetting(ACTIVE_LIST_SETTING_KEY, activeListId);
+  }
+  notifyListeners();
+}

@@ -1,3 +1,5 @@
+import type { Todo, TodoListRecord } from '@quick-capture/shared';
+
 import { getAccessToken } from '@/services/auth-client';
 
 function getApiBaseUrl(): string {
@@ -36,6 +38,20 @@ export async function syncApiFetch(path: string, init: RequestInit = {}): Promis
     ...init,
     headers,
   });
+}
+
+export async function fetchListsFromApi(): Promise<TodoListRecord[]> {
+  const response = await syncApiFetch('/api/lists');
+  if (!response.ok) throw new Error(await parseApiError(response));
+  const data = (await response.json()) as { lists: TodoListRecord[] };
+  return data.lists;
+}
+
+export async function fetchTodosFromApi(listId: string): Promise<Todo[]> {
+  const response = await syncApiFetch(`/api/todos?listId=${encodeURIComponent(listId)}`);
+  if (!response.ok) throw new Error(await parseApiError(response));
+  const data = (await response.json()) as { todos: Todo[] };
+  return data.todos;
 }
 
 export async function updateTodoReminderOnApi(

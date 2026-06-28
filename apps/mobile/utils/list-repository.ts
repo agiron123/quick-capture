@@ -62,3 +62,16 @@ export async function countTodosInList(listId: string): Promise<number> {
   );
   return row?.count ?? 0;
 }
+
+export async function replaceAllLists(lists: TodoListRecord[]): Promise<void> {
+  const db = await getDatabase();
+  await db.withTransactionAsync(async () => {
+    await db.runAsync('DELETE FROM todo_lists');
+    for (const list of lists) {
+      await db.runAsync(
+        'INSERT INTO todo_lists (id, name, sort_order, created_at) VALUES (?, ?, ?, ?)',
+        [list.id, list.name, list.sortOrder, list.createdAt]
+      );
+    }
+  });
+}

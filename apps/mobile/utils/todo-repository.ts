@@ -147,3 +147,33 @@ export async function deleteTodosByListId(listId: string): Promise<void> {
   const db = await getDatabase();
   await db.runAsync('DELETE FROM todos WHERE list_id = ?', [listId]);
 }
+
+export async function replaceAllTodos(todos: Todo[]): Promise<void> {
+  const db = await getDatabase();
+  await db.withTransactionAsync(async () => {
+    await db.runAsync('DELETE FROM todos');
+    for (const todo of todos) {
+      await db.runAsync(
+        `INSERT INTO todos (
+          id, title, completed, source, list_id, created_at, sort_order,
+          reminder_at, notification_id,
+          note_image_uri, note_audio_uri, transcript
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          todo.id,
+          todo.title,
+          todo.completed ? 1 : 0,
+          todo.source,
+          todo.listId,
+          todo.createdAt,
+          todo.sortOrder,
+          todo.reminderAt ?? null,
+          todo.notificationId ?? null,
+          todo.noteImageUri ?? null,
+          todo.noteAudioUri ?? null,
+          todo.transcript ?? null,
+        ]
+      );
+    }
+  });
+}

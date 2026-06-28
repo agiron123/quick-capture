@@ -1,6 +1,6 @@
 import { cancelReminder, reconcileAllReminders, rescheduleReminder } from '@/services/reminder-scheduler';
-import { isServerRemindersEnabled } from '@/services/sync-mode';
 import { updateTodoReminderOnApi } from '@/services/sync-api-client';
+import { isServerRemindersEnabled } from '@/services/sync-mode';
 import type { Todo } from '@/types/todo';
 import { getDatabase } from '@/utils/db';
 import { initListStore } from '@/utils/list-store';

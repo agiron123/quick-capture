@@ -1,17 +1,18 @@
 import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
+    createContext,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useState,
+    type ReactNode,
 } from 'react';
 
 import { authClient, isAuthConfigured } from '@/services/auth-client';
 import { registerExpoPushDevice } from '@/services/register-push-device';
 import { clearAllLocalReminders } from '@/services/reminder-scheduler';
 import { setServerRemindersEnabled } from '@/services/sync-mode';
+import { pullTodosFromServer } from '@/services/todo-sync';
 
 type AuthSession = {
   userId: string;
@@ -53,6 +54,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       setServerRemindersEnabled(true);
       await clearAllLocalReminders();
+      try {
+        await pullTodosFromServer();
+      } catch (error) {
+        console.warn('Todo sync pull failed:', error);
+      }
       try {
         await registerExpoPushDevice();
       } catch (error) {
