@@ -27,7 +27,7 @@ import { useLists } from '@/hooks/use-lists';
 import { useNotificationHighlight } from '@/hooks/use-notification-highlight';
 import { useTodos } from '@/hooks/use-todos';
 import type { Todo } from '@quick-capture/shared';
-import { filterTodos, type TodoStatusFilter } from '@quick-capture/shared';
+import { collectTodoTags, filterTodos, type TodoDueFilter, type TodoPriority, type TodoStatusFilter } from '@quick-capture/shared';
 
 export function TodosPageClient() {
   const { lists, activeListId, setActiveListId, isLoading: listsLoading } = useLists();
@@ -56,10 +56,15 @@ export function TodosPageClient() {
   const [newTitle, setNewTitle] = useState('');
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState<TodoStatusFilter>('all');
+  const [priorityFilter, setPriorityFilter] = useState<TodoPriority | null>(null);
+  const [tag, setTag] = useState<string | null>(null);
+  const [due, setDue] = useState<TodoDueFilter>('all');
+
+  const availableTags = useMemo(() => collectTodoTags(todos), [todos]);
 
   const filteredTodos = useMemo(
-    () => filterTodos(todos, { query, status }),
-    [todos, query, status]
+    () => filterTodos(todos, { query, status, priority: priorityFilter, tag, due }),
+    [todos, query, status, priorityFilter, tag, due]
   );
 
   const activeList = useMemo(
@@ -98,8 +103,15 @@ export function TodosPageClient() {
           <TodoFilterBar
             query={query}
             status={status}
+            priority={priorityFilter}
+            tag={tag}
+            due={due}
+            availableTags={availableTags}
             onQueryChange={setQuery}
             onStatusChange={setStatus}
+            onPriorityChange={setPriorityFilter}
+            onTagChange={setTag}
+            onDueChange={setDue}
             actions={<ExportTodosMenu todos={todos} listName={activeList?.name} />}
           />
         ) : null}

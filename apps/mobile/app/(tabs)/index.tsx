@@ -1,6 +1,6 @@
-import { PlatformColor, Text, View } from 'react-native';
+import { collectTodoTags, filterTodos, type TodoDueFilter, type TodoPriority, type TodoStatusFilter } from '@quick-capture/shared';
 import { useMemo, useState } from 'react';
-import { filterTodos, type TodoStatusFilter } from '@quick-capture/shared';
+import { PlatformColor, Text, View } from 'react-native';
 
 import { TodoFilterBar } from '@/components/todo-filter-bar';
 import { TodoList } from '@/components/todo-list';
@@ -14,10 +14,15 @@ export default function TodosScreen() {
   const highlightTodoId = useNotificationHighlight();
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState<TodoStatusFilter>('all');
+  const [priorityFilter, setPriorityFilter] = useState<TodoPriority | null>(null);
+  const [tag, setTag] = useState<string | null>(null);
+  const [due, setDue] = useState<TodoDueFilter>('all');
+
+  const availableTags = useMemo(() => collectTodoTags(todos), [todos]);
 
   const filteredTodos = useMemo(
-    () => filterTodos(todos, { query, status }),
-    [todos, query, status]
+    () => filterTodos(todos, { query, status, priority: priorityFilter, tag, due }),
+    [todos, query, status, priorityFilter, tag, due]
   );
 
   const pendingCount = todos.filter((todo) => !todo.completed).length;
@@ -36,8 +41,15 @@ export default function TodosScreen() {
         <TodoFilterBar
           query={query}
           status={status}
+          priority={priorityFilter}
+          tag={tag}
+          due={due}
+          availableTags={availableTags}
           onQueryChange={setQuery}
           onStatusChange={setStatus}
+          onPriorityChange={setPriorityFilter}
+          onTagChange={setTag}
+          onDueChange={setDue}
         />
       ) : null}
 

@@ -118,8 +118,7 @@ Input (voice / photo / text)
 Phase 3 core is shipped. Remaining priorities:
 
 1. **OAuth providers** — Google + GitHub in Neon Console
-2. **Search filter follow-ups** — tag, priority, due-date filters
-3. **Wearables** — Phase 5 Apple Watch / Wear OS
+2. **Wearables** — Phase 5 Apple Watch / Wear OS
 
 Specs:
 - [docs/features/instant-capture-shortcuts.md](./docs/features/instant-capture-shortcuts.md)
