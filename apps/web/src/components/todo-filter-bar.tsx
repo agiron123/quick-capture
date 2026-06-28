@@ -1,6 +1,8 @@
 'use client';
 
 import { filterTodos, type TodoStatusFilter } from '@quick-capture/shared';
+import type { ReactNode } from 'react';
+
 import { Input } from '@/components/ui/input';
 
 type TodoFilterBarProps = {
@@ -8,6 +10,7 @@ type TodoFilterBarProps = {
   status: TodoStatusFilter;
   onQueryChange: (query: string) => void;
   onStatusChange: (status: TodoStatusFilter) => void;
+  actions?: ReactNode;
 };
 
 const STATUS_OPTIONS: { value: TodoStatusFilter; label: string }[] = [
@@ -21,6 +24,7 @@ export function TodoFilterBar({
   status,
   onQueryChange,
   onStatusChange,
+  actions,
 }: TodoFilterBarProps) {
   return (
     <div className="space-y-3 px-4 pb-2 pt-3">
@@ -48,6 +52,7 @@ export function TodoFilterBar({
           );
         })}
       </div>
+      {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
     </div>
   );
 }

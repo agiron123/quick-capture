@@ -1,8 +1,10 @@
 import { Tabs } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
+import { View } from 'react-native';
 
 import { AccountHeaderButton } from '@/components/account-header-button';
 import { AddTodoHeaderButton } from '@/components/add-todo-header-button';
+import { ExportTodosHeaderButton } from '@/components/export-todos-header-button';
 import { ListPickerHeaderButton } from '@/components/list-picker-header-button';
 import { TabBarWithMic } from '@/components/tab-bar-with-mic';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
@@ -24,7 +26,12 @@ export default function TabLayout() {
         options={{
           headerTitle: () => <ListPickerHeaderButton />,
           headerLeft: () => <AccountHeaderButton />,
-          headerRight: () => <AddTodoHeaderButton />,
+          headerRight: () => (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <ExportTodosHeaderButton />
+              <AddTodoHeaderButton />
+            </View>
+          ),
           tabBarIcon: ({ color }) => (
             <SymbolView
               name={{ ios: 'checklist', android: 'checklist', web: 'checklist' }}

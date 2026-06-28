@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 
 import { AddSubtaskDialog } from '@/components/add-subtask-dialog';
 import { AppShell, HeaderAddButton } from '@/components/app-shell';
+import { ExportTodosMenu } from '@/components/export-todos-menu';
 import { TodoFilterBar } from '@/components/todo-filter-bar';
 import { ManageListsDialog } from '@/components/manage-lists-dialog';
 import { SetDueDateDialog } from '@/components/set-due-date-dialog';
@@ -99,6 +100,7 @@ export function TodosPageClient() {
             status={status}
             onQueryChange={setQuery}
             onStatusChange={setStatus}
+            actions={<ExportTodosMenu todos={todos} listName={activeList?.name} />}
           />
         ) : null}
 

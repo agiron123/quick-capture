@@ -24,6 +24,7 @@ Quick Capture turns messy inputs (handwritten notes, voice, manual entry) into a
 | Todo priority | ✅ Shipped | [docs/features/todo-priority.md](./docs/features/todo-priority.md) |
 | Todo tags | ✅ Shipped | [docs/features/todo-tags.md](./docs/features/todo-tags.md) |
 | Subtasks | ✅ Shipped | [docs/features/subtasks.md](./docs/features/subtasks.md) |
+| Export / share | ✅ Shipped | [docs/features/export-share.md](./docs/features/export-share.md) |
 
 ## Vision
 
@@ -102,7 +103,7 @@ Input (voice / photo / text)
 ### Phase 4 — Beyond todos
 
 - [x] Search and filter (title search + open/done) — [spec](./docs/features/search-filter.md)
-- [ ] Export / share
+- [x] Export / share — [spec](./docs/features/export-share.md)
 - [ ] Widget or shortcut for instant capture
 
 ### Phase 5 — Wearable capture
@@ -116,9 +117,10 @@ Input (voice / photo / text)
 Phase 3 core is shipped. Remaining priorities:
 
 1. **OAuth providers** — Google + GitHub in Neon Console
-2. **Export / share** — Phase 4
+2. **Widget or shortcut** — Phase 4 instant capture
 
 Specs:
+- [docs/features/export-share.md](./docs/features/export-share.md)
 - [docs/features/search-filter.md](./docs/features/search-filter.md)
 - [docs/features/subtasks.md](./docs/features/subtasks.md)
 - [docs/features/todo-tags.md](./docs/features/todo-tags.md)
