@@ -78,6 +78,7 @@ function localTodoDiffers(local: Todo, server: Todo, mappedListId: string): bool
     local.title !== server.title ||
     local.completed !== server.completed ||
     (local.dueAt ?? null) !== (server.dueAt ?? null) ||
+    (local.priority ?? null) !== (server.priority ?? null) ||
     (local.reminderAt ?? null) !== (server.reminderAt ?? null) ||
     mappedListId !== server.listId ||
     local.sortOrder !== server.sortOrder
@@ -128,6 +129,7 @@ async function pushExistingTodoChanges(
       title: local.title,
       completed: local.completed,
       dueAt: local.dueAt ?? null,
+      priority: local.priority ?? null,
       reminderAt: local.reminderAt ?? null,
       listId: mappedListId,
       sortOrder: local.sortOrder,

@@ -5,6 +5,7 @@ import {
     deleteTodoOnApi,
     reorderTodosOnApi,
     updateTodoDueDateOnApi,
+    updateTodoPriorityOnApi,
     updateTodoOnApi,
     updateTodoReminderOnApi,
 } from '@/services/sync-api-client';
@@ -244,6 +245,38 @@ export async function setDueDateInStore(id: string, dueAt: string | null): Promi
       ? {
           ...item,
           dueAt: dueAt ?? undefined,
+          ...(serverUpdatedAt ? { updatedAt: serverUpdatedAt } : {}),
+        }
+      : item
+  );
+  notifyListeners();
+}
+
+export async function setPriorityInStore(
+  id: string,
+  priority: import('@quick-capture/shared').TodoPriority | null
+): Promise<void> {
+  const todo = cache.find((item) => item.id === id);
+  if (!todo) return;
+
+  let serverUpdatedAt: string | undefined;
+
+  if (isServerRemindersEnabled()) {
+    const updated = await updateTodoPriorityOnApi(id, priority, todo.updatedAt);
+    serverUpdatedAt = updated.updatedAt;
+    await todoRepository.updateTodoPriority(id, priority);
+    if (serverUpdatedAt) {
+      await todoRepository.updateTodoUpdatedAt(id, serverUpdatedAt);
+    }
+  } else {
+    await todoRepository.updateTodoPriority(id, priority);
+  }
+
+  cache = cache.map((item) =>
+    item.id === id
+      ? {
+          ...item,
+          priority: priority ?? undefined,
           ...(serverUpdatedAt ? { updatedAt: serverUpdatedAt } : {}),
         }
       : item

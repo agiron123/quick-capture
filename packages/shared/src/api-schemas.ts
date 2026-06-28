@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 export const todoSourceSchema = z.enum(['manual', 'capture', 'voice', 'watch']);
 
+export const todoPrioritySchema = z.enum(['low', 'medium', 'high']);
+
 export const createListSchema = z.object({
   name: z.string().trim().min(1).max(100),
 });
@@ -19,6 +21,7 @@ export const createTodoSchema = z.object({
   clientId: z.string().optional(),
   reminderAt: z.string().datetime().optional(),
   dueAt: z.string().datetime().optional(),
+  priority: todoPrioritySchema.optional(),
   noteImageUri: z.string().optional(),
   noteAudioUri: z.string().optional(),
   transcript: z.string().optional(),
@@ -34,6 +37,7 @@ export const updateTodoSchema = z.object({
   completed: z.boolean().optional(),
   reminderAt: z.string().datetime().nullable().optional(),
   dueAt: z.string().datetime().nullable().optional(),
+  priority: todoPrioritySchema.nullable().optional(),
   listId: z.string().min(1).optional(),
   sortOrder: z.number().int().nonnegative().optional(),
   baseUpdatedAt: z.string().datetime().optional(),

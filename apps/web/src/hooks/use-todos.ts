@@ -61,6 +61,17 @@ export function useTodos(listId: string) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos', listId] }),
   });
 
+  const priorityMutation = useMutation({
+    mutationFn: ({
+      id,
+      priority,
+    }: {
+      id: string;
+      priority: import('@quick-capture/shared').TodoPriority | null;
+    }) => updateTodo(id, { priority }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos', listId] }),
+  });
+
   return {
     todos: todosQuery.data ?? [],
     isLoading: todosQuery.isLoading,
@@ -79,6 +90,9 @@ export function useTodos(listId: string) {
     },
     setDueDate: async (id: string, dueAt: string | null) => {
       await dueDateMutation.mutateAsync({ id, dueAt });
+    },
+    setPriority: async (id: string, priority: import('@quick-capture/shared').TodoPriority | null) => {
+      await priorityMutation.mutateAsync({ id, priority });
     },
   };
 }

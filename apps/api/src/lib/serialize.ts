@@ -25,6 +25,10 @@ export function serializeTodo(row: TodoRow): Todo {
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     sortOrder: row.sortOrder,
+    priority:
+      row.priority === 'low' || row.priority === 'medium' || row.priority === 'high'
+        ? row.priority
+        : undefined,
     dueAt: row.dueAt ?? undefined,
     reminderAt: row.reminderAt ?? undefined,
     transcript: row.transcript ?? undefined,

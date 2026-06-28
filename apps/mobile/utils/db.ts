@@ -56,6 +56,7 @@ async function openAndMigrate(): Promise<SQLite.SQLiteDatabase> {
   await migrateReminderColumns(db);
   await migrateUpdatedAtColumn(db);
   await migrateDueAtColumn(db);
+  await migratePriorityColumn(db);
   await ensureDefaultList(db);
 
   await db.execAsync(`
@@ -111,6 +112,13 @@ async function migrateDueAtColumn(db: SQLite.SQLiteDatabase): Promise<void> {
   if (columns.some((column) => column.name === 'due_at')) return;
 
   await db.execAsync('ALTER TABLE todos ADD COLUMN due_at TEXT');
+}
+
+async function migratePriorityColumn(db: SQLite.SQLiteDatabase): Promise<void> {
+  const columns = await db.getAllAsync<{ name: string }>('PRAGMA table_info(todos)');
+  if (columns.some((column) => column.name === 'priority')) return;
+
+  await db.execAsync('ALTER TABLE todos ADD COLUMN priority TEXT');
 }
 
 async function migrateListIdColumn(db: SQLite.SQLiteDatabase): Promise<void> {

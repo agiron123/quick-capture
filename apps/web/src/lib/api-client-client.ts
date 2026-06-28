@@ -102,7 +102,13 @@ export async function createTodosBatch(
 
 export async function updateTodo(
   id: string,
-  patch: { title?: string; completed?: boolean; reminderAt?: string | null; dueAt?: string | null }
+  patch: {
+    title?: string;
+    completed?: boolean;
+    reminderAt?: string | null;
+    dueAt?: string | null;
+    priority?: import('@quick-capture/shared').TodoPriority | null;
+  }
 ): Promise<Todo> {
   const response = await apiFetch(`/api/todos/${id}`, {
     method: 'PATCH',

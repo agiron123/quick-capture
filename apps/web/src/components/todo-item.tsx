@@ -1,12 +1,13 @@
 'use client';
 
 import type { Todo } from '@quick-capture/shared';
-import { Bell, Calendar, Trash2 } from 'lucide-react';
+import { Bell, Calendar, Flag, Trash2 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { formatDueDateLabel, isDueOverdue } from '@/lib/format-due-date';
+import { formatPriorityLabel, priorityBadgeClass, priorityIconClass } from '@/lib/format-priority';
 import { formatReminderLabel } from '@/lib/format-reminder';
 
 function sourceLabel(source: Todo['source']): string {
@@ -27,6 +28,7 @@ type TodoItemProps = {
   onDelete: (id: string) => void;
   onSetReminder: (todo: Todo) => void;
   onSetDueDate: (todo: Todo) => void;
+  onSetPriority: (todo: Todo) => void;
 };
 
 export function TodoItem({
@@ -36,6 +38,7 @@ export function TodoItem({
   onDelete,
   onSetReminder,
   onSetDueDate,
+  onSetPriority,
 }: TodoItemProps) {
   const dueOverdue = todo.dueAt ? isDueOverdue(todo.dueAt, todo.completed) : false;
 
@@ -54,6 +57,11 @@ export function TodoItem({
         >
           {todo.title}
         </p>
+        {todo.priority ? (
+          <Badge variant="secondary" className={priorityBadgeClass(todo.priority)}>
+            {formatPriorityLabel(todo.priority)}
+          </Badge>
+        ) : null}
         {todo.dueAt ? (
           <Badge
             variant="secondary"
@@ -67,10 +75,20 @@ export function TodoItem({
             {formatReminderLabel(todo.reminderAt)}
           </Badge>
         ) : null}
-        {!todo.dueAt && !todo.reminderAt ? (
+        {!todo.priority && !todo.dueAt && !todo.reminderAt ? (
           <p className="text-sm text-muted-foreground">{sourceLabel(todo.source)}</p>
         ) : null}
       </div>
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label={todo.priority ? 'Edit priority' : 'Set priority'}
+        onClick={() => onSetPriority(todo)}
+      >
+        <Flag
+          className={`size-4 ${todo.priority ? priorityIconClass(todo.priority) : ''}`}
+        />
+      </Button>
       <Button
         variant="ghost"
         size="icon"

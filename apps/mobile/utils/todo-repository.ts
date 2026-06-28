@@ -1,4 +1,4 @@
-import type { Todo, TodoSource } from '@/types/todo';
+import type { Todo, TodoPriority, TodoSource } from '@/types/todo';
 import { getDatabase } from '@/utils/db';
 
 type TodoRow = {
@@ -10,6 +10,7 @@ type TodoRow = {
   created_at: string;
   updated_at: string | null;
   due_at: string | null;
+  priority: string | null;
   sort_order: number;
   reminder_at: string | null;
   notification_id: string | null;
@@ -17,6 +18,11 @@ type TodoRow = {
   note_audio_uri: string | null;
   transcript: string | null;
 };
+
+function parsePriority(value: string | null): TodoPriority | undefined {
+  if (value === 'low' || value === 'medium' || value === 'high') return value;
+  return undefined;
+}
 
 function rowToTodo(row: TodoRow): Todo {
   return {
@@ -28,6 +34,7 @@ function rowToTodo(row: TodoRow): Todo {
     createdAt: row.created_at,
     updatedAt: row.updated_at ?? row.created_at,
     dueAt: row.due_at ?? undefined,
+    priority: parsePriority(row.priority),
     sortOrder: row.sort_order,
     reminderAt: row.reminder_at ?? undefined,
     notificationId: row.notification_id ?? undefined,
@@ -49,10 +56,10 @@ export async function insertTodo(todo: Todo): Promise<void> {
   const db = await getDatabase();
   await db.runAsync(
     `INSERT INTO todos (
-      id, title, completed, source, list_id, created_at, updated_at, due_at, sort_order,
+      id, title, completed, source, list_id, created_at, updated_at, due_at, priority, sort_order,
       reminder_at, notification_id,
       note_image_uri, note_audio_uri, transcript
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       todo.id,
       todo.title,
@@ -62,6 +69,7 @@ export async function insertTodo(todo: Todo): Promise<void> {
       todo.createdAt,
       todo.updatedAt ?? todo.createdAt,
       todo.dueAt ?? null,
+      todo.priority ?? null,
       todo.sortOrder,
       todo.reminderAt ?? null,
       todo.notificationId ?? null,
@@ -79,10 +87,10 @@ export async function insertTodos(todos: Todo[]): Promise<void> {
     for (const todo of todos) {
       await db.runAsync(
         `INSERT INTO todos (
-          id, title, completed, source, list_id, created_at, updated_at, due_at, sort_order,
+          id, title, completed, source, list_id, created_at, updated_at, due_at, priority, sort_order,
           reminder_at, notification_id,
           note_image_uri, note_audio_uri, transcript
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           todo.id,
           todo.title,
@@ -92,6 +100,7 @@ export async function insertTodos(todos: Todo[]): Promise<void> {
           todo.createdAt,
           todo.updatedAt ?? todo.createdAt,
           todo.dueAt ?? null,
+          todo.priority ?? null,
           todo.sortOrder,
           todo.reminderAt ?? null,
           todo.notificationId ?? null,
@@ -102,6 +111,11 @@ export async function insertTodos(todos: Todo[]): Promise<void> {
       );
     }
   });
+}
+
+export async function updateTodoPriority(id: string, priority: string | null): Promise<void> {
+  const db = await getDatabase();
+  await db.runAsync('UPDATE todos SET priority = ? WHERE id = ?', [priority, id]);
 }
 
 export async function updateTodoDueAt(id: string, dueAt: string | null): Promise<void> {
@@ -173,10 +187,10 @@ export async function replaceAllTodos(todos: Todo[]): Promise<void> {
     for (const todo of todos) {
       await db.runAsync(
         `INSERT INTO todos (
-          id, title, completed, source, list_id, created_at, updated_at, due_at, sort_order,
+          id, title, completed, source, list_id, created_at, updated_at, due_at, priority, sort_order,
           reminder_at, notification_id,
           note_image_uri, note_audio_uri, transcript
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           todo.id,
           todo.title,
@@ -186,6 +200,7 @@ export async function replaceAllTodos(todos: Todo[]): Promise<void> {
           todo.createdAt,
           todo.updatedAt ?? todo.createdAt,
           todo.dueAt ?? null,
+          todo.priority ?? null,
           todo.sortOrder,
           todo.reminderAt ?? null,
           todo.notificationId ?? null,

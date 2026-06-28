@@ -31,6 +31,7 @@ type TodoListProps = {
   onDelete: (id: string) => void;
   onSetReminder: (todo: Todo) => void;
   onSetDueDate: (todo: Todo) => void;
+  onSetPriority: (todo: Todo) => void;
   onReorder: (todoIds: string[]) => void;
 };
 
@@ -41,6 +42,7 @@ function SortableTodoRow({
   onDelete,
   onSetReminder,
   onSetDueDate,
+  onSetPriority,
 }: {
   todo: Todo;
   highlighted: boolean;
@@ -48,6 +50,7 @@ function SortableTodoRow({
   onDelete: (id: string) => void;
   onSetReminder: (todo: Todo) => void;
   onSetDueDate: (todo: Todo) => void;
+  onSetPriority: (todo: Todo) => void;
 }) {
   const rowRef = useRef<HTMLDivElement>(null);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -89,6 +92,7 @@ function SortableTodoRow({
           onDelete={onDelete}
           onSetReminder={onSetReminder}
           onSetDueDate={onSetDueDate}
+          onSetPriority={onSetPriority}
         />
       </div>
     </div>
@@ -103,6 +107,7 @@ export function TodoList({
   onDelete,
   onSetReminder,
   onSetDueDate,
+  onSetPriority,
   onReorder,
 }: TodoListProps) {
   const sensors = useSensors(
@@ -148,6 +153,7 @@ export function TodoList({
               onDelete={onDelete}
               onSetReminder={onSetReminder}
               onSetDueDate={onSetDueDate}
+              onSetPriority={onSetPriority}
             />
           ))}
         </div>

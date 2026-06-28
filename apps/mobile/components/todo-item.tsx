@@ -6,6 +6,7 @@ import { PlatformColor, Pressable, Text, View } from 'react-native';
 
 import type { Todo } from '@/types/todo';
 import { formatDueDateLabel, isDueOverdue } from '@/utils/format-due-date';
+import { formatPriorityLabel, priorityAccentColor } from '@/utils/format-priority';
 import { formatReminderLabel } from '@/utils/format-reminder';
 
 type TodoItemProps = {
@@ -45,8 +46,14 @@ export function TodoItem({
     router.push({ pathname: '/set-due-date', params: { todoId: todo.id } } as Href);
   };
 
+  const openPriority = async () => {
+    await Haptics.selectionAsync();
+    router.push({ pathname: '/set-priority', params: { todoId: todo.id } } as Href);
+  };
+
   const hasReminder = Boolean(todo.reminderAt);
   const hasDueDate = Boolean(todo.dueAt);
+  const hasPriority = Boolean(todo.priority);
   const dueOverdue = hasDueDate && isDueOverdue(todo.dueAt!, todo.completed);
 
   return (
@@ -106,6 +113,17 @@ export function TodoItem({
           }}>
           {todo.title}
         </Text>
+        {hasPriority ? (
+          <Text
+            selectable
+            style={{
+              color: priorityAccentColor(todo.priority!),
+              fontSize: 13,
+              fontWeight: '600',
+            }}>
+            {formatPriorityLabel(todo.priority!)}
+          </Text>
+        ) : null}
         {hasDueDate ? (
           <Text
             selectable
@@ -121,7 +139,7 @@ export function TodoItem({
             {formatReminderLabel(todo.reminderAt!)}
           </Text>
         ) : null}
-        {!hasDueDate && !hasReminder ? (
+        {!hasDueDate && !hasReminder && !hasPriority ? (
           <Text selectable style={{ color: PlatformColor('secondaryLabel'), fontSize: 13 }}>
             {todo.source === 'capture'
               ? 'From note capture'
@@ -131,6 +149,25 @@ export function TodoItem({
           </Text>
         ) : null}
       </View>
+
+      <Pressable
+        onPress={openPriority}
+        accessibilityRole="button"
+        accessibilityLabel={hasPriority ? 'Edit priority' : 'Set priority'}
+        hitSlop={8}
+        style={{ padding: 4 }}>
+        <SymbolView
+          name={{
+            ios: hasPriority ? 'flag.fill' : 'flag',
+            android: 'flag',
+            web: 'flag',
+          }}
+          tintColor={
+            hasPriority ? priorityAccentColor(todo.priority!) : PlatformColor('tertiaryLabel')
+          }
+          size={20}
+        />
+      </Pressable>
 
       <Pressable
         onPress={openDueDate}

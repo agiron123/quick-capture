@@ -55,6 +55,14 @@ export async function fetchTodosFromApi(listId: string): Promise<Todo[]> {
   return data.todos;
 }
 
+export async function updateTodoPriorityOnApi(
+  id: string,
+  priority: import('@quick-capture/shared').TodoPriority | null,
+  baseUpdatedAt?: string
+): Promise<Todo> {
+  return updateTodoOnApi(id, { priority, baseUpdatedAt });
+}
+
 export async function updateTodoDueDateOnApi(
   id: string,
   dueAt: string | null,
@@ -138,6 +146,7 @@ export async function updateTodoOnApi(
     completed?: boolean;
     reminderAt?: string | null;
     dueAt?: string | null;
+    priority?: import('@quick-capture/shared').TodoPriority | null;
     listId?: string;
     sortOrder?: number;
     baseUpdatedAt?: string;

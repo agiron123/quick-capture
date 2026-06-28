@@ -1,5 +1,7 @@
 export type TodoSource = 'manual' | 'capture' | 'voice' | 'watch';
 
+export type TodoPriority = 'low' | 'medium' | 'high';
+
 export type Todo = {
   id: string;
   title: string;
@@ -9,6 +11,7 @@ export type Todo = {
   createdAt: string;
   sortOrder: number;
   updatedAt?: string;
+  priority?: TodoPriority;
   dueAt?: string;
   reminderAt?: string;
   notificationId?: string;
