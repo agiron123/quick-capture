@@ -167,7 +167,9 @@ export function TodoItem({
               ? 'From note capture'
               : todo.source === 'voice'
                 ? 'From voice note'
-                : 'Added manually'}
+                : todo.source === 'watch'
+                  ? 'From watch capture'
+                  : 'Added manually'}
           </Text>
         ) : null}
       </View>

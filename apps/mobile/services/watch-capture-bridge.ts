@@ -13,7 +13,7 @@ export function initWatchCaptureBridge(): () => void {
     const pending = storage.get(WATCH_PENDING_CAPTURE_KEY);
     if (pending === 'voice') {
       storage.remove(WATCH_PENDING_CAPTURE_KEY);
-      router.push('/voice-record' as Href);
+      router.push({ pathname: '/voice-record', params: { origin: 'watch' } } as Href);
     }
   };
 

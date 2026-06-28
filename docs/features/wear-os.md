@@ -23,10 +23,10 @@ Phone: WearCaptureListenerService → quickcapture://voice-record
     ↓
 wear-capture-bridge (pending flag) → /voice-record
     ↓
-AI → review-todos → save (source: watch — follow-up)
+AI → review-todos → save (source: watch)
 ```
 
-Todos created from watch-initiated capture should use `source: 'watch'` when that path is wired through review (follow-up).
+Todos created from watch-initiated capture use `source: 'watch'` through the review flow.
 
 ## Setup
 
@@ -58,7 +58,6 @@ Requires a dev/EAS build — not Expo Go.
 
 ## Follow-ups
 
-- Set `source: 'watch'` on todos saved after watch-initiated capture
 - Tile / complication for faster capture
 - Open todo count glance on watch via Data Layer sync
 

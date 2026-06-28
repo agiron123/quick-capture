@@ -16,7 +16,7 @@ export function initWearCaptureBridge(): () => void {
       const pending = await WearCaptureBridge.getPendingCapture();
       if (pending === 'voice') {
         await WearCaptureBridge.clearPendingCapture();
-        router.push('/voice-record' as Href);
+        router.push({ pathname: '/voice-record', params: { origin: 'watch' } } as Href);
       }
     } catch (error) {
       console.warn('Wear capture bridge failed to read pending capture', error);

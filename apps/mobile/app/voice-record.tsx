@@ -1,10 +1,14 @@
-import { router, Stack } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Alert, PlatformColor, View } from 'react-native';
 
 import { VoiceRecorder } from '@/components/voice-recorder';
 import { extractTodosFromVoice } from '@/services/ai-extract-todos-from-voice';
+import type { TodoSource } from '@/types/todo';
 
 export default function VoiceRecordModal() {
+  const { origin } = useLocalSearchParams<{ origin?: string }>();
+  const reviewSource: TodoSource = origin === 'watch' ? 'watch' : 'voice';
+
   const handleRecordingComplete = async (uri: string) => {
     try {
       const { transcript, todos } = await extractTodosFromVoice(uri);
@@ -20,7 +24,7 @@ export default function VoiceRecordModal() {
                 router.replace({
                   pathname: '/review-todos',
                   params: {
-                    source: 'voice',
+                    source: reviewSource,
                     audioUri: uri,
                     transcript,
                     todos: JSON.stringify([]),
@@ -36,7 +40,7 @@ export default function VoiceRecordModal() {
       router.replace({
         pathname: '/review-todos',
         params: {
-          source: 'voice',
+          source: reviewSource,
           audioUri: uri,
           transcript,
           todos: JSON.stringify(todos),

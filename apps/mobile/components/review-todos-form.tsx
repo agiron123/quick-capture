@@ -64,9 +64,11 @@ export function ReviewTodosForm({
       ) : null}
 
       <Text selectable style={{ color: PlatformColor('secondaryLabel'), fontSize: 15 }}>
-        {source === 'voice'
-          ? 'Edit the todos extracted from your voice note.'
-          : 'Edit the extracted todos before saving.'}
+        {source === 'watch'
+          ? 'Edit the todos extracted from your watch voice capture.'
+          : source === 'voice'
+            ? 'Edit the todos extracted from your voice note.'
+            : 'Edit the extracted todos before saving.'}
       </Text>
 
       <View style={{ gap: 12 }}>

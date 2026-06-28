@@ -121,8 +121,8 @@ Input (voice / photo / text)
 Phase 3 core is shipped. Remaining priorities:
 
 1. **OAuth providers** — Google + GitHub in Neon Console
-2. **Apple Watch follow-ups** — `source: watch`, complications
-3. **Wear OS follow-ups** — `source: watch`, tile / complication
+2. **Apple Watch follow-ups** — complications, bidirectional sync
+3. **Wear OS follow-ups** — tile / complication
 
 Specs:
 - [docs/features/apple-watch.md](./docs/features/apple-watch.md)

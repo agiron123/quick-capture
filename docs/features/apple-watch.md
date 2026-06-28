@@ -23,7 +23,7 @@ iPhone app foreground → watch-capture-bridge
 /voice-record → AI → review-todos → save (source: watch)
 ```
 
-Todos created from watch-initiated capture should use `source: 'watch'` when that path is wired through review (follow-up).
+Todos created from watch-initiated capture use `source: 'watch'` through the review flow.
 
 ## Setup
 
@@ -47,7 +47,6 @@ Todos created from watch-initiated capture should use `source: 'watch'` when tha
 
 ## Follow-ups
 
-- Set `source: 'watch'` on todos saved after watch-initiated capture
 - WatchConnectivity bidirectional sync (open app when phone unreachable)
 - watch-widget complication for faster capture
 - Complication / glance at open todo count via App Group

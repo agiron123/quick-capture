@@ -45,7 +45,7 @@ class WearCaptureListenerService : WearableListenerService() {
 
 object WearCaptureBridgeStore {
   const val MESSAGE_PATH_VOICE = "/capture/voice"
-  const val VOICE_DEEP_LINK = "quickcapture://voice-record"
+  const val VOICE_DEEP_LINK = "quickcapture://voice-record?origin=watch"
   private const val PREFS_NAME = "quickcapture_wear_bridge"
   private const val PENDING_KEY = "wearPendingCapture"
 
