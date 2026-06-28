@@ -87,7 +87,7 @@ Input (voice / photo / text)
   - [x] Web: service worker + Web Push via VAPID
   - [x] Device management UI on web (`/devices`)
 - [ ] Object storage (R2) for capture media in production
-- [ ] Notification tap deep links (mobile + web)
+- [x] Notification tap deep links (mobile + web)
 - [ ] Sync conflict resolution (same todo edited offline on two devices)
 - [ ] Due dates, priority, tags, subtasks
 
@@ -110,7 +110,7 @@ Phase 3 core is shipped. Remaining priorities:
 1. **Production capture storage** — R2 (or S3-compatible) instead of local disk on Railway
 2. **OAuth providers** — Google + GitHub in Neon Console
 3. **Unified review modal** — one component for camera and voice on mobile
-4. **Production capture storage** — R2 instead of local disk on Railway
+4. **Sync conflict resolution** — same todo edited on multiple devices offline
 
 Specs:
 - [docs/features/auth.md](./docs/features/auth.md)
