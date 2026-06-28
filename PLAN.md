@@ -2,7 +2,7 @@
 
 Quick Capture turns messy inputs (handwritten notes, voice, manual entry) into actionable todos. This document is the living roadmap. Detailed specs live in [`docs/`](./docs/).
 
-## Current state (v0.3)
+## Current state (v0.4)
 
 | Feature | Status | Spec |
 | --- | --- | --- |
@@ -11,6 +11,9 @@ Quick Capture turns messy inputs (handwritten notes, voice, manual entry) into a
 | Manual todo entry | ✅ Shipped | [docs/features/manual-entry.md](./docs/features/manual-entry.md) |
 | Camera capture → AI → review → save | ✅ Shipped | [docs/features/camera-capture.md](./docs/features/camera-capture.md) |
 | Voice capture → AI → review → save | ✅ Shipped | [docs/features/voice-capture.md](./docs/features/voice-capture.md) |
+| Server-side AI (OpenAI + MiniMax) | ✅ Shipped | [docs/features/ai-backend.md](./docs/features/ai-backend.md) |
+| Multiple todo lists | ✅ Shipped | [docs/features/todo-list.md](./docs/features/todo-list.md) |
+| Scheduled reminders | ✅ Shipped | [docs/features/scheduled-reminders.md](./docs/features/scheduled-reminders.md) |
 | API scaffold (`apps/api`) | ✅ Shipped | [docs/monorepo.md](./docs/monorepo.md) |
 
 ## Vision
@@ -51,11 +54,28 @@ Input (voice / photo / text)
 - [x] Capture history / source preview on todo items (voice + camera labels)
 - [x] Haptic + visual recording feedback (start/stop pulse, timer)
 
-### Phase 3 — Cloud backend and sync
+### Phase 2.5 — Scheduled reminders
 
-- [ ] Auth (username/password + Google + GitHub) in `apps/api`
-- [ ] Capture + todo REST API and sync from `apps/mobile`
-- [ ] Server-side AI (remove client API keys)
+- [x] Per-todo reminder date/time (local push notifications)
+- [x] Bell affordance + set-reminder modal with presets
+- [x] Cancel reminder on complete/delete; reconcile on app launch
+- [x] Sync-ready schema (`reminderAt` synced; `notificationId` device-local)
+- [x] Spec: [docs/features/scheduled-reminders.md](./docs/features/scheduled-reminders.md)
+
+### Phase 3 — Cloud backend, sync, and push
+
+- [ ] **[Neon Auth](https://neon.com/docs/auth/overview)** — managed auth on Neon Postgres ([spec](./docs/features/auth.md))
+  - [ ] Email/password + Google + GitHub (Neon Console / branch config)
+  - [ ] Mobile + web clients: Neon Auth SDK; API: JWT verification via JWKS in Hono
+  - [ ] Branch-aware auth for preview/staging environments
+- [ ] Neon Postgres + todo REST API and sync from `apps/mobile` / `apps/web`
+- [x] Server-side AI (OpenAI + MiniMax providers)
+- [ ] Todo sync including `reminderAt` (Postgres)
+- [ ] **API-backed push notifications** — multi-device + web ([spec](./docs/features/push-notifications.md))
+  - [ ] Device registration (`POST /api/devices/register`) — Expo tokens + Web Push
+  - [ ] Reminder worker — server fires at `reminderAt`, sends to all user devices
+  - [ ] Mobile: register Expo push token after auth; server replaces local schedule when synced
+  - [ ] Web app (`apps/web`) — Web Push via service worker
 - [ ] Due dates, priority, tags, subtasks
 
 ### Phase 4 — Beyond todos
@@ -70,14 +90,18 @@ Input (voice / photo / text)
 - [ ] Wear OS module (`native/wear/`) — not CMF Watch
 - [ ] CMF Android phone shortcuts
 
-## Next up: Capture UX polish + cloud backend
+## Next up: Phase 3 — sync and API push
 
-Phase 1 capture (camera + voice) is shipped. Next priorities:
+Phase 2.5 local reminders are shipped. Next priorities:
 
-1. **Unified review modal** — one component for camera and voice params
-2. **Phase 3 backend** — auth, sync, server-side AI (see below)
+1. **Neon Auth + todo sync** — account-backed todos in Neon Postgres (`reminderAt` included)
+2. **API-backed push** — server sends reminders to all devices (mobile + future web)
+3. **Unified review modal** — one component for camera and voice params
 
-Voice capture spec (shipped): [docs/features/voice-capture.md](./docs/features/voice-capture.md)
+Specs:
+- [docs/features/auth.md](./docs/features/auth.md)
+- [docs/features/push-notifications.md](./docs/features/push-notifications.md)
+- [docs/features/scheduled-reminders.md](./docs/features/scheduled-reminders.md)
 
 ## How to use this plan
 
@@ -87,7 +111,7 @@ Voice capture spec (shipped): [docs/features/voice-capture.md](./docs/features/v
 
 ## Conventions
 
-- **Monorepo:** `apps/mobile` (Expo), `apps/api` (Hono), `packages/shared` (types + Zod)
+- **Monorepo:** `apps/mobile` (Expo), `apps/api` (Hono), `apps/web` (planned), `packages/shared` (types + Zod)
 - **Routes** in `apps/mobile/app/` only; components, hooks, services in `apps/mobile/`
 - **Capture sources** in `@quick-capture/shared`: `manual` | `capture` | `voice` | `watch`
 - **Review before save** for all AI-generated todos

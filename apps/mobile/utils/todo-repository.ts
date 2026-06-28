@@ -9,6 +9,8 @@ type TodoRow = {
   list_id: string;
   created_at: string;
   sort_order: number;
+  reminder_at: string | null;
+  notification_id: string | null;
   note_image_uri: string | null;
   note_audio_uri: string | null;
   transcript: string | null;
@@ -23,6 +25,8 @@ function rowToTodo(row: TodoRow): Todo {
     listId: row.list_id,
     createdAt: row.created_at,
     sortOrder: row.sort_order,
+    reminderAt: row.reminder_at ?? undefined,
+    notificationId: row.notification_id ?? undefined,
     noteImageUri: row.note_image_uri ?? undefined,
     noteAudioUri: row.note_audio_uri ?? undefined,
     transcript: row.transcript ?? undefined,
@@ -42,8 +46,9 @@ export async function insertTodo(todo: Todo): Promise<void> {
   await db.runAsync(
     `INSERT INTO todos (
       id, title, completed, source, list_id, created_at, sort_order,
+      reminder_at, notification_id,
       note_image_uri, note_audio_uri, transcript
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       todo.id,
       todo.title,
@@ -52,6 +57,8 @@ export async function insertTodo(todo: Todo): Promise<void> {
       todo.listId,
       todo.createdAt,
       todo.sortOrder,
+      todo.reminderAt ?? null,
+      todo.notificationId ?? null,
       todo.noteImageUri ?? null,
       todo.noteAudioUri ?? null,
       todo.transcript ?? null,
@@ -67,8 +74,9 @@ export async function insertTodos(todos: Todo[]): Promise<void> {
       await db.runAsync(
         `INSERT INTO todos (
           id, title, completed, source, list_id, created_at, sort_order,
+          reminder_at, notification_id,
           note_image_uri, note_audio_uri, transcript
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           todo.id,
           todo.title,
@@ -77,6 +85,8 @@ export async function insertTodos(todos: Todo[]): Promise<void> {
           todo.listId,
           todo.createdAt,
           todo.sortOrder,
+          todo.reminderAt ?? null,
+          todo.notificationId ?? null,
           todo.noteImageUri ?? null,
           todo.noteAudioUri ?? null,
           todo.transcript ?? null,
@@ -89,6 +99,34 @@ export async function insertTodos(todos: Todo[]): Promise<void> {
 export async function updateTodoCompleted(id: string, completed: boolean): Promise<void> {
   const db = await getDatabase();
   await db.runAsync('UPDATE todos SET completed = ? WHERE id = ?', [completed ? 1 : 0, id]);
+}
+
+export async function updateTodoReminder(
+  id: string,
+  reminderAt: string | null,
+  notificationId: string | null
+): Promise<void> {
+  const db = await getDatabase();
+  await db.runAsync(
+    'UPDATE todos SET reminder_at = ?, notification_id = ? WHERE id = ?',
+    [reminderAt, notificationId, id]
+  );
+}
+
+export async function updateTodoNotificationId(
+  id: string,
+  notificationId: string | null
+): Promise<void> {
+  const db = await getDatabase();
+  await db.runAsync('UPDATE todos SET notification_id = ? WHERE id = ?', [notificationId, id]);
+}
+
+export async function clearTodoReminder(id: string): Promise<void> {
+  const db = await getDatabase();
+  await db.runAsync(
+    'UPDATE todos SET reminder_at = NULL, notification_id = NULL WHERE id = ?',
+    [id]
+  );
 }
 
 export async function updateTodosOrder(todos: Todo[]): Promise<void> {

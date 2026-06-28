@@ -1,9 +1,11 @@
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
+import { router, type Href } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { PlatformColor, Pressable, Text, View } from 'react-native';
 
 import type { Todo } from '@/types/todo';
+import { formatReminderLabel } from '@/utils/format-reminder';
 
 type TodoItemProps = {
   todo: Todo;
@@ -23,6 +25,13 @@ export function TodoItem({ todo, onToggle, onDelete, onDrag, isDragging }: TodoI
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     onDelete(todo.id);
   };
+
+  const openReminder = async () => {
+    await Haptics.selectionAsync();
+    router.push({ pathname: '/set-reminder', params: { todoId: todo.id } } as Href);
+  };
+
+  const hasReminder = Boolean(todo.reminderAt);
 
   return (
     <View
@@ -79,14 +88,37 @@ export function TodoItem({ todo, onToggle, onDelete, onDrag, isDragging }: TodoI
           }}>
           {todo.title}
         </Text>
-        <Text selectable style={{ color: PlatformColor('secondaryLabel'), fontSize: 13 }}>
-          {todo.source === 'capture'
-            ? 'From note capture'
-            : todo.source === 'voice'
-              ? 'From voice note'
-              : 'Added manually'}
-        </Text>
+        {hasReminder ? (
+          <Text selectable style={{ color: PlatformColor('systemOrange'), fontSize: 13 }}>
+            {formatReminderLabel(todo.reminderAt!)}
+          </Text>
+        ) : (
+          <Text selectable style={{ color: PlatformColor('secondaryLabel'), fontSize: 13 }}>
+            {todo.source === 'capture'
+              ? 'From note capture'
+              : todo.source === 'voice'
+                ? 'From voice note'
+                : 'Added manually'}
+          </Text>
+        )}
       </View>
+
+      <Pressable
+        onPress={openReminder}
+        accessibilityRole="button"
+        accessibilityLabel={hasReminder ? 'Edit reminder' : 'Set reminder'}
+        hitSlop={8}
+        style={{ padding: 4 }}>
+        <SymbolView
+          name={{
+            ios: hasReminder ? 'bell.fill' : 'bell',
+            android: hasReminder ? 'notifications' : 'notifications_none',
+            web: hasReminder ? 'notifications' : 'notifications_none',
+          }}
+          tintColor={hasReminder ? PlatformColor('systemOrange') : PlatformColor('tertiaryLabel')}
+          size={20}
+        />
+      </Pressable>
 
       {todo.noteImageUri ? (
         <Image

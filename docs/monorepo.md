@@ -8,6 +8,7 @@ Quick Capture uses [Turborepo](https://turbo.build) with npm workspaces.
 apps/
   mobile/     @quick-capture/mobile   Expo React Native app
   api/        @quick-capture/api      Hono API (Railway in production)
+  web/        (planned)               Web app — sync + Web Push (Phase 3)
 packages/
   shared/     @quick-capture/shared   Types + Zod schemas
   typescript-config/                    Shared tsconfig bases
@@ -66,3 +67,10 @@ Environment variables load from the repo root `.env` (see [`.env.example`](../.e
 5. On a physical device, use your machine's LAN IP instead of `localhost` for `EXPO_PUBLIC_API_URL`.
 
 Spec: [features/ai-backend.md](./features/ai-backend.md)
+
+### Neon Auth setup (Phase 3)
+
+1. Create a Neon project and enable **Auth** on your branch (Neon Console → Auth).
+2. Configure sign-in providers (email/password, Google, GitHub).
+3. Set `DATABASE_URL`, `NEON_AUTH_URL` (API), and `EXPO_PUBLIC_NEON_AUTH_URL` (mobile) in `.env`.
+4. Hono verifies client JWTs via JWKS; see [features/auth.md](./features/auth.md).

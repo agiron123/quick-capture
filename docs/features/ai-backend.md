@@ -1,7 +1,7 @@
 # AI backend
 
 **Status:** Shipped  
-**Phase:** 3 (partial — AI only; auth/sync still planned)
+**Phase:** 3 (partial — AI only; Neon Auth/sync still planned)
 
 ## Problem
 

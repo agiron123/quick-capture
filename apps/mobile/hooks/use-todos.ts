@@ -4,14 +4,15 @@ import { useActiveListId } from '@/hooks/use-lists';
 import type { Todo, TodoSource } from '@/types/todo';
 import { createId } from '@/utils/id';
 import {
-  addTodoToStore,
-  addTodosToStore,
-  createSortOrdersForNewTodos,
-  deleteTodoFromStore,
-  getTodosSnapshot,
-  reorderTodosInStore,
-  subscribeTodos,
-  toggleTodoInStore,
+    addTodoToStore,
+    addTodosToStore,
+    createSortOrdersForNewTodos,
+    deleteTodoFromStore,
+    getTodosSnapshot,
+    reorderTodosInStore,
+    setReminderInStore,
+    subscribeTodos,
+    toggleTodoInStore,
 } from '@/utils/todo-store';
 
 type AddTodoItem = {
@@ -29,11 +30,13 @@ function subscribeTodosAndLists(onStoreChange: () => void): () => void {
 
 export function useTodos(): {
   todos: Todo[];
+  getTodoById: (id: string) => Todo | undefined;
   addTodo: (title: string, source?: TodoSource, noteImageUri?: string) => void;
   addTodos: (items: AddTodoItem[]) => void;
   toggleTodo: (id: string) => void;
   deleteTodo: (id: string) => void;
   reorderTodos: (todos: Todo[]) => void;
+  setReminder: (id: string, reminderAt: string | null) => Promise<boolean>;
 } {
   const activeListId = useActiveListId();
   const allTodos = useSyncExternalStore(
@@ -48,6 +51,11 @@ export function useTodos(): {
         .filter((todo) => todo.listId === activeListId)
         .sort((a, b) => a.sortOrder - b.sortOrder),
     [allTodos, activeListId]
+  );
+
+  const getTodoById = useCallback(
+    (id: string) => allTodos.find((todo) => todo.id === id),
+    [allTodos]
   );
 
   const addTodo = useCallback(
@@ -111,5 +119,18 @@ export function useTodos(): {
     [activeListId]
   );
 
-  return { todos, addTodo, addTodos, toggleTodo, deleteTodo, reorderTodos };
+  const setReminder = useCallback((id: string, reminderAt: string | null) => {
+    return setReminderInStore(id, reminderAt);
+  }, []);
+
+  return {
+    todos,
+    getTodoById,
+    addTodo,
+    addTodos,
+    toggleTodo,
+    deleteTodo,
+    reorderTodos,
+    setReminder,
+  };
 }

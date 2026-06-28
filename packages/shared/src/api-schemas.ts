@@ -7,6 +7,7 @@ export const createTodoSchema = z.object({
   source: todoSourceSchema.default('manual'),
   captureId: z.string().uuid().optional(),
   clientId: z.string().optional(),
+  reminderAt: z.string().datetime().optional(),
   noteImageUri: z.string().optional(),
   noteAudioUri: z.string().optional(),
   transcript: z.string().optional(),
@@ -15,6 +16,7 @@ export const createTodoSchema = z.object({
 export const updateTodoSchema = z.object({
   title: z.string().trim().min(1).optional(),
   completed: z.boolean().optional(),
+  reminderAt: z.string().datetime().nullable().optional(),
 });
 
 export const createCaptureSchema = z.object({
@@ -31,6 +33,7 @@ export const syncPayloadSchema = z.object({
       completed: z.boolean(),
       source: todoSourceSchema,
       createdAt: z.string(),
+      reminderAt: z.string().datetime().optional(),
       noteImageUri: z.string().optional(),
       noteAudioUri: z.string().optional(),
       transcript: z.string().optional(),

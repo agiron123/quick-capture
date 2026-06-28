@@ -1,3 +1,4 @@
+import { cancelReminder, reconcileAllReminders, rescheduleReminder } from '@/services/reminder-scheduler';
 import type { Todo } from '@/types/todo';
 import { getDatabase } from '@/utils/db';
 import { initListStore } from '@/utils/list-store';
@@ -30,6 +31,13 @@ export function getTodosSnapshot(): Todo[] {
   return cache;
 }
 
+async function syncNotificationId(todoId: string, notificationId: string | null): Promise<void> {
+  await todoRepository.updateTodoNotificationId(todoId, notificationId);
+  cache = cache.map((todo) =>
+    todo.id === todoId ? { ...todo, notificationId: notificationId ?? undefined } : todo
+  );
+}
+
 export async function initTodoStore(): Promise<void> {
   if (initialized) return;
   if (!initPromise) {
@@ -37,6 +45,7 @@ export async function initTodoStore(): Promise<void> {
       await getDatabase();
       await initListStore();
       cache = await todoRepository.fetchAllTodos();
+      await reconcileAllReminders(cache, syncNotificationId);
       initialized = true;
       notifyListeners();
     })();
@@ -61,15 +70,72 @@ export async function toggleTodoInStore(id: string): Promise<void> {
   const todo = cache.find((item) => item.id === id);
   if (!todo) return;
   const completed = !todo.completed;
-  await todoRepository.updateTodoCompleted(id, completed);
-  cache = cache.map((item) => (item.id === id ? { ...item, completed } : item));
+
+  if (completed) {
+    if (todo.notificationId) {
+      await cancelReminder(todo.notificationId);
+    }
+    await todoRepository.updateTodoCompleted(id, true);
+    await todoRepository.clearTodoReminder(id);
+  } else {
+    await todoRepository.updateTodoCompleted(id, false);
+  }
+
+  cache = cache.map((item) =>
+    item.id === id
+      ? {
+          ...item,
+          completed,
+          reminderAt: completed ? undefined : item.reminderAt,
+          notificationId: completed ? undefined : item.notificationId,
+        }
+      : item
+  );
   notifyListeners();
 }
 
 export async function deleteTodoFromStore(id: string): Promise<void> {
+  const todo = cache.find((item) => item.id === id);
+  if (todo?.notificationId) {
+    await cancelReminder(todo.notificationId);
+  }
   await todoRepository.deleteTodoById(id);
   cache = cache.filter((item) => item.id !== id);
   notifyListeners();
+}
+
+export async function setReminderInStore(id: string, reminderAt: string | null): Promise<boolean> {
+  const todo = cache.find((item) => item.id === id);
+  if (!todo) return false;
+
+  if (todo.notificationId) {
+    await cancelReminder(todo.notificationId);
+  }
+
+  let notificationId: string | undefined;
+  if (reminderAt) {
+    const scheduledId = await rescheduleReminder({
+      ...todo,
+      reminderAt,
+      notificationId: undefined,
+    });
+    notificationId = scheduledId ?? undefined;
+  }
+
+  await todoRepository.updateTodoReminder(id, reminderAt, notificationId ?? null);
+
+  cache = cache.map((item) =>
+    item.id === id
+      ? {
+          ...item,
+          reminderAt: reminderAt ?? undefined,
+          notificationId,
+        }
+      : item
+  );
+  notifyListeners();
+
+  return Boolean(reminderAt && notificationId);
 }
 
 export async function reorderTodosInStore(listId: string, todos: Todo[]): Promise<void> {

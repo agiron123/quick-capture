@@ -45,12 +45,15 @@ async function openAndMigrate(): Promise<SQLite.SQLiteDatabase> {
       note_image_uri TEXT,
       note_audio_uri TEXT,
       transcript TEXT,
+      reminder_at TEXT,
+      notification_id TEXT,
       FOREIGN KEY (list_id) REFERENCES todo_lists(id)
     );
   `);
 
   await migrateSortOrderColumn(db);
   await migrateListIdColumn(db);
+  await migrateReminderColumns(db);
   await ensureDefaultList(db);
 
   await db.execAsync(`
@@ -80,6 +83,17 @@ async function migrateSortOrderColumn(db: SQLite.SQLiteDatabase): Promise<void> 
       await db.runAsync('UPDATE todos SET sort_order = ? WHERE id = ?', [index, rows[index].id]);
     }
   });
+}
+
+async function migrateReminderColumns(db: SQLite.SQLiteDatabase): Promise<void> {
+  let columns = await db.getAllAsync<{ name: string }>('PRAGMA table_info(todos)');
+  if (!columns.some((column) => column.name === 'reminder_at')) {
+    await db.execAsync('ALTER TABLE todos ADD COLUMN reminder_at TEXT');
+  }
+  columns = await db.getAllAsync<{ name: string }>('PRAGMA table_info(todos)');
+  if (!columns.some((column) => column.name === 'notification_id')) {
+    await db.execAsync('ALTER TABLE todos ADD COLUMN notification_id TEXT');
+  }
 }
 
 async function migrateListIdColumn(db: SQLite.SQLiteDatabase): Promise<void> {

@@ -37,7 +37,7 @@ Copy `.env.example` to `.env` for local env vars. Mobile env uses `EXPO_PUBLIC_*
 1. **Manual todo** — Todos tab → Add → modal → save locally
 2. **Camera capture** — Capture tab → photo → AI extract → review modal → save
 3. **Voice capture** (planned) — mic button → record → transcribe + extract → review → save
-4. **Cloud sync** (planned) — auth in `apps/api`, sync todos/captures when logged in
+4. **Cloud sync** (planned) — Neon Auth + sync todos/captures when logged in
 
 All AI-generated todos go through **review before save**. Never skip the review step for capture flows.
 
@@ -63,7 +63,7 @@ All AI-generated todos go through **review before save**. Never skip the review 
 
 - Hono + ESM (`"type": "module"`)
 - Validate request bodies with Zod schemas from `@quick-capture/shared`
-- Auth (username/password, Google, GitHub) and capture CRUD are planned — see Phase 3 in PLAN.md
+- Auth via **Neon Auth** (email/password, Google, GitHub); JWT verification in Hono — see [docs/features/auth.md](./docs/features/auth.md)
 
 ### When adding a feature
 
@@ -112,7 +112,7 @@ Use these **existing skills** (install or enable in Cursor) when working in the 
 
 | Skill | When to use |
 | --- | --- |
-| Vercel `auth` plugin skill | Auth patterns (Better Auth setup in Hono) |
+| Vercel `auth` plugin skill | Better Auth / OAuth patterns (Neon Auth is Better Auth–based) |
 | Vercel `vercel-functions` / `runtime-cache` | If adding edge/serverless endpoints |
 | `deploy-on-aws` `deploy` skill | Alternative hosting; primary target is **Railway + Neon** |
 
@@ -144,7 +144,7 @@ Create these under `.cursor/skills/` in this repo so all contributors get the sa
 | `quick-capture-feature` | Read PLAN.md + `docs/features/` before implementing; update specs when done |
 | `quick-capture-shared` | How to add types + Zod schemas in `packages/shared` and rebuild |
 | `quick-capture-capture-flow` | Camera/voice → AI service → review modal → `useTodos` pipeline |
-| `quick-capture-api` | Hono route patterns, shared validation, planned Better Auth + Drizzle |
+| `quick-capture-api` | Hono route patterns, shared validation, Neon Auth JWT middleware + Drizzle |
 | `quick-capture-monorepo` | Turbo filters, workspace deps, Metro gotchas |
 
 Use the `create-skill` skill to scaffold these. Each should link to the relevant `docs/features/*.md` spec.
@@ -162,4 +162,4 @@ Use the `create-skill` skill to scaffold these. Each should link to the relevant
 
 **Phase 1:** Voice capture — see [docs/features/voice-capture.md](./docs/features/voice-capture.md)
 
-**Phase 3 (next major):** Backend auth + sync in `apps/api` — username/password, Google, GitHub; move AI keys server-side.
+**Phase 3 (next major):** Neon Auth + todo sync in Neon Postgres; API JWT auth in Hono — see [docs/features/auth.md](./docs/features/auth.md).

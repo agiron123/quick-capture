@@ -8,6 +8,8 @@ export type Todo = {
   listId: string;
   createdAt: string;
   sortOrder: number;
+  reminderAt?: string;
+  notificationId?: string;
   noteImageUri?: string;
   noteAudioUri?: string;
   transcript?: string;
@@ -15,4 +17,5 @@ export type Todo = {
 
 export type ExtractedTodo = {
   title: string;
+  reminderAt?: string;
 };

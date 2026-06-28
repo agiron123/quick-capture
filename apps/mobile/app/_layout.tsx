@@ -8,6 +8,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
+import { initNotificationHandlers } from '@/services/notification-handler';
 import { initTodoStore } from '@/utils/todo-store';
 
 export { ErrorBoundary } from 'expo-router';
@@ -29,6 +30,7 @@ export default function RootLayout() {
   }, [error]);
 
   useEffect(() => {
+    initNotificationHandlers();
     initTodoStore()
       .then(() => setDbReady(true))
       .catch((initError) => {
@@ -61,7 +63,8 @@ function RootLayoutNav() {
           <Stack.Screen name="add-todo" options={{ presentation: 'modal' }} />
           <Stack.Screen name="review-todos" options={{ presentation: 'modal' }} />
           <Stack.Screen name="voice-record" options={{ presentation: 'modal' }} />
-        <Stack.Screen name="manage-lists" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="manage-lists" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="set-reminder" options={{ presentation: 'modal' }} />
         </Stack>
       </ThemeProvider>
     </GestureHandlerRootView>
