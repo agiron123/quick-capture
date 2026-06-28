@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
 import { signOutAction } from '@/app/auth/actions';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -60,6 +61,7 @@ export function AppShell({
         </div>
         <div className="flex items-center gap-2">
           {headerRight}
+          <ThemeToggle />
           <form action={signOutAction}>
             <Button variant="ghost" size="sm" type="submit">
               Sign out
