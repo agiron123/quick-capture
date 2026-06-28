@@ -45,8 +45,24 @@ Run from the repo root:
 ## API local development
 
 ```bash
+cp .env.example .env
+# Edit .env: set AI_PROVIDER, OPENAI_API_KEY, and/or MINIMAX_API_KEY
+
 npm run dev:api
 curl http://localhost:3000/health
+curl http://localhost:3000/api/ai/status
 ```
 
-Environment variables for the API will live in `apps/api/.env` (see root `.env.example` when backend auth ships).
+Environment variables load from the repo root `.env` (see [`.env.example`](../.env.example)).
+
+### AI backend setup
+
+1. Copy `.env.example` → `.env` at the repo root.
+2. Choose a provider:
+   - **OpenAI:** `AI_PROVIDER=openai` + `OPENAI_API_KEY`
+   - **MiniMax:** `AI_PROVIDER=minimax` + `MINIMAX_API_KEY` (+ `OPENAI_API_KEY` for voice transcription)
+3. Set mobile vars: `EXPO_PUBLIC_API_URL=http://localhost:3000`, `EXPO_PUBLIC_USE_MOCK_AI=false`
+4. Run `npm run dev` (API + Expo together).
+5. On a physical device, use your machine's LAN IP instead of `localhost` for `EXPO_PUBLIC_API_URL`.
+
+Spec: [features/ai-backend.md](./features/ai-backend.md)

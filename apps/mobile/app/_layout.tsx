@@ -61,6 +61,7 @@ function RootLayoutNav() {
           <Stack.Screen name="add-todo" options={{ presentation: 'modal' }} />
           <Stack.Screen name="review-todos" options={{ presentation: 'modal' }} />
           <Stack.Screen name="voice-record" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="manage-lists" options={{ presentation: 'modal' }} />
         </Stack>
       </ThemeProvider>
     </GestureHandlerRootView>

@@ -1,5 +1,6 @@
 import type { Todo } from '@/types/todo';
 import { getDatabase } from '@/utils/db';
+import { initListStore } from '@/utils/list-store';
 import * as todoRepository from '@/utils/todo-repository';
 
 type Listener = () => void;
@@ -13,8 +14,10 @@ function notifyListeners(): void {
   listeners.forEach((listener) => listener());
 }
 
-function nextSortOrders(count: number): number[] {
-  const minOrder = cache.length > 0 ? Math.min(...cache.map((todo) => todo.sortOrder)) : 0;
+function nextSortOrders(count: number, listId: string): number[] {
+  const listTodos = cache.filter((todo) => todo.listId === listId);
+  const minOrder =
+    listTodos.length > 0 ? Math.min(...listTodos.map((todo) => todo.sortOrder)) : 0;
   return Array.from({ length: count }, (_, index) => minOrder - count + index);
 }
 
@@ -32,6 +35,7 @@ export async function initTodoStore(): Promise<void> {
   if (!initPromise) {
     initPromise = (async () => {
       await getDatabase();
+      await initListStore();
       cache = await todoRepository.fetchAllTodos();
       initialized = true;
       notifyListeners();
@@ -68,13 +72,19 @@ export async function deleteTodoFromStore(id: string): Promise<void> {
   notifyListeners();
 }
 
-export async function reorderTodosInStore(todos: Todo[]): Promise<void> {
-  const reordered = todos.map((todo, index) => ({ ...todo, sortOrder: index }));
+export async function reorderTodosInStore(listId: string, todos: Todo[]): Promise<void> {
+  const reordered = todos.map((todo, index) => ({ ...todo, sortOrder: index, listId }));
   await todoRepository.updateTodosOrder(reordered);
-  cache = reordered;
+  const otherTodos = cache.filter((todo) => todo.listId !== listId);
+  cache = [...otherTodos, ...reordered];
   notifyListeners();
 }
 
-export function createSortOrdersForNewTodos(count: number): number[] {
-  return nextSortOrders(count);
+export function createSortOrdersForNewTodos(count: number, listId: string): number[] {
+  return nextSortOrders(count, listId);
+}
+
+export async function refreshTodosFromDb(): Promise<void> {
+  cache = await todoRepository.fetchAllTodos();
+  notifyListeners();
 }

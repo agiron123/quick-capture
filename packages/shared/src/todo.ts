@@ -5,6 +5,7 @@ export type Todo = {
   title: string;
   completed: boolean;
   source: TodoSource;
+  listId: string;
   createdAt: string;
   sortOrder: number;
   noteImageUri?: string;

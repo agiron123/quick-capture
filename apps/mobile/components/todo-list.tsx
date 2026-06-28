@@ -9,6 +9,7 @@ import { TodoItem } from '@/components/todo-item';
 import type { Todo } from '@/types/todo';
 
 type TodoListProps = {
+  listName?: string;
   todos: Todo[];
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
@@ -38,17 +39,17 @@ function DraggableTodoRow({
   );
 }
 
-export function TodoList({ todos, onToggle, onDelete, onReorder }: TodoListProps) {
+export function TodoList({ listName, todos, onToggle, onDelete, onReorder }: TodoListProps) {
   if (todos.length === 0) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, gap: 8 }}>
         <Text selectable style={{ color: PlatformColor('label'), fontSize: 20, fontWeight: '600' }}>
-          No todos yet
+          {listName ? `No todos in ${listName}` : 'No todos yet'}
         </Text>
         <Text
           selectable
           style={{ color: PlatformColor('secondaryLabel'), fontSize: 16, textAlign: 'center' }}>
-          Capture a handwritten note or add a todo manually to get started.
+          Capture a note, record a voice memo, or add a todo manually to get started.
         </Text>
       </View>
     );

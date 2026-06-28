@@ -1,9 +1,11 @@
 import { PlatformColor, Text, View } from 'react-native';
 
 import { TodoList } from '@/components/todo-list';
+import { useLists } from '@/hooks/use-lists';
 import { useTodos } from '@/hooks/use-todos';
 
 export default function TodosScreen() {
+  const { activeList } = useLists();
   const { todos, toggleTodo, deleteTodo, reorderTodos } = useTodos();
 
   const pendingCount = todos.filter((todo) => !todo.completed).length;
@@ -19,6 +21,7 @@ export default function TodosScreen() {
       ) : null}
 
       <TodoList
+        listName={activeList?.name}
         todos={todos}
         onToggle={toggleTodo}
         onDelete={deleteTodo}

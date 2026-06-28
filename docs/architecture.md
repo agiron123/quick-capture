@@ -7,7 +7,7 @@
 - **Hono** API (`apps/api`) — Railway in production
 - **@quick-capture/shared** — types and Zod schemas
 - **expo-sqlite** — local SQLite database (`quick-capture.db`) for on-device todo persistence
-- **OpenAI API** — vision extraction (camera); Whisper + chat planned for voice
+- **Server-side AI** — Hono API proxies OpenAI and MiniMax; keys stay on the server
 
 ## Monorepo layout
 
@@ -49,12 +49,15 @@ Root Stack
 
 ```
 Capture input (apps/mobile)
-    → services/ai-*.ts (extract)
+    → services/ai-api-client.ts (multipart upload)
+    → apps/api /api/ai/extract/* (OpenAI or MiniMax)
     → review-todos modal
     → useTodos().addTodos()
     → utils/todo-store.ts + SQLite (local)
     → apps/api sync (planned, when authenticated)
 ```
+
+Voice uses hybrid transcription: OpenAI Whisper for speech-to-text, then the configured chat provider for todo extraction.
 
 ## Core types
 
@@ -83,6 +86,10 @@ Mobile re-exports via `apps/mobile/types/todo.ts` for `@/types/todo` imports.
 | --- | --- |
 | `GET /health` | Health check |
 | `GET /api` | API metadata |
+| `GET /api/ai/status` | Active AI provider (no secrets) |
+| `POST /api/ai/extract/image` | Image → todos (multipart `image`) |
+| `POST /api/ai/extract/voice` | Audio → transcript + todos (multipart `audio`) |
+| `POST /api/ai/extract/transcript` | Transcript → todos (JSON) |
 | `POST /api/todos/validate` | Validates body with shared Zod schema (stub) |
 
 Auth, captures CRUD, and sync endpoints are planned in Phase 3.
@@ -91,12 +98,18 @@ Auth, captures CRUD, and sync endpoints are planned in Phase 3.
 
 | Variable | App | Purpose |
 | --- | --- | --- |
-| `EXPO_PUBLIC_OPENAI_API_KEY` | mobile | OpenAI API access |
-| `EXPO_PUBLIC_USE_MOCK_AI` | mobile | Force mock AI responses |
-| `EXPO_PUBLIC_API_URL` | mobile | API base URL (planned) |
+| `AI_PROVIDER` | api | `openai` or `minimax` |
+| `OPENAI_API_KEY` | api | OpenAI chat + Whisper transcription |
+| `MINIMAX_API_KEY` | api | MiniMax chat (when `AI_PROVIDER=minimax`) |
+| `MINIMAX_BASE_URL` | api | MiniMax OpenAI-compatible base URL |
+| `MINIMAX_CHAT_MODEL` | api | MiniMax model (default `MiniMax-M2.5`) |
+| `OPENAI_CHAT_MODEL` | api | OpenAI model (default `gpt-4o-mini`) |
+| `OPENAI_TRANSCRIPTION_MODEL` | api | Whisper model (default `whisper-1`) |
+| `EXPO_PUBLIC_API_URL` | mobile | API base URL |
+| `EXPO_PUBLIC_USE_MOCK_AI` | mobile | Mock AI locally (no API calls) |
 | `PORT` | api | API port (default 3000) |
 
-See `.env.example`.
+See `.env.example`. Provider API keys must never use `EXPO_PUBLIC_` prefix.
 
 ## Conventions
 

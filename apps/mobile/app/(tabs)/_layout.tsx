@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 
 import { AddTodoHeaderButton } from '@/components/add-todo-header-button';
+import { ListPickerHeaderButton } from '@/components/list-picker-header-button';
 import { TabBarWithMic } from '@/components/tab-bar-with-mic';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -20,7 +21,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Todos',
+          headerTitle: () => <ListPickerHeaderButton />,
           headerRight: () => <AddTodoHeaderButton />,
           tabBarIcon: ({ color }) => (
             <SymbolView

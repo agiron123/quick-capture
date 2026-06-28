@@ -1,8 +1,21 @@
+import './load-env.js';
+
 import { serve } from '@hono/node-server';
-import { Hono } from 'hono';
 import { createTodoSchema } from '@quick-capture/shared';
+import { Hono } from 'hono';
+import { cors } from 'hono/cors';
+
+import { aiRoutes } from './routes/ai.js';
 
 const app = new Hono();
+
+app.use(
+  '*',
+  cors({
+    origin: '*',
+    allowMethods: ['GET', 'POST', 'OPTIONS'],
+  })
+);
 
 app.get('/health', (c) => c.json({ status: 'ok' }));
 
@@ -16,6 +29,8 @@ app.post('/api/todos/validate', async (c) => {
   }
   return c.json({ ok: true, data: parsed.data });
 });
+
+app.route('/api/ai', aiRoutes);
 
 const port = Number(process.env.PORT ?? 3000);
 
