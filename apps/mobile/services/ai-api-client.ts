@@ -1,7 +1,7 @@
 import type {
-  ExtractImageResponse,
-  ExtractTranscriptResponse,
-  ExtractVoiceResponse,
+    ExtractImageResponse,
+    ExtractTranscriptResponse,
+    ExtractVoiceResponse,
 } from '@quick-capture/shared';
 
 import { syncApiFetch } from '@/services/sync-api-client';

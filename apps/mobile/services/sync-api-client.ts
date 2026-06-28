@@ -103,6 +103,8 @@ export async function createTodosBatchOnApi(
     clientId?: string;
     captureId?: string;
     transcript?: string;
+    reminderAt?: string;
+    sortOrder?: number;
   }>
 ): Promise<Todo[]> {
   const response = await syncApiFetch('/api/todos', {
@@ -115,6 +117,8 @@ export async function createTodosBatchOnApi(
         clientId: item.clientId,
         captureId: item.captureId,
         transcript: item.transcript,
+        reminderAt: item.reminderAt,
+        sortOrder: item.sortOrder,
       })),
     }),
   });

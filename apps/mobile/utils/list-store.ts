@@ -1,8 +1,8 @@
 import { ACTIVE_LIST_SETTING_KEY, DEFAULT_LIST_ID } from '@/constants/lists';
 import {
-  createListOnApi,
-  deleteListOnApi,
-  renameListOnApi,
+    createListOnApi,
+    deleteListOnApi,
+    renameListOnApi,
 } from '@/services/sync-api-client';
 import { isServerRemindersEnabled } from '@/services/sync-mode';
 import type { TodoListRecord } from '@/types/list';

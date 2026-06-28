@@ -1,11 +1,11 @@
 import { cancelReminder, reconcileAllReminders, rescheduleReminder } from '@/services/reminder-scheduler';
 import {
-  createTodoOnApi,
-  createTodosBatchOnApi,
-  deleteTodoOnApi,
-  reorderTodosOnApi,
-  updateTodoOnApi,
-  updateTodoReminderOnApi,
+    createTodoOnApi,
+    createTodosBatchOnApi,
+    deleteTodoOnApi,
+    reorderTodosOnApi,
+    updateTodoOnApi,
+    updateTodoReminderOnApi,
 } from '@/services/sync-api-client';
 import { isServerRemindersEnabled } from '@/services/sync-mode';
 import type { Todo } from '@/types/todo';

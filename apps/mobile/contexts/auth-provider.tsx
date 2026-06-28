@@ -12,7 +12,7 @@ import { authClient, isAuthConfigured } from '@/services/auth-client';
 import { registerExpoPushDevice } from '@/services/register-push-device';
 import { clearAllLocalReminders } from '@/services/reminder-scheduler';
 import { setServerRemindersEnabled } from '@/services/sync-mode';
-import { pullTodosFromServer } from '@/services/todo-sync';
+import { syncOnSignIn } from '@/services/todo-sync';
 
 type AuthSession = {
   userId: string;
@@ -55,9 +55,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setServerRemindersEnabled(true);
       await clearAllLocalReminders();
       try {
-        await pullTodosFromServer();
+        await syncOnSignIn();
       } catch (error) {
-        console.warn('Todo sync pull failed:', error);
+        console.warn('Todo sync failed:', error);
       }
       try {
         await registerExpoPushDevice();
