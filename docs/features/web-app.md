@@ -42,21 +42,24 @@ Web attaches `Authorization: Bearer <jwt>` from Neon Auth `getAccessToken()` to 
 
 ## Implementation status
 
-### Phase 3a — Foundation (current)
+### Phase 3a — Foundation
 
 - [x] Drizzle schema + migrations in `apps/api`
 - [x] JWT auth middleware (JWKS)
 - [x] Lists + todos REST API
+- [x] Capture upload API (local disk storage; R2 planned)
 - [x] Scaffold `apps/web` with Neon Auth + shadcn
 - [x] Sign-in / sign-up pages
-- [x] Basic todo list UI (add, toggle, delete)
+- [x] Basic todo list UI (add, toggle, delete, reorder)
+- [x] Manage lists dialog
+- [x] Image + voice capture with AI review-before-save
+- [x] Set reminder UI (`reminderAt` via API)
 
 ### Next slices
 
-- [ ] Drag reorder + manage lists dialog
-- [ ] Capture + voice flows with review modal
-- [ ] Reminders UI + Web Push
+- [ ] Web Push service worker + device registration
 - [ ] Mobile Neon Auth client + sync
+- [ ] Object storage (R2) for capture media in production
 
 ## Related
 

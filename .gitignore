@@ -34,6 +34,9 @@ yarn-error.*
 .env
 .env*.local
 
+# capture media (local dev storage)
+.uploads/
+
 # typescript
 *.tsbuildinfo
 

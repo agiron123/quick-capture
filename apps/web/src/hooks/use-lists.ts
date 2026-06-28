@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
 
-import { createList, fetchLists } from '@/lib/api-client-client';
+import { createList, deleteList, fetchLists, renameList } from '@/lib/api-client-client';
 
 const DEFAULT_LIST_ID = 'list-inbox';
 const ACTIVE_LIST_KEY = 'active_list_id';
@@ -35,11 +35,26 @@ export function useLists() {
     },
   });
 
+  const deleteListMutation = useMutation({
+    mutationFn: deleteList,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lists'] });
+      queryClient.invalidateQueries({ queryKey: ['todos'] });
+    },
+  });
+
+  const renameListMutation = useMutation({
+    mutationFn: ({ listId, name }: { listId: string; name: string }) => renameList(listId, name),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['lists'] }),
+  });
+
   return {
     lists: listsQuery.data ?? [],
     activeListId,
     setActiveListId,
     isLoading: listsQuery.isLoading,
     createList: createListMutation.mutateAsync,
+    deleteList: deleteListMutation.mutateAsync,
+    renameList: renameListMutation.mutateAsync,
   };
 }

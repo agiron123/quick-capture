@@ -6,6 +6,7 @@ import { Bell, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { formatReminderLabel } from '@/lib/format-reminder';
 
 function sourceLabel(source: Todo['source']): string {
   switch (source) {
@@ -22,9 +23,10 @@ type TodoItemProps = {
   todo: Todo;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
+  onSetReminder: (todo: Todo) => void;
 };
 
-export function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
+export function TodoItem({ todo, onToggle, onDelete, onSetReminder }: TodoItemProps) {
   return (
     <div className="flex items-center gap-3 rounded-xl border bg-card p-4">
       <Checkbox
@@ -40,14 +42,19 @@ export function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
         </p>
         {todo.reminderAt ? (
           <Badge variant="secondary" className="text-orange-600">
-            Reminder set
+            {formatReminderLabel(todo.reminderAt)}
           </Badge>
         ) : (
           <p className="text-sm text-muted-foreground">{sourceLabel(todo.source)}</p>
         )}
       </div>
-      <Button variant="ghost" size="icon" aria-label="Set reminder" disabled>
-        <Bell className="size-4" />
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label={todo.reminderAt ? 'Edit reminder' : 'Set reminder'}
+        onClick={() => onSetReminder(todo)}
+      >
+        <Bell className={`size-4 ${todo.reminderAt ? 'text-orange-600' : ''}`} />
       </Button>
       <Button
         variant="ghost"

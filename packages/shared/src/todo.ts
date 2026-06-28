@@ -10,6 +10,7 @@ export type Todo = {
   sortOrder: number;
   reminderAt?: string;
   notificationId?: string;
+  captureId?: string;
   noteImageUri?: string;
   noteAudioUri?: string;
   transcript?: string;

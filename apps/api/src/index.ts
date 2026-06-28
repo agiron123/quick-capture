@@ -6,6 +6,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 
 import { aiRoutes } from './routes/ai.js';
+import { captureRoutes } from './routes/captures.js';
 import { listRoutes } from './routes/lists.js';
 import { todoRoutes } from './routes/todos.js';
 
@@ -55,6 +56,7 @@ app.post('/api/todos/validate', async (c) => {
 });
 
 app.route('/api/ai', aiRoutes);
+app.route('/api/captures', captureRoutes);
 app.route('/api/lists', listRoutes);
 app.route('/api/todos', todoRoutes);
 

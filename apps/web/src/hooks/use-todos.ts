@@ -4,9 +4,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
     createTodo,
+    createTodosBatch,
     deleteTodo,
     fetchTodos,
+    reorderTodos,
     updateTodo,
+    type CreateTodoItemInput,
 } from '@/lib/api-client-client';
 
 export function useTodos(listId: string) {
@@ -34,9 +37,28 @@ export function useTodos(listId: string) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos', listId] }),
   });
 
+  const addBatchMutation = useMutation({
+    mutationFn: (items: CreateTodoItemInput[]) => createTodosBatch(listId, items),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos', listId] }),
+  });
+
+  const reorderMutation = useMutation({
+    mutationFn: (todoIds: string[]) => reorderTodos(listId, todoIds),
+    onSuccess: (todos) => {
+      queryClient.setQueryData(['todos', listId], todos);
+    },
+  });
+
+  const reminderMutation = useMutation({
+    mutationFn: ({ id, reminderAt }: { id: string; reminderAt: string | null }) =>
+      updateTodo(id, { reminderAt }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos', listId] }),
+  });
+
   return {
     todos: todosQuery.data ?? [],
     isLoading: todosQuery.isLoading,
+    refetch: todosQuery.refetch,
     toggleTodo: async (id: string) => {
       const todo = todosQuery.data?.find((item) => item.id === id);
       if (!todo) return;
@@ -44,5 +66,10 @@ export function useTodos(listId: string) {
     },
     deleteTodo: deleteMutation.mutateAsync,
     addTodo: addMutation.mutateAsync,
+    addTodos: addBatchMutation.mutateAsync,
+    reorderTodos: reorderMutation.mutateAsync,
+    setReminder: async (id: string, reminderAt: string | null) => {
+      await reminderMutation.mutateAsync({ id, reminderAt });
+    },
   };
 }

@@ -1,12 +1,11 @@
 'use client';
 
-import { Camera, CheckSquare, Mic, Plus } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-import { signOutAction } from '@/app/auth/actions';
+import { AppShell, HeaderAddButton } from '@/components/app-shell';
+import { ManageListsDialog } from '@/components/manage-lists-dialog';
+import { SetReminderDialog } from '@/components/set-reminder-dialog';
 import { TodoList } from '@/components/todo-list';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,22 +15,27 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLists } from '@/hooks/use-lists';
 import { useTodos } from '@/hooks/use-todos';
+import type { Todo } from '@quick-capture/shared';
 
 export function TodosPageClient() {
-  const router = useRouter();
-  const { lists, activeListId, setActiveListId, isLoading: listsLoading } = useLists();
-  const { todos, isLoading, toggleTodo, deleteTodo, addTodo } = useTodos(activeListId);
+  const { lists, activeListId, isLoading: listsLoading } = useLists();
+  const {
+    todos,
+    isLoading,
+    toggleTodo,
+    deleteTodo,
+    addTodo,
+    reorderTodos,
+    setReminder,
+  } = useTodos(activeListId);
+
   const [addOpen, setAddOpen] = useState(false);
+  const [manageOpen, setManageOpen] = useState(false);
+  const [reminderTodo, setReminderTodo] = useState<Todo | null>(null);
   const [newTitle, setNewTitle] = useState('');
 
   const activeList = useMemo(
@@ -55,88 +59,33 @@ export function TodosPageClient() {
   };
 
   return (
-    <div className="flex min-h-full flex-col">
-      <header className="flex items-center justify-between border-b px-4 py-3">
-        <div className="flex items-center gap-2">
-          <CheckSquare className="size-5" />
-          {listsLoading ? (
-            <Skeleton className="h-8 w-32" />
-          ) : (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">{activeList?.name ?? 'Inbox'}</Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                {lists.map((list) => (
-                  <DropdownMenuItem key={list.id} onClick={() => setActiveListId(list.id)}>
-                    {list.name}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setAddOpen(true)}>
-            <Plus className="mr-1 size-4" />
-            Add
-          </Button>
-          <form action={signOutAction}>
-            <Button variant="ghost" size="sm" type="submit">
-              Sign out
-            </Button>
-          </form>
-        </div>
-      </header>
-
-      <nav className="flex items-center gap-2 border-b px-4 py-2">
-        <Button asChild variant="secondary" size="sm">
-          <Link href="/">
-            <CheckSquare className="mr-1 size-4" />
-            Todos
-          </Link>
-        </Button>
-        <Button asChild variant="ghost" size="sm">
-          <Link href="/capture">
-            <Camera className="mr-1 size-4" />
-            Capture
-          </Link>
-        </Button>
-        <Button asChild variant="ghost" size="sm">
-          <Link href="/voice">
-            <Mic className="mr-1 size-4" />
-            Voice
-          </Link>
-        </Button>
-      </nav>
-
-      {todos.length > 0 ? (
-        <p className="px-4 pt-3 text-sm text-muted-foreground">
-          {pendingCount} open · {todos.length - pendingCount} done
-        </p>
-      ) : null}
-
-      {isLoading ? (
-        <div className="space-y-3 p-4">
-          <Skeleton className="h-16 w-full" />
-          <Skeleton className="h-16 w-full" />
-        </div>
-      ) : (
-        <TodoList
-          listName={activeList?.name}
-          todos={todos}
-          onToggle={(id) => void toggleTodo(id)}
-          onDelete={(id) => void deleteTodo(id)}
-        />
-      )}
-
-      <Button
-        className="fixed bottom-6 left-1/2 size-14 -translate-x-1/2 rounded-full shadow-lg"
-        onClick={() => router.push('/voice')}
-        aria-label="Record voice note"
+    <>
+      <AppShell
+        onManageLists={() => setManageOpen(true)}
+        headerRight={<HeaderAddButton onClick={() => setAddOpen(true)} />}
       >
-        <Mic className="size-6" />
-      </Button>
+        {todos.length > 0 ? (
+          <p className="px-4 pt-3 text-sm text-muted-foreground">
+            {pendingCount} open · {todos.length - pendingCount} done
+          </p>
+        ) : null}
+
+        {isLoading || listsLoading ? (
+          <div className="space-y-3 p-4">
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+          </div>
+        ) : (
+          <TodoList
+            listName={activeList?.name}
+            todos={todos}
+            onToggle={(id) => void toggleTodo(id)}
+            onDelete={(id) => void deleteTodo(id)}
+            onSetReminder={setReminderTodo}
+            onReorder={(todoIds) => void reorderTodos(todoIds)}
+          />
+        )}
+      </AppShell>
 
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogContent>
@@ -156,6 +105,17 @@ export function TodosPageClient() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+
+      <ManageListsDialog open={manageOpen} onOpenChange={setManageOpen} />
+
+      <SetReminderDialog
+        todo={reminderTodo}
+        open={Boolean(reminderTodo)}
+        onOpenChange={(open) => {
+          if (!open) setReminderTodo(null);
+        }}
+        onSave={setReminder}
+      />
+    </>
   );
 }
