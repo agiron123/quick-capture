@@ -1,16 +1,10 @@
 import type {
-    ExtractImageResponse,
-    ExtractTranscriptResponse,
-    ExtractVoiceResponse,
+  ExtractImageResponse,
+  ExtractTranscriptResponse,
+  ExtractVoiceResponse,
 } from '@quick-capture/shared';
 
-function getApiBaseUrl(): string {
-  const baseUrl = process.env.EXPO_PUBLIC_API_URL?.trim();
-  if (!baseUrl) {
-    throw new Error('Missing EXPO_PUBLIC_API_URL');
-  }
-  return baseUrl.replace(/\/$/, '');
-}
+import { syncApiFetch } from '@/services/sync-api-client';
 
 async function parseApiError(response: Response): Promise<string> {
   try {
@@ -35,7 +29,7 @@ export async function extractTodosFromImageViaApi(imageUri: string): Promise<Ext
     type: 'image/jpeg',
   } as unknown as Blob);
 
-  const response = await fetch(`${getApiBaseUrl()}/api/ai/extract/image`, {
+  const response = await syncApiFetch('/api/ai/extract/image', {
     method: 'POST',
     body: formData,
   });
@@ -55,7 +49,7 @@ export async function extractTodosFromVoiceViaApi(audioUri: string): Promise<Ext
     type: 'audio/m4a',
   } as unknown as Blob);
 
-  const response = await fetch(`${getApiBaseUrl()}/api/ai/extract/voice`, {
+  const response = await syncApiFetch('/api/ai/extract/voice', {
     method: 'POST',
     body: formData,
   });
@@ -70,11 +64,8 @@ export async function extractTodosFromVoiceViaApi(audioUri: string): Promise<Ext
 export async function extractTodosFromTranscriptViaApi(
   transcript: string
 ): Promise<ExtractTranscriptResponse> {
-  const response = await fetch(`${getApiBaseUrl()}/api/ai/extract/transcript`, {
+  const response = await syncApiFetch('/api/ai/extract/transcript', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify({ transcript }),
   });
 
