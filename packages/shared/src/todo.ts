@@ -6,6 +6,7 @@ export type Todo = {
   completed: boolean;
   source: TodoSource;
   createdAt: string;
+  sortOrder: number;
   noteImageUri?: string;
   noteAudioUri?: string;
   transcript?: string;

@@ -1,16 +1,18 @@
-import { SymbolView } from 'expo-symbols';
 import { Tabs } from 'expo-router';
+import { SymbolView } from 'expo-symbols';
 
 import { AddTodoHeaderButton } from '@/components/add-todo-header-button';
-import Colors from '@/constants/Colors';
-import { useColorScheme } from '@/components/useColorScheme';
+import { TabBarWithMic } from '@/components/tab-bar-with-mic';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
+import { useColorScheme } from '@/components/useColorScheme';
+import Colors from '@/constants/Colors';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
   return (
     <Tabs
+      tabBar={(props) => <TabBarWithMic {...props} />}
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: useClientOnlyValue(false, true),

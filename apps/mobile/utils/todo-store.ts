@@ -13,6 +13,11 @@ function notifyListeners(): void {
   listeners.forEach((listener) => listener());
 }
 
+function nextSortOrders(count: number): number[] {
+  const minOrder = cache.length > 0 ? Math.min(...cache.map((todo) => todo.sortOrder)) : 0;
+  return Array.from({ length: count }, (_, index) => minOrder - count + index);
+}
+
 export function subscribeTodos(listener: Listener): () => void {
   listeners.add(listener);
   return () => listeners.delete(listener);
@@ -33,11 +38,6 @@ export async function initTodoStore(): Promise<void> {
     })();
   }
   await initPromise;
-}
-
-async function refreshCache(): Promise<void> {
-  cache = await todoRepository.fetchAllTodos();
-  notifyListeners();
 }
 
 export async function addTodoToStore(todo: Todo): Promise<void> {
@@ -66,4 +66,15 @@ export async function deleteTodoFromStore(id: string): Promise<void> {
   await todoRepository.deleteTodoById(id);
   cache = cache.filter((item) => item.id !== id);
   notifyListeners();
+}
+
+export async function reorderTodosInStore(todos: Todo[]): Promise<void> {
+  const reordered = todos.map((todo, index) => ({ ...todo, sortOrder: index }));
+  await todoRepository.updateTodosOrder(reordered);
+  cache = reordered;
+  notifyListeners();
+}
+
+export function createSortOrdersForNewTodos(count: number): number[] {
+  return nextSortOrders(count);
 }

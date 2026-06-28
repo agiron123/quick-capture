@@ -11,7 +11,8 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "Quick Capture uses the camera to photograph handwritten notes and turn them into todos.",
-        "NSPhotoLibraryUsageDescription": "Quick Capture lets you pick note photos from your library to extract todos."
+        "NSPhotoLibraryUsageDescription": "Quick Capture lets you pick note photos from your library to extract todos.",
+        "NSMicrophoneUsageDescription": "Quick Capture uses the microphone to record voice notes and turn them into todos."
       }
     },
     "android": {
@@ -24,7 +25,8 @@
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.CAMERA",
-        "android.permission.READ_MEDIA_IMAGES"
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "web": {
@@ -56,6 +58,12 @@
         "expo-image-picker",
         {
           "photosPermission": "Quick Capture lets you pick note photos from your library to extract todos."
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Quick Capture uses the microphone to record voice notes and turn them into todos."
         }
       ]
     ],

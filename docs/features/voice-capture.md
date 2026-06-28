@@ -1,6 +1,6 @@
 # Voice capture
 
-**Status:** Planned  
+**Status:** Shipped  
 **Phase:** 1 (core) + Phase 2 (center tab UX)
 
 ## Problem
@@ -30,7 +30,7 @@ Review Todos modal (transcript + editable todo list)
 Todos tab with new items (source: 'voice')
 ```
 
-### Alternate: long-press (optional, Phase 2)
+### Alternate: long-press (optional, Phase 2+)
 
 - **Press and hold** mic → record while held
 - **Release** → stop and process
@@ -41,7 +41,7 @@ Start with tap-to-start / tap-to-stop for clarity; add hold-to-record later if n
 
 ### 1. Center tab bar microphone button
 
-Replace the standard two-tab layout with a **three-slot tab bar**:
+Custom tab bar with a center `Pressable` that opens the voice modal instead of navigating:
 
 ```
 [ Todos ]  [  🎤  ]  [ Capture ]
@@ -50,39 +50,31 @@ Replace the standard two-tab layout with a **three-slot tab bar**:
          (elevated / larger)
 ```
 
-**Implementation options (pick one in build):**
-
-| Option | Pros | Cons |
-| --- | --- | --- |
-| **A. Dummy tab + custom tabBar** | Native tab feel, mic always visible | Custom `tabBar` component |
-| **B. Floating action over tab bar** | Clear “primary action” | Slightly overlaps tab bar |
-| **C. Third real tab (`voice`)** | Simplest routing | Less “center button” feel |
-
-**Recommended: Option A** — custom tab bar with a center `Pressable` that opens a modal instead of navigating.
+**Implementation:** Option A — `components/tab-bar-with-mic.tsx` wraps expo-router's `BottomTabBar` with a floating center mic button.
 
 **Visual design:**
 
-- 56–64pt circular button, centered, slightly elevated (`boxShadow`)
+- 56pt circular button, centered, elevated (`boxShadow`)
 - Icon: `mic.fill` (SF Symbol) / material mic on Android
-- Active recording: pulsing red ring or waveform animation
+- Active recording: red stop button + pulsing ring on recording modal
 - `PlatformColor('systemRed')` while recording; `systemBlue` idle
 
-**Files to add/change:**
+**Files:**
 
 - `apps/mobile/components/tab-bar-with-mic.tsx` — custom tab bar
 - `apps/mobile/app/(tabs)/_layout.tsx` — wire `tabBar` prop
-- `apps/mobile/app/voice-record.tsx` — recording modal (new route)
+- `apps/mobile/app/voice-record.tsx` — recording modal route
 
 ### 2. Recording modal
 
-Full-screen or bottom sheet modal (`presentation: 'modal'`).
+Full-screen modal (`presentation: 'modal'`).
 
 **States:**
 
 | State | UI |
 | --- | --- |
 | `idle` | “Tap to record” + large mic button |
-| `recording` | Timer, waveform or pulse, **Stop** button |
+| `recording` | Timer, pulse ring, **Stop** button |
 | `processing` | Spinner + “Turning your note into todos…” |
 | `error` | Message + Retry / Cancel |
 
@@ -90,41 +82,38 @@ Full-screen or bottom sheet modal (`presentation: 'modal'`).
 
 **Behavior:**
 
-- Max duration: **60 seconds** (configurable constant)
+- Max duration: **60 seconds** (`constants/voice-capture.ts`)
 - Min duration: **1 second** (reject accidental taps)
 - Request mic permission on first open (`expo-audio`)
-- Save recording to cache via `expo-file-system` (`File` in app cache dir)
+- Recording saved via expo-audio recorder URI
 
 ### 3. Review modal (extend existing)
 
-Extend `apps/mobile/app/review-todos.tsx` to support voice:
+`apps/mobile/app/review-todos.tsx` supports voice:
 
-- Show **transcript** above editable todo list (read-only `Text selectable`)
-- Optional: mini audio playback (`expo-audio` player) — Phase 2
+- **Transcript** above editable todo list (read-only, selectable)
 - Params: `transcript`, `audioUri`, `todos` (JSON), `source: 'voice'`
+- Audio playback on review screen — deferred to Phase 2 polish
 
 **Todo item badge:** “From voice note” when `source === 'voice'`
 
-## Data model changes
+## Data model
 
 ```typescript
-// packages/shared/src/todo.ts
 export type TodoSource = 'manual' | 'capture' | 'voice';
 
 export type Todo = {
   // ...existing
-  noteAudioUri?: string;  // local file URI
-  transcript?: string;    // full transcription text
+  noteAudioUri?: string;
+  transcript?: string;
 };
 ```
 
-**Storage:** No schema migration needed — JSON blob grows new optional fields.
+Stored in SQLite via `note_audio_uri` and `transcript` columns.
 
 ## Services
 
-### New: `services/ai-extract-todos-from-voice.ts`
-
-**Pipeline:**
+### `services/ai-extract-todos-from-voice.ts`
 
 ```
 audio URI
@@ -133,101 +122,49 @@ audio URI
   → { transcript, todos: ExtractedTodo[] }
 ```
 
-**Mock mode** (no API key):
+Shared transcript → todos logic in `services/ai-extract-todos-from-text.ts`.
 
-```typescript
-{
-  transcript: "Remind me to call mom tomorrow and pick up groceries.",
-  todos: [
-    { title: "Call mom tomorrow" },
-    { title: "Pick up groceries" },
-  ]
-}
-```
-
-**Real mode:**
-
-1. `POST https://api.openai.com/v1/audio/transcriptions`  
-   - Model: `whisper-1`  
-   - File: audio from URI (m4a/caf from expo-audio)
-
-2. `POST https://api.openai.com/v1/chat/completions`  
-   - Model: `gpt-4o-mini`  
-   - System: extract actionable todos from transcript  
-   - Response: `{ "todos": [{ "title": "..." }] }`
-
-Consider refactoring shared “transcript → todos” logic with a small `services/ai-extract-todos-from-text.ts` used by voice (and future text paste).
+**Mock mode** (`EXPO_PUBLIC_USE_MOCK_AI=true` or no API key): returns sample transcript and todos after a short delay.
 
 ## Dependencies
 
-```bash
-npx expo install expo-audio
-```
-
-**Permissions (`app.json`):**
-
+- `expo-audio` — recording and permissions
 - iOS: `NSMicrophoneUsageDescription`
 - Android: `RECORD_AUDIO`
-- `expo-audio` config plugin if required by SDK version
 
-**Audio setup (on mount):**
-
-```typescript
-await AudioModule.requestRecordingPermissionsAsync();
-await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
-```
-
-Use `useAudioRecorder(RecordingPresets.HIGH_QUALITY)` per project conventions (`expo-audio`, not `expo-av`).
-
-## Navigation changes
+## Navigation
 
 ```
 Root Stack
 ├── (tabs)
 ├── add-todo
-├── review-todos      ← extend for voice params
-└── voice-record      ← NEW modal
+├── review-todos      ← voice + camera params
+└── voice-record      ← recording modal
 ```
 
-**Center mic action:**
+Center mic: `router.push('/voice-record')`  
+On success: `router.replace({ pathname: '/review-todos', params: { source, audioUri, transcript, todos } })`
 
-```typescript
-router.push('/voice-record');
-```
-
-On success from `voice-record.tsx`:
-
-```typescript
-router.replace({
-  pathname: '/review-todos',
-  params: {
-    source: 'voice',
-    audioUri: uri,
-    transcript,
-    todos: JSON.stringify(extracted),
-  },
-});
-```
-
-## Implementation tasks
+## Implementation status
 
 ### Phase 1 — Core voice pipeline
 
-- [ ] Add `voice` to `TodoSource` and optional `noteAudioUri` / `transcript` on `Todo`
-- [ ] Install and configure `expo-audio` + microphone permissions
-- [ ] Create `components/voice-recorder.tsx` (record, stop, timer, processing)
-- [ ] Create `apps/mobile/app/voice-record.tsx` modal route
-- [ ] Create `services/ai-extract-todos-from-voice.ts` (mock + OpenAI)
-- [ ] Extend `review-todos.tsx` for transcript + voice source
-- [ ] Update `use-todos` / `addTodos` to pass audio URI and transcript
-- [ ] Update `todo-item.tsx` label for voice source
+- [x] Add `voice` to `TodoSource` and optional `noteAudioUri` / `transcript` on `Todo`
+- [x] Install and configure `expo-audio` + microphone permissions
+- [x] Create `components/voice-recorder.tsx` (record, stop, timer, processing)
+- [x] Create `apps/mobile/app/voice-record.tsx` modal route
+- [x] Create `services/ai-extract-todos-from-voice.ts` (mock + OpenAI)
+- [x] Create `services/ai-extract-todos-from-text.ts` (shared extraction)
+- [x] Extend `review-todos.tsx` for transcript + voice source
+- [x] Update `use-todos` / `addTodos` to pass audio URI and transcript
+- [x] Update `todo-item.tsx` label for voice source
 
 ### Phase 2 — Center tab bar mic
 
-- [ ] Create `components/tab-bar-with-mic.tsx`
-- [ ] Update `apps/mobile/app/(tabs)/_layout.tsx` with custom tab bar
-- [ ] Center button opens `/voice-record` from any tab
-- [ ] Recording feedback: haptics on start/stop, pulse animation
+- [x] Create `components/tab-bar-with-mic.tsx`
+- [x] Update `apps/mobile/app/(tabs)/_layout.tsx` with custom tab bar
+- [x] Center button opens `/voice-record` from any tab
+- [x] Recording feedback: haptics on start/stop, pulse animation
 - [ ] (Optional) Audio playback on review screen
 
 ### Phase 3 — Polish
@@ -239,30 +176,30 @@ router.replace({
 
 ## Acceptance criteria
 
-- [ ] Center mic visible on Todos and Capture tabs
-- [ ] Tap mic → record → stop → review → save adds todos with `source: 'voice'`
-- [ ] Transcript visible on review screen
-- [ ] Mock mode works without API key
-- [ ] Real mode transcribes and extracts with OpenAI
-- [ ] Mic permission denied shows clear message and settings path
-- [ ] Recordings under 1s rejected with friendly feedback
+- [x] Center mic visible on Todos and Capture tabs
+- [x] Tap mic → record → stop → review → save adds todos with `source: 'voice'`
+- [x] Transcript visible on review screen
+- [x] Mock mode works without API key
+- [x] Real mode transcribes and extracts with OpenAI (when `EXPO_PUBLIC_OPENAI_API_KEY` set)
+- [x] Mic permission denied shows clear message and settings path
+- [x] Recordings under 1s rejected with friendly feedback
 
 ## Error handling
 
 | Case | Behavior |
 | --- | --- |
-| Permission denied | Explain + button to open settings (if supported) |
-| Recording too short | Toast: “Hold a little longer” |
-| AI failure | Alert with retry; keep audio file for retry |
-| No todos extracted | Show transcript; allow manual “Add another” lines |
-| Network offline | Alert; suggest manual add |
+| Permission denied | Explain + button to open settings |
+| Recording too short | “Hold a little longer” message |
+| AI failure | Alert with retry; recording modal stays open |
+| No todos extracted | Alert with “Review anyway” option (empty list + transcript) |
+| Network offline | Alert on real-mode AI failure |
 
 ## Open questions
 
-- **Auto-stop vs manual stop only?** Start manual; add 60s auto-stop as safety.
-- **Keep audio files forever?** Store URI on todo for replay; prune cache files older than 30 days (Phase 3).
-- **On-device speech recognition?** iOS `Speech` framework could reduce API cost — evaluate after MVP.
-- **Backend for API keys?** Defer to Phase 3 in PLAN.md; client key OK for prototype.
+- **Auto-stop vs manual stop only?** Both: manual stop + 60s auto-stop safety.
+- **Keep audio files forever?** Store URI on todo; prune cache files older than 30 days (Phase 3).
+- **On-device speech recognition?** Evaluate after MVP.
+- **Backend for API keys?** Defer to Phase 3 in PLAN.md.
 
 ## Related docs
 

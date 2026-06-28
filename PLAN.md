@@ -2,7 +2,7 @@
 
 Quick Capture turns messy inputs (handwritten notes, voice, manual entry) into actionable todos. This document is the living roadmap. Detailed specs live in [`docs/`](./docs/).
 
-## Current state (v0.2)
+## Current state (v0.3)
 
 | Feature | Status | Spec |
 | --- | --- | --- |
@@ -10,8 +10,8 @@ Quick Capture turns messy inputs (handwritten notes, voice, manual entry) into a
 | Todo list (complete, delete, persist) | ✅ Shipped | [docs/features/todo-list.md](./docs/features/todo-list.md) |
 | Manual todo entry | ✅ Shipped | [docs/features/manual-entry.md](./docs/features/manual-entry.md) |
 | Camera capture → AI → review → save | ✅ Shipped | [docs/features/camera-capture.md](./docs/features/camera-capture.md) |
+| Voice capture → AI → review → save | ✅ Shipped | [docs/features/voice-capture.md](./docs/features/voice-capture.md) |
 | API scaffold (`apps/api`) | ✅ Shipped | [docs/monorepo.md](./docs/monorepo.md) |
-| Voice capture → AI → review → save | 📋 Planned | [docs/features/voice-capture.md](./docs/features/voice-capture.md) |
 
 ## Vision
 
@@ -37,19 +37,19 @@ Input (voice / photo / text)
 - [x] Scaffold `apps/api` (Hono)
 - [x] Document dev workflow in [docs/monorepo.md](./docs/monorepo.md)
 
-### Phase 1 — Core capture (current)
+### Phase 1 — Core capture
 
 - [x] Local todo storage
 - [x] Manual todos
 - [x] Camera → vision AI → review modal
-- [ ] **Voice → transcription AI → review modal** ← next up
+- [x] Voice → transcription AI → review modal
 
 ### Phase 2 — Capture UX polish
 
-- [ ] Center tab bar microphone button (primary quick-capture affordance)
+- [x] Center tab bar microphone button (primary quick-capture affordance)
 - [ ] Unified review modal for all capture sources
-- [ ] Capture history / source preview on todo items
-- [ ] Haptic + visual recording feedback
+- [x] Capture history / source preview on todo items (voice + camera labels)
+- [x] Haptic + visual recording feedback (start/stop pulse, timer)
 
 ### Phase 3 — Cloud backend and sync
 
@@ -70,11 +70,14 @@ Input (voice / photo / text)
 - [ ] Wear OS module (`native/wear/`) — not CMF Watch
 - [ ] CMF Android phone shortcuts
 
-## Next feature: Voice capture
+## Next up: Capture UX polish + cloud backend
 
-**Goal:** A microphone button at the center of the tab bar for one-tap voice notes that become todos.
+Phase 1 capture (camera + voice) is shipped. Next priorities:
 
-Full spec: [docs/features/voice-capture.md](./docs/features/voice-capture.md)
+1. **Unified review modal** — one component for camera and voice params
+2. **Phase 3 backend** — auth, sync, server-side AI (see below)
+
+Voice capture spec (shipped): [docs/features/voice-capture.md](./docs/features/voice-capture.md)
 
 ## How to use this plan
 

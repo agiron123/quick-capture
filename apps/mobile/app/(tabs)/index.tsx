@@ -4,7 +4,7 @@ import { TodoList } from '@/components/todo-list';
 import { useTodos } from '@/hooks/use-todos';
 
 export default function TodosScreen() {
-  const { todos, toggleTodo, deleteTodo } = useTodos();
+  const { todos, toggleTodo, deleteTodo, reorderTodos } = useTodos();
 
   const pendingCount = todos.filter((todo) => !todo.completed).length;
 
@@ -18,7 +18,12 @@ export default function TodosScreen() {
         </View>
       ) : null}
 
-      <TodoList todos={todos} onToggle={toggleTodo} onDelete={deleteTodo} />
+      <TodoList
+        todos={todos}
+        onToggle={toggleTodo}
+        onDelete={deleteTodo}
+        onReorder={reorderTodos}
+      />
     </View>
   );
 }

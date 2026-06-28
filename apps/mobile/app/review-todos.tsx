@@ -1,5 +1,5 @@
-import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Image } from 'expo-image';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
   PlatformColor,
@@ -11,14 +11,20 @@ import {
 } from 'react-native';
 
 import { useTodos } from '@/hooks/use-todos';
-import type { ExtractedTodo } from '@/types/todo';
+import type { ExtractedTodo, TodoSource } from '@/types/todo';
 
 export default function ReviewTodosModal() {
-  const { imageUri, todos: todosParam } = useLocalSearchParams<{
-    imageUri?: string;
-    todos?: string;
-  }>();
+  const { imageUri, audioUri, transcript, todos: todosParam, source } =
+    useLocalSearchParams<{
+      imageUri?: string;
+      audioUri?: string;
+      transcript?: string;
+      todos?: string;
+      source?: string;
+    }>();
   const { addTodos } = useTodos();
+
+  const captureSource: TodoSource = source === 'voice' ? 'voice' : 'capture';
 
   const initialTodos = useMemo(() => {
     if (!todosParam) return [];
@@ -52,8 +58,10 @@ export default function ReviewTodosModal() {
         .filter(Boolean)
         .map((title) => ({
           title,
-          source: 'capture' as const,
+          source: captureSource,
           noteImageUri: typeof imageUri === 'string' ? imageUri : undefined,
+          noteAudioUri: typeof audioUri === 'string' ? audioUri : undefined,
+          transcript: typeof transcript === 'string' ? transcript : undefined,
         }))
     );
     router.replace('/(tabs)');
@@ -88,6 +96,23 @@ export default function ReviewTodosModal() {
             }}
             contentFit="cover"
           />
+        ) : null}
+
+        {typeof transcript === 'string' && transcript.length > 0 ? (
+          <View
+            style={{
+              backgroundColor: PlatformColor('secondarySystemBackground'),
+              borderRadius: 12,
+              padding: 14,
+              gap: 6,
+            }}>
+            <Text style={{ color: PlatformColor('secondaryLabel'), fontSize: 13, fontWeight: '600' }}>
+              Transcript
+            </Text>
+            <Text selectable style={{ color: PlatformColor('label'), fontSize: 16, lineHeight: 22 }}>
+              {transcript}
+            </Text>
+          </View>
         ) : null}
 
         <Text selectable style={{ color: PlatformColor('secondaryLabel'), fontSize: 15 }}>

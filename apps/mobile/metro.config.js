@@ -13,4 +13,15 @@ config.resolver.nodeModulesPaths = [
 ];
 config.resolver.unstable_enablePackageExports = true;
 
+// Required for expo-sqlite on web (wa-sqlite.wasm)
+config.resolver.assetExts = [...config.resolver.assetExts, 'wasm'];
+
+config.server.enhanceMiddleware = (middleware) => {
+  return (req, res, next) => {
+    res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless');
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+    return middleware(req, res, next);
+  };
+};
+
 module.exports = config;

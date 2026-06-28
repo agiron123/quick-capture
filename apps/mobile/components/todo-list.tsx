@@ -1,4 +1,9 @@
-import { FlatList, PlatformColor, Text, View } from 'react-native';
+import * as Haptics from 'expo-haptics';
+import { PlatformColor, Text, View } from 'react-native';
+import DraggableFlatList, {
+  RenderItemParams,
+  ScaleDecorator,
+} from 'react-native-draggable-flatlist';
 
 import { TodoItem } from '@/components/todo-item';
 import type { Todo } from '@/types/todo';
@@ -7,9 +12,33 @@ type TodoListProps = {
   todos: Todo[];
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
+  onReorder: (todos: Todo[]) => void;
 };
 
-export function TodoList({ todos, onToggle, onDelete }: TodoListProps) {
+function DraggableTodoRow({
+  item,
+  drag,
+  isActive,
+  onToggle,
+  onDelete,
+}: RenderItemParams<Todo> & {
+  onToggle: (id: string) => void;
+  onDelete: (id: string) => void;
+}) {
+  return (
+    <ScaleDecorator activeScale={1.03}>
+      <TodoItem
+        todo={item}
+        onToggle={onToggle}
+        onDelete={onDelete}
+        onDrag={drag}
+        isDragging={isActive}
+      />
+    </ScaleDecorator>
+  );
+}
+
+export function TodoList({ todos, onToggle, onDelete, onReorder }: TodoListProps) {
   if (todos.length === 0) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, gap: 8 }}>
@@ -25,14 +54,20 @@ export function TodoList({ todos, onToggle, onDelete }: TodoListProps) {
     );
   }
 
+  const handleDragEnd = async ({ data }: { data: Todo[] }) => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onReorder(data);
+  };
+
   return (
-    <FlatList
+    <DraggableFlatList
       data={todos}
       keyExtractor={(item) => item.id}
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{ padding: 16, gap: 12 }}
-      renderItem={({ item }) => (
-        <TodoItem todo={item} onToggle={onToggle} onDelete={onDelete} />
+      onDragEnd={handleDragEnd}
+      renderItem={(params) => (
+        <DraggableTodoRow {...params} onToggle={onToggle} onDelete={onDelete} />
       )}
     />
   );

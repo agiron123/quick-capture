@@ -1,5 +1,6 @@
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
+import { SymbolView } from 'expo-symbols';
 import { PlatformColor, Pressable, Text, View } from 'react-native';
 
 import type { Todo } from '@/types/todo';
@@ -8,9 +9,11 @@ type TodoItemProps = {
   todo: Todo;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
+  onDrag?: () => void;
+  isDragging?: boolean;
 };
 
-export function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
+export function TodoItem({ todo, onToggle, onDelete, onDrag, isDragging }: TodoItemProps) {
   const handleToggle = async () => {
     await Haptics.selectionAsync();
     onToggle(todo.id);
@@ -31,7 +34,25 @@ export function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
         gap: 10,
         flexDirection: 'row',
         alignItems: 'center',
+        opacity: isDragging ? 0.92 : 1,
+        boxShadow: isDragging ? '0 8px 24px rgba(0, 0, 0, 0.18)' : undefined,
       }}>
+      {onDrag ? (
+        <Pressable
+          onPressIn={onDrag}
+          disabled={isDragging}
+          accessibilityRole="button"
+          accessibilityLabel="Reorder todo"
+          hitSlop={8}
+          style={{ paddingVertical: 4, paddingRight: 2 }}>
+          <SymbolView
+            name={{ ios: 'line.3.horizontal', android: 'drag_handle', web: 'drag_handle' }}
+            tintColor={PlatformColor('tertiaryLabel')}
+            size={18}
+          />
+        </Pressable>
+      ) : null}
+
       <Pressable
         onPress={handleToggle}
         style={{
@@ -59,7 +80,11 @@ export function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
           {todo.title}
         </Text>
         <Text selectable style={{ color: PlatformColor('secondaryLabel'), fontSize: 13 }}>
-          {todo.source === 'capture' ? 'From note capture' : 'Added manually'}
+          {todo.source === 'capture'
+            ? 'From note capture'
+            : todo.source === 'voice'
+              ? 'From voice note'
+              : 'Added manually'}
         </Text>
       </View>
 

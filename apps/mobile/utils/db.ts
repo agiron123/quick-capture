@@ -26,18 +26,40 @@ async function openAndMigrate(): Promise<SQLite.SQLiteDatabase> {
       completed INTEGER NOT NULL DEFAULT 0,
       source TEXT NOT NULL,
       created_at TEXT NOT NULL,
+      sort_order INTEGER NOT NULL DEFAULT 0,
       note_image_uri TEXT,
       note_audio_uri TEXT,
       transcript TEXT
     );
+  `);
 
-    CREATE INDEX IF NOT EXISTS idx_todos_created_at ON todos (created_at DESC);
+  await migrateSortOrderColumn(db);
+
+  await db.execAsync(`
+    CREATE INDEX IF NOT EXISTS idx_todos_sort_order ON todos (sort_order ASC);
   `);
 
   await migrateLegacyLocalStorage(db);
 
   database = db;
   return db;
+}
+
+async function migrateSortOrderColumn(db: SQLite.SQLiteDatabase): Promise<void> {
+  const columns = await db.getAllAsync<{ name: string }>('PRAGMA table_info(todos)');
+  if (columns.some((column) => column.name === 'sort_order')) return;
+
+  await db.execAsync('ALTER TABLE todos ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0');
+
+  const rows = await db.getAllAsync<{ id: string }>(
+    'SELECT id FROM todos ORDER BY created_at DESC'
+  );
+
+  await db.withTransactionAsync(async () => {
+    for (let index = 0; index < rows.length; index++) {
+      await db.runAsync('UPDATE todos SET sort_order = ? WHERE id = ?', [index, rows[index].id]);
+    }
+  });
 }
 
 async function migrateLegacyLocalStorage(db: SQLite.SQLiteDatabase): Promise<void> {
@@ -64,6 +86,7 @@ async function migrateLegacyLocalStorage(db: SQLite.SQLiteDatabase): Promise<voi
       completed: boolean;
       source: string;
       createdAt: string;
+      sortOrder?: number;
       noteImageUri?: string;
       noteAudioUri?: string;
       transcript?: string;
@@ -72,18 +95,19 @@ async function migrateLegacyLocalStorage(db: SQLite.SQLiteDatabase): Promise<voi
     if (!Array.isArray(legacyTodos) || legacyTodos.length === 0) return;
 
     await db.withTransactionAsync(async () => {
-      for (const todo of legacyTodos) {
+      for (const [index, todo] of legacyTodos.entries()) {
         await db.runAsync(
           `INSERT INTO todos (
-            id, title, completed, source, created_at,
+            id, title, completed, source, created_at, sort_order,
             note_image_uri, note_audio_uri, transcript
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             todo.id,
             todo.title,
             todo.completed ? 1 : 0,
             todo.source,
             todo.createdAt,
+            todo.sortOrder ?? index,
             todo.noteImageUri ?? null,
             todo.noteAudioUri ?? null,
             todo.transcript ?? null,

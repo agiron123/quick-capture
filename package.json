@@ -10,6 +10,8 @@
     "dev": "turbo run dev",
     "dev:mobile": "turbo run dev --filter=@quick-capture/mobile",
     "dev:api": "turbo run dev --filter=@quick-capture/api",
+    "ios": "npm run ios --workspace=@quick-capture/mobile",
+    "android": "npm run android --workspace=@quick-capture/mobile",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck"
