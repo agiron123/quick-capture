@@ -55,7 +55,7 @@ Input (voice / photo / text)
 ### Phase 2 — Capture UX polish
 
 - [x] Center tab bar microphone button (primary quick-capture affordance)
-- [ ] Unified review modal for all capture sources
+- [x] Unified review modal for all capture sources (`review-todos-form.tsx`)
 - [x] Capture history / source preview on todo items (voice + camera labels)
 - [x] Haptic + visual recording feedback (start/stop pulse, timer)
 
@@ -108,8 +108,7 @@ Input (voice / photo / text)
 Phase 3 core is shipped. Remaining priorities:
 
 1. **OAuth providers** — Google + GitHub in Neon Console
-2. **Unified review modal** — extract shared component from mobile review route
-3. **Sync conflict resolution** — same todo edited on multiple devices offline
+2. **Sync conflict resolution** — same todo edited on multiple devices offline
 
 Specs:
 - [docs/features/auth.md](./docs/features/auth.md)
