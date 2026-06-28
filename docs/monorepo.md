@@ -28,6 +28,7 @@ Run from the repo root:
 | `npm run dev:mobile` | Expo dev server only |
 | `npm run dev:api` | API dev server only (`http://localhost:3000`) |
 | `npm run dev:web` | Next.js web companion (`http://localhost:3001`) |
+| `npm run dev:web-api` | API + web in parallel (no mobile) |
 | `npm run build` | Build all packages (respects dependency order) |
 | `npm run typecheck` | Typecheck all packages |
 

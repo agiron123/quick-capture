@@ -44,7 +44,7 @@ Input (voice / photo / text)
 - [x] Create `packages/shared` and `packages/typescript-config`
 - [x] Scaffold `apps/api` (Hono)
 - [x] Document dev workflow in [docs/monorepo.md](./docs/monorepo.md)
-- [ ] Root `dev:web-api` script — run API (`:3000`) + web (`:3001`) together without mobile; today use two terminals (`npm run dev:api` + `npm run dev:web`) or `npx turbo run dev --filter=@quick-capture/api --filter=@quick-capture/web`
+- [x] Root `dev:web-api` script — run API (`:3000`) + web (`:3001`) together without mobile (`npm run dev:web-api`)
 
 ### Phase 1 — Core capture
 
@@ -109,7 +109,7 @@ Input (voice / photo / text)
 Phase 3 core is shipped. Remaining priorities:
 
 1. **OAuth providers** — Google + GitHub in Neon Console
-2. **Root `dev:web-api` script** — API + web in one command
+2. **Branch-aware auth** — preview/staging Neon branches
 
 Specs:
 - [docs/features/auth.md](./docs/features/auth.md)

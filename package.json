@@ -11,6 +11,7 @@
     "dev:mobile": "turbo run dev --filter=@quick-capture/mobile",
     "dev:api": "turbo run dev --filter=@quick-capture/api",
     "dev:web": "turbo run dev --filter=@quick-capture/web",
+    "dev:web-api": "turbo run dev --filter=@quick-capture/api --filter=@quick-capture/web",
     "ios": "npm run ios --workspace=@quick-capture/mobile",
     "android": "npm run android --workspace=@quick-capture/mobile",
     "build": "turbo run build",
