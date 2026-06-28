@@ -2,7 +2,7 @@
 
 Quick Capture turns messy inputs (handwritten notes, voice, manual entry) into actionable todos. This document is the living roadmap. Detailed specs live in [`docs/`](./docs/).
 
-## Current state (v0.4)
+## Current state (v0.5)
 
 | Feature | Status | Spec |
 | --- | --- | --- |
@@ -13,8 +13,12 @@ Quick Capture turns messy inputs (handwritten notes, voice, manual entry) into a
 | Voice capture → AI → review → save | ✅ Shipped | [docs/features/voice-capture.md](./docs/features/voice-capture.md) |
 | Server-side AI (OpenAI + MiniMax) | ✅ Shipped | [docs/features/ai-backend.md](./docs/features/ai-backend.md) |
 | Multiple todo lists | ✅ Shipped | [docs/features/todo-list.md](./docs/features/todo-list.md) |
-| Scheduled reminders | ✅ Shipped | [docs/features/scheduled-reminders.md](./docs/features/scheduled-reminders.md) |
-| API scaffold (`apps/api`) | ✅ Shipped | [docs/monorepo.md](./docs/monorepo.md) |
+| Scheduled reminders (local) | ✅ Shipped | [docs/features/scheduled-reminders.md](./docs/features/scheduled-reminders.md) |
+| API + Neon Postgres sync | ✅ Shipped | [docs/features/auth.md](./docs/features/auth.md) |
+| Web companion (`apps/web`) | ✅ Shipped | [docs/features/web-app.md](./docs/features/web-app.md) |
+| Neon Auth (web + mobile) | ✅ Shipped | [docs/features/auth.md](./docs/features/auth.md) |
+| API-backed push reminders | ✅ Shipped | [docs/features/push-notifications.md](./docs/features/push-notifications.md) |
+| Mobile cloud sync | ✅ Shipped | [docs/features/auth.md](./docs/features/auth.md) |
 
 ## Vision
 
@@ -27,7 +31,7 @@ Input (voice / photo / text)
         ↓
    Review & edit
         ↓
-   Todo list (persisted locally / synced via API)
+   Todo list (local SQLite offline / synced via API when signed in)
 ```
 
 ## Roadmap
@@ -64,18 +68,26 @@ Input (voice / photo / text)
 
 ### Phase 3 — Cloud backend, sync, and push
 
-- [ ] **[Neon Auth](https://neon.com/docs/auth/overview)** — managed auth on Neon Postgres ([spec](./docs/features/auth.md))
-  - [ ] Email/password + Google + GitHub (Neon Console / branch config)
-  - [ ] Mobile + web clients: Neon Auth SDK; API: JWT verification via JWKS in Hono
+- [x] **[Neon Auth](https://neon.com/docs/auth/overview)** — managed auth on Neon Postgres ([spec](./docs/features/auth.md))
+  - [x] Email/password sign-in (web + mobile)
+  - [ ] Google + GitHub OAuth (configure in Neon Console)
+  - [x] Mobile + web clients: Neon Auth SDK; API: JWT verification via JWKS in Hono
   - [ ] Branch-aware auth for preview/staging environments
-- [ ] Neon Postgres + todo REST API and sync from `apps/mobile` / `apps/web`
-- [x] Server-side AI (OpenAI + MiniMax providers)
-- [ ] Todo sync including `reminderAt` (Postgres)
-- [ ] **API-backed push notifications** — multi-device + web ([spec](./docs/features/push-notifications.md))
-  - [ ] Device registration (`POST /api/devices/register`) — Expo tokens + Web Push
-  - [ ] Reminder worker — server fires at `reminderAt`, sends to all user devices
-  - [ ] Mobile: register Expo push token after auth; server replaces local schedule when synced
-  - [ ] Web app (`apps/web`) — Web Push via service worker
+- [x] Neon Postgres + Drizzle migrations (`todo_lists`, `todos`, `captures`, `user_devices`)
+- [x] Lists + todos REST API (`apps/api`)
+- [x] Capture upload API (local disk; R2 planned for production)
+- [x] **Web companion** (`apps/web`) — Neon Auth, todos, capture, voice, reminders, dark mode
+- [x] **Mobile sync** — sign-in, push local todos before pull, CRUD sync to API
+- [x] Todo sync including `reminderAt` (Postgres)
+- [x] **API-backed push notifications** — multi-device + web ([spec](./docs/features/push-notifications.md))
+  - [x] Device registration (`POST /api/devices/register`) — Expo tokens + Web Push
+  - [x] Reminder worker — server fires at `reminderAt`, sends to all user devices
+  - [x] Mobile: register Expo push token after auth; server replaces local schedule when synced
+  - [x] Web: service worker + Web Push via VAPID
+  - [x] Device management UI on web (`/devices`)
+- [ ] Object storage (R2) for capture media in production
+- [ ] Notification tap deep links (mobile + web)
+- [ ] Sync conflict resolution (same todo edited offline on two devices)
 - [ ] Due dates, priority, tags, subtasks
 
 ### Phase 4 — Beyond todos
@@ -90,16 +102,18 @@ Input (voice / photo / text)
 - [ ] Wear OS module (`native/wear/`) — not CMF Watch
 - [ ] CMF Android phone shortcuts
 
-## Next up: Phase 3 — sync and API push
+## Next up
 
-Phase 2.5 local reminders are shipped. Next priorities:
+Phase 3 core is shipped. Remaining priorities:
 
-1. **Neon Auth + todo sync** — account-backed todos in Neon Postgres (`reminderAt` included)
-2. **API-backed push** — server sends reminders to all devices (mobile + future web)
-3. **Unified review modal** — one component for camera and voice params
+1. **Production capture storage** — R2 (or S3-compatible) instead of local disk on Railway
+2. **OAuth providers** — Google + GitHub in Neon Console
+3. **Unified review modal** — one component for camera and voice on mobile
+4. **Push polish** — notification tap deep links, snooze, expired-token pruning
 
 Specs:
 - [docs/features/auth.md](./docs/features/auth.md)
+- [docs/features/web-app.md](./docs/features/web-app.md)
 - [docs/features/push-notifications.md](./docs/features/push-notifications.md)
 - [docs/features/scheduled-reminders.md](./docs/features/scheduled-reminders.md)
 
@@ -111,8 +125,8 @@ Specs:
 
 ## Conventions
 
-- **Monorepo:** `apps/mobile` (Expo), `apps/api` (Hono), `apps/web` (planned), `packages/shared` (types + Zod)
-- **Routes** in `apps/mobile/app/` only; components, hooks, services in `apps/mobile/`
+- **Monorepo:** `apps/mobile` (Expo), `apps/api` (Hono), `apps/web` (Next.js), `packages/shared` (types + Zod)
+- **Routes** in `apps/mobile/app/` and `apps/web/app/` only; components, hooks, services elsewhere
 - **Capture sources** in `@quick-capture/shared`: `manual` | `capture` | `voice` | `watch`
 - **Review before save** for all AI-generated todos
 

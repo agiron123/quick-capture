@@ -69,9 +69,15 @@ Environment variables load from the repo root `.env` (see [`.env.example`](../.e
 
 Spec: [features/ai-backend.md](./features/ai-backend.md)
 
-### Neon Auth setup (Phase 3)
+### Neon Auth + sync setup (Phase 3)
 
 1. Create a Neon project and enable **Auth** on your branch (Neon Console → Auth).
-2. Configure sign-in providers (email/password, Google, GitHub).
-3. Set `DATABASE_URL`, `NEON_AUTH_URL` (API), and `EXPO_PUBLIC_NEON_AUTH_URL` (mobile) in `.env`.
-4. Hono verifies client JWTs via JWKS; see [features/auth.md](./features/auth.md).
+2. Configure sign-in providers (email/password shipped; Google, GitHub optional).
+3. Set in `.env`:
+   - `DATABASE_URL`, `NEON_AUTH_URL` (API JWKS)
+   - `EXPO_PUBLIC_NEON_AUTH_URL` (mobile)
+   - `NEON_AUTH_BASE_URL`, `NEON_AUTH_COOKIE_SECRET`, `NEXT_PUBLIC_NEON_AUTH_URL` (web)
+   - `NEXT_PUBLIC_API_URL=http://localhost:3000`, `CORS_ORIGINS=http://localhost:3001,http://localhost:8081`
+4. Run migrations: `npm run db:migrate --workspace=@quick-capture/api`
+5. For Web Push reminders: `npx web-push generate-vapid-keys` → set `VAPID_*` and `NEXT_PUBLIC_VAPID_PUBLIC_KEY`
+6. Hono verifies client JWTs via JWKS; see [features/auth.md](./features/auth.md).
