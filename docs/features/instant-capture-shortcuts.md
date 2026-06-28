@@ -18,7 +18,13 @@ Uses [`expo-quick-actions`](https://github.com/EvanBacon/expo-quick-actions) wit
 - **Android:** Dynamic shortcuts set on launch.
 - **Requires a dev build** — config plugin is not available in Expo Go. Use `npx expo run:ios` / `run:android` or EAS Build.
 
-Deep links also work via app scheme: `quickcapture://voice-record`, `quickcapture://capture`, `quickcapture://add-todo`.
+Deep links also work via app scheme (see `@quick-capture/shared` `captureDeepLinks`):
+
+- `quickcapture://voice-record`
+- `quickcapture://capture`
+- `quickcapture://add-todo`
+
+For Nothing CMF Watch users (phone-side only), see [cmf-watch-android-shortcuts.md](./cmf-watch-android-shortcuts.md).
 
 ## Follow-ups
 

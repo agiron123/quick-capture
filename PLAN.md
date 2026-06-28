@@ -26,6 +26,7 @@ Quick Capture turns messy inputs (handwritten notes, voice, manual entry) into a
 | Subtasks | ✅ Shipped | [docs/features/subtasks.md](./docs/features/subtasks.md) |
 | Export / share | ✅ Shipped | [docs/features/export-share.md](./docs/features/export-share.md) |
 | Instant capture shortcuts | ✅ Shipped | [docs/features/instant-capture-shortcuts.md](./docs/features/instant-capture-shortcuts.md) |
+| CMF Watch phone shortcuts | ✅ Shipped | [docs/features/cmf-watch-android-shortcuts.md](./docs/features/cmf-watch-android-shortcuts.md) |
 
 ## Vision
 
@@ -111,16 +112,18 @@ Input (voice / photo / text)
 
 - [ ] Apple Watch companion (`native/watch/`)
 - [ ] Wear OS module (`native/wear/`) — not CMF Watch
-- [ ] CMF Android phone shortcuts
+- [x] CMF Android phone shortcuts — [spec](./docs/features/cmf-watch-android-shortcuts.md)
 
 ## Next up
 
 Phase 3 core is shipped. Remaining priorities:
 
 1. **OAuth providers** — Google + GitHub in Neon Console
-2. **Wearables** — Phase 5 Apple Watch / Wear OS
+2. **Apple Watch companion** — `native/watch/` scaffold
+3. **Wear OS module** — `native/wear/`
 
 Specs:
+- [docs/features/cmf-watch-android-shortcuts.md](./docs/features/cmf-watch-android-shortcuts.md)
 - [docs/features/instant-capture-shortcuts.md](./docs/features/instant-capture-shortcuts.md)
 - [docs/features/export-share.md](./docs/features/export-share.md)
 - [docs/features/search-filter.md](./docs/features/search-filter.md)
