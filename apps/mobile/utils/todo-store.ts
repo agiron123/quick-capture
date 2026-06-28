@@ -1,5 +1,12 @@
 import { cancelReminder, reconcileAllReminders, rescheduleReminder } from '@/services/reminder-scheduler';
-import { updateTodoReminderOnApi } from '@/services/sync-api-client';
+import {
+  createTodoOnApi,
+  createTodosBatchOnApi,
+  deleteTodoOnApi,
+  reorderTodosOnApi,
+  updateTodoOnApi,
+  updateTodoReminderOnApi,
+} from '@/services/sync-api-client';
 import { isServerRemindersEnabled } from '@/services/sync-mode';
 import type { Todo } from '@/types/todo';
 import { getDatabase } from '@/utils/db';
@@ -56,15 +63,50 @@ export async function initTodoStore(): Promise<void> {
 }
 
 export async function addTodoToStore(todo: Todo): Promise<void> {
-  await todoRepository.insertTodo(todo);
-  cache = [todo, ...cache];
+  if (isServerRemindersEnabled()) {
+    const created = await createTodoOnApi({
+      title: todo.title,
+      source: todo.source,
+      listId: todo.listId,
+      sortOrder: todo.sortOrder,
+      clientId: todo.id,
+      transcript: todo.transcript,
+      reminderAt: todo.reminderAt,
+    });
+    await todoRepository.insertTodo({ ...created, noteImageUri: todo.noteImageUri, noteAudioUri: todo.noteAudioUri });
+    cache = [{ ...created, noteImageUri: todo.noteImageUri, noteAudioUri: todo.noteAudioUri }, ...cache];
+  } else {
+    await todoRepository.insertTodo(todo);
+    cache = [todo, ...cache];
+  }
   notifyListeners();
 }
 
 export async function addTodosToStore(todos: Todo[]): Promise<void> {
   if (todos.length === 0) return;
-  await todoRepository.insertTodos(todos);
-  cache = [...todos, ...cache];
+
+  if (isServerRemindersEnabled()) {
+    const listId = todos[0].listId;
+    const created = await createTodosBatchOnApi(
+      listId,
+      todos.map((todo) => ({
+        title: todo.title,
+        source: todo.source,
+        clientId: todo.id,
+        transcript: todo.transcript,
+      }))
+    );
+    const merged = created.map((todo, index) => ({
+      ...todo,
+      noteImageUri: todos[index]?.noteImageUri,
+      noteAudioUri: todos[index]?.noteAudioUri,
+    }));
+    await todoRepository.insertTodos(merged);
+    cache = [...merged, ...cache];
+  } else {
+    await todoRepository.insertTodos(todos);
+    cache = [...todos, ...cache];
+  }
   notifyListeners();
 }
 
@@ -72,6 +114,10 @@ export async function toggleTodoInStore(id: string): Promise<void> {
   const todo = cache.find((item) => item.id === id);
   if (!todo) return;
   const completed = !todo.completed;
+
+  if (isServerRemindersEnabled()) {
+    await updateTodoOnApi(id, { completed });
+  }
 
   if (completed) {
     if (todo.notificationId) {
@@ -101,6 +147,11 @@ export async function deleteTodoFromStore(id: string): Promise<void> {
   if (todo?.notificationId) {
     await cancelReminder(todo.notificationId);
   }
+
+  if (isServerRemindersEnabled()) {
+    await deleteTodoOnApi(id);
+  }
+
   await todoRepository.deleteTodoById(id);
   cache = cache.filter((item) => item.id !== id);
   notifyListeners();
@@ -164,6 +215,14 @@ export async function setReminderInStore(id: string, reminderAt: string | null):
 
 export async function reorderTodosInStore(listId: string, todos: Todo[]): Promise<void> {
   const reordered = todos.map((todo, index) => ({ ...todo, sortOrder: index, listId }));
+
+  if (isServerRemindersEnabled()) {
+    await reorderTodosOnApi(
+      listId,
+      reordered.map((todo) => todo.id)
+    );
+  }
+
   await todoRepository.updateTodosOrder(reordered);
   const otherTodos = cache.filter((todo) => todo.listId !== listId);
   cache = [...otherTodos, ...reordered];

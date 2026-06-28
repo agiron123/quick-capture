@@ -1,4 +1,10 @@
 import { ACTIVE_LIST_SETTING_KEY, DEFAULT_LIST_ID } from '@/constants/lists';
+import {
+  createListOnApi,
+  deleteListOnApi,
+  renameListOnApi,
+} from '@/services/sync-api-client';
+import { isServerRemindersEnabled } from '@/services/sync-mode';
 import type { TodoListRecord } from '@/types/list';
 import { getSetting, setSetting } from '@/utils/db';
 import * as listRepository from '@/utils/list-repository';
@@ -67,12 +73,18 @@ export async function createListInStore(name: string): Promise<TodoListRecord> {
   const minOrder =
     listsCache.length > 0 ? Math.max(...listsCache.map((list) => list.sortOrder)) + 1 : 0;
 
-  const list: TodoListRecord = {
-    id: `list-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-    name: trimmed,
-    sortOrder: minOrder,
-    createdAt: new Date().toISOString(),
-  };
+  let list: TodoListRecord;
+
+  if (isServerRemindersEnabled()) {
+    list = await createListOnApi(trimmed);
+  } else {
+    list = {
+      id: `list-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+      name: trimmed,
+      sortOrder: minOrder,
+      createdAt: new Date().toISOString(),
+    };
+  }
 
   await listRepository.insertList(list);
   listsCache = [...listsCache, list];
@@ -92,6 +104,10 @@ export async function deleteListFromStore(listId: string): Promise<void> {
     throw new Error('You need at least one list');
   }
 
+  if (isServerRemindersEnabled()) {
+    await deleteListOnApi(listId);
+  }
+
   await listRepository.moveTodosToList(listId, DEFAULT_LIST_ID);
   await listRepository.deleteListById(listId);
   listsCache = listsCache.filter((list) => list.id !== listId);
@@ -108,6 +124,10 @@ export async function renameListInStore(listId: string, name: string): Promise<v
   const trimmed = name.trim();
   if (!trimmed) {
     throw new Error('List name is required');
+  }
+
+  if (isServerRemindersEnabled()) {
+    await renameListOnApi(listId, trimmed);
   }
 
   await listRepository.updateListName(listId, trimmed);
