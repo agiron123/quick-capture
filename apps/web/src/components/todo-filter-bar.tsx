@@ -1,23 +1,23 @@
 'use client';
 
 import {
-  collectTodoTags,
-  filterTodos,
-  type TodoDueFilter,
-  type TodoPriority,
-  type TodoStatusFilter,
+    collectTodoTags,
+    filterTodos,
+    type TodoDueFilter,
+    type TodoPriority,
+    type TodoStatusFilter,
 } from '@quick-capture/shared';
 import { ChevronDownIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuLabel,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
+    DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 

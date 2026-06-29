@@ -2,6 +2,7 @@ import {
     boolean,
     index,
     integer,
+    jsonb,
     pgTable,
     text,
     timestamp,
@@ -81,6 +82,45 @@ export const todos = pgTable(
     index('idx_todos_list_id').on(table.listId),
     index('idx_todos_parent_id').on(table.parentId),
     index('idx_todos_sort_order').on(table.sortOrder),
+  ]
+);
+
+export const chatThreads = pgTable(
+  'chat_threads',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id').notNull(),
+    title: text('title').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index('idx_chat_threads_user_id').on(table.userId),
+    index('idx_chat_threads_user_updated').on(table.userId, table.updatedAt),
+  ]
+);
+
+export const chatMessages = pgTable(
+  'chat_messages',
+  {
+    id: text('id').primaryKey(),
+    threadId: text('thread_id')
+      .notNull()
+      .references(() => chatThreads.id, { onDelete: 'cascade' }),
+    role: text('role').notNull(),
+    content: text('content').notNull(),
+    metadata: jsonb('metadata'),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index('idx_chat_messages_thread_id').on(table.threadId),
+    index('idx_chat_messages_thread_created').on(table.threadId, table.createdAt),
   ]
 );
 

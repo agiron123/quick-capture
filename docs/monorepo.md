@@ -29,6 +29,8 @@ Run from the repo root:
 | `npm run dev:api` | API dev server only (`http://localhost:3000`) |
 | `npm run dev:web` | Next.js web companion (`http://localhost:3001`) |
 | `npm run dev:web-api` | API + web in parallel (no mobile) |
+| `npm run docker:dev` | API + web + whisper via Docker Compose (see [docker-dev.md](./docker-dev.md)) |
+| `npm run docker:down` | Stop Docker Compose stack |
 | `npm run build` | Build all packages (respects dependency order) |
 | `npm run typecheck` | Typecheck all packages |
 
@@ -61,12 +63,15 @@ Environment variables load from the repo root `.env` (see [`.env.example`](../.e
 ### AI backend setup
 
 1. Copy `.env.example` → `.env` at the repo root.
-2. Choose a provider:
+2. Choose a chat provider:
    - **OpenAI:** `AI_PROVIDER=openai` + `OPENAI_API_KEY`
-   - **MiniMax:** `AI_PROVIDER=minimax` + `MINIMAX_API_KEY` (+ `OPENAI_API_KEY` for voice transcription)
-3. Set mobile vars: `EXPO_PUBLIC_API_URL=http://localhost:3000`, `EXPO_PUBLIC_USE_MOCK_AI=false`
-4. Run `npm run dev` (API + Expo together).
-5. On a physical device, use your machine's LAN IP instead of `localhost` for `EXPO_PUBLIC_API_URL`.
+   - **MiniMax:** `AI_PROVIDER=minimax` + `MINIMAX_API_KEY`
+3. Choose a transcription provider for voice capture:
+   - **OpenAI Whisper (default):** `TRANSCRIPTION_PROVIDER=openai` + `OPENAI_API_KEY`
+   - **Local whisper.cpp:** `TRANSCRIPTION_PROVIDER=whisper-cpp` + `WHISPER_CPP_BASE_URL=http://127.0.0.1:8080` (no OpenAI key needed for STT)
+4. Set mobile vars: `EXPO_PUBLIC_API_URL=http://localhost:3000`, `EXPO_PUBLIC_USE_MOCK_AI=false`
+5. Run `npm run dev` (API + Expo together), or `npm run docker:dev` for the full web stack in Docker.
+6. On a physical device, use your machine's LAN IP instead of `localhost` for `EXPO_PUBLIC_API_URL`.
 
 Spec: [features/ai-backend.md](./features/ai-backend.md)
 

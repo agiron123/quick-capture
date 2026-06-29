@@ -10,10 +10,17 @@ export type AiConfig = {
   minimaxApiKey: string | undefined;
   minimaxBaseUrl: string;
   minimaxChatModel: string;
+  whisperCppBaseUrl: string | undefined;
+  whisperCppInferencePath: string;
 };
 
 function parseProvider(value: string | undefined): AiProvider {
   if (value === 'minimax') return 'minimax';
+  return 'openai';
+}
+
+function parseTranscriptionProvider(value: string | undefined): TranscriptionProvider {
+  if (value === 'whisper-cpp') return 'whisper-cpp';
   return 'openai';
 }
 
@@ -22,7 +29,7 @@ export function getAiConfig(): AiConfig {
 
   return {
     provider,
-    transcriptionProvider: 'openai',
+    transcriptionProvider: parseTranscriptionProvider(process.env.TRANSCRIPTION_PROVIDER),
     openaiApiKey: process.env.OPENAI_API_KEY?.trim() || undefined,
     openaiBaseUrl: process.env.OPENAI_BASE_URL?.trim() || 'https://api.openai.com/v1',
     openaiChatModel: process.env.OPENAI_CHAT_MODEL?.trim() || 'gpt-4o-mini',
@@ -30,6 +37,8 @@ export function getAiConfig(): AiConfig {
     minimaxApiKey: process.env.MINIMAX_API_KEY?.trim() || undefined,
     minimaxBaseUrl: process.env.MINIMAX_BASE_URL?.trim() || 'https://api.minimax.io/v1',
     minimaxChatModel: process.env.MINIMAX_CHAT_MODEL?.trim() || 'MiniMax-M2.5',
+    whisperCppBaseUrl: process.env.WHISPER_CPP_BASE_URL?.trim() || undefined,
+    whisperCppInferencePath: process.env.WHISPER_CPP_INFERENCE_PATH?.trim() || '/inference',
   };
 }
 
@@ -43,7 +52,30 @@ export function assertChatProviderConfigured(config: AiConfig): void {
 }
 
 export function assertTranscriptionConfigured(config: AiConfig): void {
+  if (config.transcriptionProvider === 'whisper-cpp') {
+    if (!config.whisperCppBaseUrl) {
+      throw new Error('Voice capture requires WHISPER_CPP_BASE_URL when TRANSCRIPTION_PROVIDER=whisper-cpp.');
+    }
+    return;
+  }
+
   if (!config.openaiApiKey) {
     throw new Error('Voice capture requires OPENAI_API_KEY for transcription.');
   }
+}
+
+export function assertMiniMaxChatConfigured(config: AiConfig): void {
+  if (!config.minimaxApiKey) {
+    throw new Error('MINIMAX_API_KEY is required for chat');
+  }
+}
+
+export function getChatMaxHistoryMessages(): number {
+  const parsed = Number(process.env.CHAT_MAX_HISTORY_MESSAGES ?? '40');
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 40;
+}
+
+export function getChatRateLimitPerHour(): number {
+  const parsed = Number(process.env.CHAT_RATE_LIMIT_PER_HOUR ?? '30');
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 30;
 }

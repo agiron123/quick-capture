@@ -96,6 +96,9 @@ export function AppShell({
         <Button asChild variant={pathname === '/voice' ? 'secondary' : 'ghost'} size="sm">
           <Link href="/voice">Voice</Link>
         </Button>
+        <Button asChild variant={pathname.startsWith('/chat') ? 'secondary' : 'ghost'} size="sm">
+          <Link href="/chat">Chat</Link>
+        </Button>
         <Button asChild variant={pathname === '/devices' ? 'secondary' : 'ghost'} size="sm">
           <Link href="/devices">Devices</Link>
         </Button>

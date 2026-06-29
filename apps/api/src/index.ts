@@ -7,11 +7,12 @@ import { cors } from 'hono/cors';
 
 import { aiRoutes } from './routes/ai.js';
 import { captureRoutes } from './routes/captures.js';
+import { chatRoutes } from './routes/chat.js';
 import { deviceRoutes } from './routes/devices.js';
 import { listRoutes } from './routes/lists.js';
 import { todoRoutes } from './routes/todos.js';
-import { startReminderWorker } from './services/reminder-worker.js';
 import { getCaptureStorageProvider } from './services/capture-storage.js';
+import { startReminderWorker } from './services/reminder-worker.js';
 
 const app = new Hono();
 
@@ -43,6 +44,7 @@ app.get('/api', (c) =>
     version: '0.1.0',
     features: {
       ai: true,
+      chat: true,
       sync: Boolean(process.env.DATABASE_URL?.trim()),
       auth: Boolean(process.env.NEON_AUTH_URL?.trim() ?? process.env.NEON_AUTH_BASE_URL?.trim()),
       captureStorage: getCaptureStorageProvider(),
@@ -60,6 +62,7 @@ app.post('/api/todos/validate', async (c) => {
 });
 
 app.route('/api/ai', aiRoutes);
+app.route('/api/chat', chatRoutes);
 app.route('/api/captures', captureRoutes);
 app.route('/api/devices', deviceRoutes);
 app.route('/api/lists', listRoutes);
@@ -67,7 +70,7 @@ app.route('/api/todos', todoRoutes);
 
 const port = Number(process.env.PORT ?? 3000);
 
-serve({ fetch: app.fetch, port }, () => {
-  console.log(`API listening on http://localhost:${port}`);
+serve({ fetch: app.fetch, port, hostname: '0.0.0.0' }, () => {
+  console.log(`API listening on http://0.0.0.0:${port}`);
   startReminderWorker();
 });

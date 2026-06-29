@@ -15,23 +15,32 @@ Mobile capture → POST /api/ai/extract/* → Provider router → OpenAI or Mini
 
 Voice pipeline (hybrid):
 
-1. OpenAI Whisper transcribes audio (always)
+1. Transcription provider converts audio to text (`openai` or `whisper-cpp`)
 2. Active chat provider extracts todos from transcript
 
 ## Providers
 
 | `AI_PROVIDER` | Image → todos | Transcript → todos | Voice transcription |
 | --- | --- | --- | --- |
-| `openai` | OpenAI vision | OpenAI chat | OpenAI Whisper |
-| `minimax` | MiniMax chat (OpenAI-compatible) | MiniMax chat | OpenAI Whisper |
+| `openai` | OpenAI vision | OpenAI chat | `TRANSCRIPTION_PROVIDER` (see below) |
+| `minimax` | MiniMax chat (OpenAI-compatible) | MiniMax chat | `TRANSCRIPTION_PROVIDER` (see below) |
+
+| `TRANSCRIPTION_PROVIDER` | Voice transcription | Required env |
+| --- | --- | --- |
+| `openai` (default) | OpenAI Whisper API | `OPENAI_API_KEY` |
+| `whisper-cpp` | Local whisper.cpp HTTP server | `WHISPER_CPP_BASE_URL` |
+
+For local dev without OpenAI for voice, set `TRANSCRIPTION_PROVIDER=whisper-cpp` and run the whisper sidecar (see [docker-dev.md](../docker-dev.md) or start whisper.cpp server on port 8080).
 
 ## Environment
 
 Server-only keys in repo root `.env`:
 
 - `AI_PROVIDER=openai|minimax`
-- `OPENAI_API_KEY` — required for OpenAI mode; also required for Whisper when using MiniMax
+- `TRANSCRIPTION_PROVIDER=openai|whisper-cpp`
+- `OPENAI_API_KEY` — required when `AI_PROVIDER=openai` or `TRANSCRIPTION_PROVIDER=openai`
 - `MINIMAX_API_KEY` — required when `AI_PROVIDER=minimax`
+- `WHISPER_CPP_BASE_URL` — required when `TRANSCRIPTION_PROVIDER=whisper-cpp` (e.g. `http://127.0.0.1:8080` or `http://whisper:8080` in Docker)
 
 Mobile:
 
@@ -51,6 +60,7 @@ Mobile:
 
 - Shared schemas: `packages/shared/src/ai-schemas.ts`
 - API providers: `apps/api/src/ai/`
+- Transcription: `apps/api/src/ai/providers/transcribe-openai.ts`, `transcribe-whisper-cpp.ts`
 - API routes: `apps/api/src/routes/ai.ts`
 - Mobile client: `apps/mobile/services/ai-api-client.ts`
 
@@ -58,6 +68,7 @@ Mobile:
 
 - [x] API keys only on server
 - [x] OpenAI and MiniMax provider switch via `AI_PROVIDER`
-- [x] Voice uses Whisper + selected chat provider
+- [x] Voice uses transcription provider + selected chat provider
+- [x] whisper.cpp transcription for local dev
 - [x] Mobile mock mode works without API
 - [x] CORS enabled for web dev

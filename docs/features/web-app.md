@@ -36,6 +36,8 @@ npm run dev:web-api   # API :3000 + web :3001 (recommended)
 | `/capture` | Image upload / webcam → AI extract → review → save |
 | `/voice` | MediaRecorder → AI extract → review → save |
 | `/devices` | View and revoke registered push devices |
+| `/chat` | MiniMax agent chat (thread list + conversation) |
+| `/chat/[threadId]` | Open persisted chat thread |
 | `/auth/sign-in` | Sign in |
 | `/auth/sign-up` | Sign up |
 

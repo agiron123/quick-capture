@@ -29,6 +29,7 @@ Quick Capture turns messy inputs (handwritten notes, voice, manual entry) into a
 | CMF Watch phone shortcuts | ✅ Shipped | [docs/features/cmf-watch-android-shortcuts.md](./docs/features/cmf-watch-android-shortcuts.md) |
 | Apple Watch companion (scaffold) | ✅ Shipped | [docs/features/apple-watch.md](./docs/features/apple-watch.md) |
 | Wear OS companion (scaffold) | ✅ Shipped | [docs/features/wear-os.md](./docs/features/wear-os.md) |
+| MiniMax agent chat (mobile + web) | 🚧 In progress | [docs/features/chat.md](./docs/features/chat.md) |
 
 ## Vision
 
@@ -116,13 +117,68 @@ Input (voice / photo / text)
 - [x] Wear OS module (`native/wear/`) — [spec](./docs/features/wear-os.md) (v1 scaffold)
 - [x] CMF Android phone shortcuts — [spec](./docs/features/cmf-watch-android-shortcuts.md)
 
+### Phase 6 — MiniMax agent chat
+
+Conversational assistant tab on mobile and web. Users chat with the **MiniMax agent** (MiniMax-M2.5 via existing server-side provider) to plan work, ask about todos, and get help with capture — with **persisted thread history** synced across signed-in devices.
+
+**Spec:** [docs/features/chat.md](./docs/features/chat.md)
+
+#### 6.1 — Data model and API
+
+- [x] Drizzle schema: `chat_threads` (id, userId, title, createdAt, updatedAt) and `chat_messages` (id, threadId, role, content, createdAt, metadata JSON for tool/stream state)
+- [x] Shared Zod + TypeScript types in `packages/shared`
+- [x] REST: list/create/update/delete threads; list messages (paginated, newest-first or cursor)
+- [x] `POST /api/chat` — authenticated streaming chat (SSE) proxied to MiniMax; system prompt scoped to Quick Capture (todos, lists, capture workflows)
+- [x] Persist user + assistant messages after stream completes; support resuming a thread by `threadId`
+- [x] Rate limiting / max context window trimming for long threads
+
+#### 6.2 — Web chat (`apps/web`)
+
+Use the [June 2026 shadcn chat components](https://ui.shadcn.com/docs/changelog/2026-06-chat-components):
+
+```bash
+pnpm dlx shadcn@latest add message-scroller message bubble attachment marker
+```
+
+- [x] Route `/chat` (+ `/chat/[threadId]`) in app shell nav
+- [x] Thread sidebar: new chat, search, rename, delete; auto-title from first user message
+- [x] **`MessageScroller`** — anchored turns, auto-follow during MiniMax streaming, restore on thread switch
+- [x] **`Message`** + **`Bubble`** — user/assistant rows, markdown body, streaming shimmer via `shimmer` utility
+- [x] **`Marker`** — “Thinking…”, errors, date separators between sessions
+- [ ] **`Attachment`** (optional v1.1) — image upload in chat; reuse capture media pipeline
+- [x] Client: SSE stream client against `/api/chat` with Neon Auth JWT
+- [x] Empty state, loading skeletons, retry on failed streams
+
+#### 6.3 — Mobile chat tab (`apps/mobile`)
+
+- [x] New **Chat** tab in `(tabs)/_layout.tsx` (alongside Todos and Capture)
+- [x] Routes: thread list → active thread; match web capabilities (new, open, delete)
+- [x] Streaming UI: inverted `FlatList` or scroll view with stick-to-bottom during assistant reply (parity with `MessageScroller` behavior)
+- [x] `Message` rows: avatar, bubble alignment, markdown text, typing/streaming indicator
+- [x] API client in `services/chat-api-client.ts`; require sign-in (same as sync) — show sign-in prompt when logged out
+- [ ] Optional: `expo-sqlite` cache of recent threads for fast open; reconcile with API on launch
+
+#### 6.4 — Agent behavior and product polish
+
+- [x] System prompt: Quick Capture context (lists, todos, capture sources); no direct DB writes from model — suggest actions, user confirms
+- [ ] Future hook: “Add as todos” from assistant suggestions → existing review-before-save flow
+- [x] Cross-device: thread list and messages sync via API (source of truth in Neon Postgres)
+- [ ] Accessibility: labels, focus order, reduced motion for streaming markers
+
+#### Dependencies
+
+- Neon Auth JWT (existing)
+- MiniMax provider in `apps/api/src/ai/` ([ai-backend.md](./docs/features/ai-backend.md))
+- Web shadcn/ui stack ([web-app.md](./docs/features/web-app.md))
+
 ## Next up
 
 Phase 3 core is shipped. Remaining priorities:
 
-1. **OAuth providers** — Google + GitHub in Neon Console
-2. **Apple Watch follow-ups** — open todo count glance, bidirectional sync
-3. **Wear OS follow-ups** — open todo count glance via Data Layer
+1. **Phase 6 — MiniMax agent chat** — API + persisted threads, web (shadcn chat components), mobile Chat tab
+2. **OAuth providers** — Google + GitHub in Neon Console
+3. **Apple Watch follow-ups** — open todo count glance, bidirectional sync
+4. **Wear OS follow-ups** — open todo count glance via Data Layer
 
 Specs:
 - [docs/features/apple-watch.md](./docs/features/apple-watch.md)
@@ -140,6 +196,7 @@ Specs:
 - [docs/features/web-app.md](./docs/features/web-app.md)
 - [docs/features/push-notifications.md](./docs/features/push-notifications.md)
 - [docs/features/scheduled-reminders.md](./docs/features/scheduled-reminders.md)
+- [docs/features/chat.md](./docs/features/chat.md)
 
 ## How to use this plan
 

@@ -80,6 +80,8 @@ function RootLayoutNav() {
             <Stack.Screen name="set-tags" options={{ presentation: 'modal' }} />
             <Stack.Screen name="add-subtask" options={{ presentation: 'modal' }} />
             <Stack.Screen name="sign-in" options={{ presentation: 'modal', title: 'Account' }} />
+            <Stack.Screen name="chat/new" options={{ title: 'New chat' }} />
+            <Stack.Screen name="chat/[threadId]" options={{ title: 'Chat' }} />
           </Stack>
         </ThemeProvider>
       </AuthProvider>

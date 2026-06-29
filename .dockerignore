@@ -1,0 +1,15 @@
+.git
+.cursor
+**/.turbo
+**/dist
+**/node_modules
+**/.next
+apps/api/.uploads
+apps/web/certificates/*.pem
+.env
+.env.*
+!.env.example
+native
+apps/mobile/.expo
+**/*.log
+**/.DS_Store

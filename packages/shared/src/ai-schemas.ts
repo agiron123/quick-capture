@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const aiProviderSchema = z.enum(['openai', 'minimax']);
-export const transcriptionProviderSchema = z.enum(['openai']);
+export const transcriptionProviderSchema = z.enum(['openai', 'whisper-cpp']);
 
 export const extractedTodoSchema = z.object({
   title: z.string().trim().min(1),
