@@ -1,0 +1,36 @@
+# Production/staging override — built images, no source bind mounts.
+#
+#   npm run docker:prod
+#   npm run docker:prod:tls   # with Caddy + Let's Encrypt
+#
+# Set NEXT_PUBLIC_* build args via .env before `docker compose build` (web image bakes them in).
+
+services:
+  migrate:
+    build:
+      dockerfile: docker/Dockerfile.api.prod
+    command: node apps/api/dist/db/migrate.js
+    volumes: !override []
+
+  api:
+    build:
+      dockerfile: docker/Dockerfile.api.prod
+    command: node apps/api/dist/index.js
+    volumes: !override
+      - api_uploads:/app/apps/api/.uploads
+    environment:
+      NODE_ENV: production
+
+  web:
+    build:
+      dockerfile: docker/Dockerfile.web.prod
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3000}
+        NEXT_PUBLIC_USE_MOCK_AI: ${NEXT_PUBLIC_USE_MOCK_AI:-false}
+        NEXT_PUBLIC_NEON_AUTH_URL: ${NEXT_PUBLIC_NEON_AUTH_URL:-}
+        NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY:-}
+    command: npm run start --workspace=@quick-capture/web
+    volumes: !override []
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3000}

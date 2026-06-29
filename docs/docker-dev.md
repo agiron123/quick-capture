@@ -147,3 +147,24 @@ npm run docker:dev:tls
 Add the web and API origins in Neon Auth ([features/auth.md](./features/auth.md)). Caddy terminates TLS; Next.js runs HTTP inside the compose network (`dev:docker:http`).
 
 See [features/deployment.md](./features/deployment.md) for DNS/tunnel options and production notes.
+
+## Production / staging (VPS)
+
+Built images without bind mounts — for a single-server deploy with optional Caddy TLS:
+
+```bash
+# .env — production Neon + API URL baked into web at build time
+NEXT_PUBLIC_API_URL=https://api.yourdomain.com
+
+npm run docker:prod
+# or with Let's Encrypt:
+npm run docker:prod:tls
+```
+
+| Script | Compose files |
+| --- | --- |
+| `npm run docker:prod` | `docker-compose.yml` + `docker-compose.prod.yml` |
+| `npm run docker:prod:tls` | above + `docker-compose.tls.yml` (`--profile tls`) |
+| `npm run docker:down:prod` | stop prod stack |
+
+Images: `docker/Dockerfile.api.prod`, `docker/Dockerfile.web.prod`. Web runs `next start` (HTTP inside the network; Caddy terminates TLS when using the TLS profile).

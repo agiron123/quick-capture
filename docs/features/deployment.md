@@ -71,6 +71,17 @@ Use default `npm run docker:dev` with self-signed certs, or [Portless](worktree-
 
 GitHub Actions (`.github/workflows/ci.yml`) runs typecheck and a production web build on push/PR. Deploy-on-push is manual until `VERCEL_*` secrets are configured.
 
+### VPS staging (all-in-one Docker)
+
+Use `docker-compose.prod.yml` with the dev base file — no bind mounts, production builds:
+
+```bash
+npm run docker:prod          # api + web + whisper on localhost ports
+npm run docker:prod:tls      # + Caddy + Let's Encrypt (DEV_DOMAIN)
+```
+
+See [docker-dev.md](../docker-dev.md#production--staging-vps).
+
 See [PLAN.md](../../PLAN.md) Phase 7.3 for open decisions.
 
 ## Related
