@@ -149,7 +149,7 @@ pnpm dlx shadcn@latest add message-scroller message bubble attachment marker
 - [x] **`MessageScroller`** — anchored turns, auto-follow during MiniMax streaming, restore on thread switch
 - [x] **`Message`** + **`Bubble`** — user/assistant rows, markdown body, streaming shimmer via `shimmer` utility
 - [x] **`Marker`** — “Thinking…”, errors, date separators between sessions
-- [ ] **`Attachment`** (optional v1.1) — image upload in chat; reuse capture media pipeline
+- [x] **`Attachment`** (optional v1.1) — image upload in chat; reuse capture media pipeline
 - [x] Client: SSE stream client against `/api/chat` with Neon Auth JWT
 - [x] Empty state, loading skeletons, retry on failed streams
 
@@ -534,9 +534,8 @@ Root `portless.json` (monorepo):
 
 Phase 3 core is shipped. Remaining priorities:
 
-1. **Phase 9 — Parallel worktree dev** — end-to-end QA with two worktrees (acceptance criteria)
-2. **Phase 6 — MiniMax agent chat** — attachments (v1.1); cross-device QA
-3. **Phase 7 — TLS + deploy** — Let's Encrypt in Docker Compose dev; Vercel for web; decide API/whisper host
+1. **Phase 6 — MiniMax agent chat** — cross-device QA; mobile attachments (future)
+2. **Phase 7 — TLS + deploy** — Let's Encrypt in Docker Compose dev; Vercel for web; decide API/whisper host
 4. **OAuth providers** — Google + GitHub in Neon Console
 5. **Apple Watch follow-ups** — open todo count glance, bidirectional sync
 6. **Wear OS follow-ups** — open todo count glance via Data Layer

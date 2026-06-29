@@ -1,10 +1,11 @@
 'use client';
 
-import type { ChatMessage } from '@quick-capture/shared';
+import type { ChatAttachment, ChatMessage } from '@quick-capture/shared';
 import { Bot, ListPlus, User } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { Attachment, AttachmentPicker } from '@/components/ui/attachment';
 import { Bubble, BubbleContent } from '@/components/ui/bubble';
 import { Marker, MarkerContent } from '@/components/ui/marker';
 import {
@@ -22,7 +23,8 @@ import {
   MessageScrollerViewport,
 } from '@/components/ui/message-scroller';
 import { Skeleton } from '@/components/ui/skeleton';
-import { fetchChatMessages, streamChatMessage } from '@/lib/chat-client';
+import { ChatMessageAttachment } from '@/components/chat-message-attachment';
+import { fetchChatMessages, streamChatMessage, uploadChatAttachment } from '@/lib/chat-client';
 
 const SUGGESTED_PROMPTS = [
   'Help me plan my day',
@@ -53,6 +55,12 @@ export function ChatConversation({
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamError, setStreamError] = useState<string | null>(null);
   const [retryMessage, setRetryMessage] = useState<string | null>(null);
+  const [pendingAttachment, setPendingAttachment] = useState<{
+    file: File;
+    previewUrl: string;
+    uploaded?: ChatAttachment;
+  } | null>(null);
+  const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
   const [activeThreadId, setActiveThreadId] = useState<string | null>(threadId);
   const streamingAssistantIdRef = useRef<string | null>(null);
 
@@ -101,8 +109,16 @@ export function ChatConversation({
     return null;
   }, [messages]);
 
+  useEffect(() => {
+    return () => {
+      if (pendingAttachment?.previewUrl) {
+        URL.revokeObjectURL(pendingAttachment.previewUrl);
+      }
+    };
+  }, [pendingAttachment?.previewUrl]);
+
   const sendMessage = useCallback(
-    async (text: string) => {
+    async (text: string, attachment?: ChatAttachment) => {
       const trimmed = text.trim();
       if (!trimmed || isStreaming) return;
 
@@ -110,6 +126,10 @@ export function ChatConversation({
       setStreamError(null);
       setRetryMessage(null);
       setIsStreaming(true);
+      if (pendingAttachment?.previewUrl) {
+        URL.revokeObjectURL(pendingAttachment.previewUrl);
+      }
+      setPendingAttachment(null);
 
       const optimisticUser: DisplayMessage = {
         id: `temp-user-${Date.now()}`,
@@ -117,13 +137,18 @@ export function ChatConversation({
         role: 'user',
         content: trimmed,
         createdAt: new Date().toISOString(),
+        metadata: attachment ? { attachments: [attachment] } : undefined,
       };
 
       setMessages((current) => [...current, optimisticUser]);
 
       try {
         await streamChatMessage(
-          { threadId: activeThreadId ?? undefined, message: trimmed },
+          {
+            threadId: activeThreadId ?? undefined,
+            message: trimmed,
+            attachmentId: attachment?.id,
+          },
           (event) => {
             if (event.type === 'thread') {
               if (!activeThreadId) {
@@ -199,12 +224,39 @@ export function ChatConversation({
         streamingAssistantIdRef.current = null;
       }
     },
-    [activeThreadId, isStreaming, onMessageSent, onThreadCreated]
+    [activeThreadId, isStreaming, onMessageSent, onThreadCreated, pendingAttachment?.previewUrl]
   );
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    void sendMessage(draft);
+    void sendMessage(draft, pendingAttachment?.uploaded);
+  };
+
+  const handleAttachmentSelect = async (file: File) => {
+    if (isStreaming || isUploadingAttachment) return;
+
+    const previewUrl = URL.createObjectURL(file);
+    setPendingAttachment({ file, previewUrl });
+    setIsUploadingAttachment(true);
+    setStreamError(null);
+
+    try {
+      const uploaded = await uploadChatAttachment(file);
+      setPendingAttachment({ file, previewUrl, uploaded });
+    } catch (error) {
+      URL.revokeObjectURL(previewUrl);
+      setPendingAttachment(null);
+      setStreamError(error instanceof Error ? error.message : 'Failed to upload image');
+    } finally {
+      setIsUploadingAttachment(false);
+    }
+  };
+
+  const clearPendingAttachment = () => {
+    if (pendingAttachment?.previewUrl) {
+      URL.revokeObjectURL(pendingAttachment.previewUrl);
+    }
+    setPendingAttachment(null);
   };
 
   const showEmptyState = !activeThreadId && messages.length === 0 && !isLoadingMessages;
@@ -270,6 +322,12 @@ export function ChatConversation({
                         align={message.role === 'user' ? 'end' : 'start'}
                       >
                         <BubbleContent>
+                          {message.metadata?.attachments?.map((attachment) => (
+                            <ChatMessageAttachment
+                              key={attachment.id}
+                              attachment={attachment}
+                            />
+                          ))}
                           <span
                             className="whitespace-pre-wrap"
                             aria-live={message.streaming ? 'polite' : undefined}
@@ -335,8 +393,20 @@ export function ChatConversation({
         className="border-t bg-background p-4"
         aria-label="Send a chat message"
       >
-        <div className="mx-auto flex max-w-3xl gap-2">
-          <textarea
+        <div className="mx-auto flex max-w-3xl flex-col gap-2">
+          {pendingAttachment ? (
+            <Attachment
+              src={pendingAttachment.previewUrl}
+              filename={pendingAttachment.file.name}
+              onRemove={clearPendingAttachment}
+            />
+          ) : null}
+          <div className="flex gap-2">
+            <AttachmentPicker
+              disabled={isStreaming || isUploadingAttachment}
+              onSelect={(file) => void handleAttachmentSelect(file)}
+            />
+            <textarea
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             onKeyDown={(event) => {
@@ -348,16 +418,22 @@ export function ChatConversation({
             placeholder="Message the assistant…"
             aria-label="Message the assistant"
             rows={2}
-            disabled={isStreaming}
+            disabled={isStreaming || isUploadingAttachment}
             className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[44px] flex-1 resize-none rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
           />
           <Button
             type="submit"
-            disabled={isStreaming || !draft.trim()}
-            aria-busy={isStreaming}
+            disabled={
+              isStreaming ||
+              isUploadingAttachment ||
+              !draft.trim() ||
+              Boolean(pendingAttachment && !pendingAttachment.uploaded)
+            }
+            aria-busy={isStreaming || isUploadingAttachment}
           >
             Send
           </Button>
+          </div>
         </div>
       </form>
     </div>

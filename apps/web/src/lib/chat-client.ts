@@ -1,6 +1,7 @@
 'use client';
 
 import type {
+  ChatAttachment,
   ChatMessage,
   ChatStreamEvent,
   ChatThread,
@@ -107,6 +108,36 @@ export async function fetchChatMessages(
   return (await response.json()) as { messages: ChatMessage[]; nextCursor?: string };
 }
 
+export async function uploadChatAttachment(file: File): Promise<ChatAttachment> {
+  const token = await getAccessToken();
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const headers = new Headers();
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+
+  const response = await fetch(`${getApiBaseUrl()}/api/chat/attachments`, {
+    method: 'POST',
+    headers,
+    body: formData,
+  });
+
+  if (!response.ok) throw new Error(await parseApiError(response));
+  const data = (await response.json()) as { attachment: ChatAttachment };
+  return data.attachment;
+}
+
+export async function fetchChatAttachmentObjectUrl(attachmentId: string): Promise<string> {
+  const response = await chatApiFetch(
+    `/api/chat/attachments/${encodeURIComponent(attachmentId)}/media`
+  );
+  if (!response.ok) throw new Error(await parseApiError(response));
+  const blob = await response.blob();
+  return URL.createObjectURL(blob);
+}
+
 function parseSseEvents(chunk: string, onEvent: (event: ChatStreamEvent) => void) {
   const lines = chunk.split('\n');
   for (const line of lines) {
@@ -123,7 +154,7 @@ function parseSseEvents(chunk: string, onEvent: (event: ChatStreamEvent) => void
 }
 
 export async function streamChatMessage(
-  input: { threadId?: string; message: string },
+  input: { threadId?: string; message: string; attachmentId?: string },
   onEvent: (event: ChatStreamEvent) => void
 ): Promise<void> {
   const response = await chatApiFetch('/api/chat', {

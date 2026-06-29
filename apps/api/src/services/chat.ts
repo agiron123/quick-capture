@@ -1,4 +1,4 @@
-import type { ChatMessage, ChatMessageMetadata } from '@quick-capture/shared';
+import type { ChatAttachment, ChatMessage, ChatMessageMetadata } from '@quick-capture/shared';
 import { and, asc, desc, eq, gt } from 'drizzle-orm';
 
 import {
@@ -19,6 +19,7 @@ import { getDatabase } from '../db/client.js';
 import { chatMessages, chatThreads } from '../db/schema.js';
 import { createId } from '../lib/id.js';
 import { serializeChatMessage, serializeChatThread } from '../lib/chat-serialize.js';
+import { readChatAttachment } from './chat-attachment-storage.js';
 
 const DEFAULT_THREAD_TITLE = 'New chat';
 
@@ -185,14 +186,49 @@ async function touchThread(threadId: string) {
   return updatedAt;
 }
 
-function buildCompletionMessages(history: ChatMessage[]): ChatCompletionMessage[] {
-  return [
-    { role: 'system', content: CHAT_AGENT_SYSTEM_PROMPT },
-    ...history.map((message) => ({
+function buildCompletionMessages(
+  history: ChatMessage[],
+  visionAttachment?: { base64: string; mimeType: string }
+): ChatCompletionMessage[] {
+  const mapped = history.map((message, index) => {
+    const isLatestUser =
+      index === history.length - 1 && message.role === 'user' && visionAttachment;
+
+    if (isLatestUser) {
+      return {
+        role: 'user' as const,
+        content: [
+          { type: 'text' as const, text: message.content },
+          {
+            type: 'image_url' as const,
+            image_url: {
+              url: `data:${visionAttachment.mimeType};base64,${visionAttachment.base64}`,
+            },
+          },
+        ],
+      };
+    }
+
+    return {
       role: message.role as 'user' | 'assistant',
       content: message.content,
-    })),
-  ];
+    };
+  });
+
+  return [{ role: 'system', content: CHAT_AGENT_SYSTEM_PROMPT }, ...mapped];
+}
+
+function buildAttachmentDto(
+  attachmentId: string,
+  mimeType: string,
+  filename?: string
+): ChatAttachment {
+  return {
+    id: attachmentId,
+    mimeType,
+    url: `/api/chat/attachments/${attachmentId}/media`,
+    filename,
+  };
 }
 
 async function generateThreadTitle(firstUserMessage: string): Promise<string> {
@@ -215,11 +251,29 @@ export type ChatStreamWriter = {
 
 export async function handleChatStream(
   userId: string,
-  input: { threadId?: string; message: string },
+  input: { threadId?: string; message: string; attachmentId?: string },
   writer: ChatStreamWriter
 ) {
   const config = getAiConfig();
   assertMiniMaxChatConfigured(config);
+
+  let attachmentMeta: ChatAttachment | undefined;
+  let visionAttachment: { base64: string; mimeType: string } | undefined;
+
+  if (input.attachmentId) {
+    const media = await readChatAttachment(userId, input.attachmentId);
+    if (!media) {
+      throw new Error('Attachment not found');
+    }
+    if (!media.mimeType.startsWith('image/')) {
+      throw new Error('Only image attachments are supported');
+    }
+    attachmentMeta = buildAttachmentDto(input.attachmentId, media.mimeType);
+    visionAttachment = {
+      base64: media.buffer.toString('base64'),
+      mimeType: media.mimeType,
+    };
+  }
 
   let thread =
     input.threadId != null ? await getUserChatThread(userId, input.threadId) : null;
@@ -239,11 +293,12 @@ export async function handleChatStream(
     threadId: thread.id,
     role: 'user',
     content: input.message,
+    metadata: attachmentMeta ? { attachments: [attachmentMeta] } : undefined,
   });
   await writer.write({ type: 'user-message', message: userMessage });
 
   const history = await getRecentMessagesForContext(thread.id);
-  const completionMessages = buildCompletionMessages(history);
+  const completionMessages = buildCompletionMessages(history, visionAttachment);
   const assistantMessageId = createId();
 
   await writer.write({ type: 'assistant-start', messageId: assistantMessageId });

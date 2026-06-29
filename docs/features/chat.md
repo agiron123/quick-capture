@@ -339,6 +339,7 @@ No new secrets beyond existing MiniMax vars. Optional tuning:
 - [x] `/chat` routes and app shell nav
 - [x] Thread sidebar (new, search, delete)
 - [x] MessageScroller + Message + Bubble + Marker
+- [x] Attachment — image upload in composer; vision messages to MiniMax (v1.1)
 - [x] SSE streaming client against API
 - [x] Empty, loading, and error states
 

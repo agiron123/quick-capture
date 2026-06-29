@@ -1,4 +1,5 @@
 import {
+  chatAttachmentUploadResponseSchema,
   chatRequestSchema,
   createChatThreadSchema,
   updateChatThreadSchema,
@@ -9,7 +10,12 @@ import { stream } from 'hono/streaming';
 import { isDatabaseConfigured } from '../db/client.js';
 import type { AuthVariables } from '../middleware/auth.js';
 import { authMiddleware } from '../middleware/auth.js';
+import { createId } from '../lib/id.js';
 import { checkChatRateLimit } from '../services/chat-rate-limit.js';
+import {
+  readChatAttachment,
+  saveChatAttachment,
+} from '../services/chat-attachment-storage.js';
 import {
   createUserChatThread,
   deleteUserChatThread,
@@ -18,6 +24,8 @@ import {
   listUserChatThreads,
   updateUserChatThreadTitle,
 } from '../services/chat.js';
+
+const MAX_CHAT_ATTACHMENT_BYTES = 5 * 1024 * 1024;
 
 export const chatRoutes = new Hono<{ Variables: AuthVariables }>();
 
@@ -96,6 +104,66 @@ chatRoutes.get('/threads/:id/messages', async (c) => {
   }
 
   return c.json(result);
+});
+
+chatRoutes.post('/attachments', async (c) => {
+  const userId = c.get('userId');
+
+  try {
+    const body = await c.req.parseBody();
+    const fileValue = body.image ?? body.file;
+
+    if (!(fileValue instanceof File)) {
+      return c.json({ error: 'Missing image upload' }, 400);
+    }
+
+    const buffer = Buffer.from(await fileValue.arrayBuffer());
+    if (buffer.length === 0) {
+      return c.json({ error: 'Image file is empty' }, 400);
+    }
+    if (buffer.length > MAX_CHAT_ATTACHMENT_BYTES) {
+      return c.json({ error: 'Image must be 5 MB or smaller' }, 400);
+    }
+
+    const mimeType = fileValue.type.startsWith('image/') ? fileValue.type : 'image/jpeg';
+    if (!mimeType.startsWith('image/')) {
+      return c.json({ error: 'Only image attachments are supported' }, 400);
+    }
+
+    const attachmentId = createId();
+    await saveChatAttachment(userId, attachmentId, buffer, mimeType);
+
+    const payload = chatAttachmentUploadResponseSchema.parse({
+      attachment: {
+        id: attachmentId,
+        mimeType,
+        url: `/api/chat/attachments/${attachmentId}/media`,
+        filename: fileValue.name || undefined,
+      },
+    });
+
+    return c.json(payload, 201);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Upload failed';
+    return c.json({ error: message }, 400);
+  }
+});
+
+chatRoutes.get('/attachments/:id/media', async (c) => {
+  const userId = c.get('userId');
+  const attachmentId = c.req.param('id');
+  const media = await readChatAttachment(userId, attachmentId);
+
+  if (!media) {
+    return c.json({ error: 'Attachment not found' }, 404);
+  }
+
+  return new Response(new Uint8Array(media.buffer), {
+    headers: {
+      'Content-Type': media.mimeType,
+      'Cache-Control': 'private, max-age=3600',
+    },
+  });
 });
 
 chatRoutes.post('/', async (c) => {
