@@ -129,3 +129,21 @@ npm run worktree:teardown -- --delete-neon-branch   # optional Neon cleanup
 Optional [Portless](https://github.com/vercel-labs/portless) URLs: `https://<slug>.quick-capture.localhost` (see [features/worktree-dev.md](./features/worktree-dev.md)).
 
 Main worktree behavior on this page is unchanged (`npm run docker:dev`).
+
+## Trusted TLS (Let's Encrypt)
+
+For a **real dev domain** with trusted HTTPS (Neon Auth without cert warnings), use the Caddy TLS profile:
+
+```bash
+# .env — domain must resolve to this machine; ports 80/443 open
+DEV_DOMAIN=dev.quickcapture.example.com
+ACME_EMAIL=you@example.com
+NEXT_PUBLIC_API_URL=https://api.dev.quickcapture.example.com
+CORS_ORIGINS=https://dev.quickcapture.example.com,https://api.dev.quickcapture.example.com,http://localhost:8081
+
+npm run docker:dev:tls
+```
+
+Add the web and API origins in Neon Auth ([features/auth.md](./features/auth.md)). Caddy terminates TLS; Next.js runs HTTP inside the compose network (`dev:docker:http`).
+
+See [features/deployment.md](./features/deployment.md) for DNS/tunnel options and production notes.

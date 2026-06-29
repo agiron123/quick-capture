@@ -32,7 +32,7 @@ Quick Capture turns messy inputs (handwritten notes, voice, manual entry) into a
 | MiniMax agent chat (mobile + web) | 🚧 In progress | [docs/features/chat.md](./docs/features/chat.md) |
 | Docker Compose local dev stack | ✅ Shipped | [docs/docker-dev.md](./docs/docker-dev.md) |
 | Parallel worktree dev (multi-instance Compose) | ✅ Shipped | [docs/features/worktree-dev.md](./docs/features/worktree-dev.md) |
-| TLS (Let's Encrypt) + cloud deploy | 📋 Planned | Phase 7 below |
+| TLS (Let's Encrypt) + cloud deploy | 🚧 In progress | [docs/features/deployment.md](./docs/features/deployment.md) |
 | Web sidebar navigation | ✅ Shipped | [docs/features/web-sidebar-nav.md](./docs/features/web-sidebar-nav.md) |
 
 ## Vision
@@ -179,7 +179,7 @@ pnpm dlx shadcn@latest add message-scroller message bubble attachment marker
 
 Replace ad-hoc self-signed certs with **automated Let's Encrypt** in the local Docker stack, and define a **Vercel-first** production target while keeping API / whisper / storage choices flexible until a full cloud provider is picked.
 
-**Spec (to create):** [docs/features/deployment.md](./docs/features/deployment.md)
+**Spec:** [docs/features/deployment.md](./docs/features/deployment.md)
 
 #### Why Let's Encrypt needs a real domain (even for “local” dev)
 
@@ -206,16 +206,16 @@ Browser → Caddy (or Traefik) :443  [Let's Encrypt]
               └─→ whisper:8080 (optional; usually internal only)
 ```
 
-- [ ] Choose proxy: **Caddy** (built-in ACME, simplest) or Traefik + optional certbot sidecar
-- [ ] Add `caddy` (or `traefik`) service + shared `certs` / `acme` volume
-- [ ] Env: `DEV_DOMAIN`, `ACME_EMAIL` (Let's Encrypt account contact)
-- [ ] HTTP-01 challenge on `:80` (required for standard ACME; Caddy handles automatically)
-- [ ] Route `https://${DEV_DOMAIN}` → web; `https://api.${DEV_DOMAIN}` or path-based `/api` → api (pick one pattern and document it)
-- [ ] Mount or sync issued certs into `apps/web/certificates/` **or** drop Next.js `--experimental-https` and let the proxy handle TLS (preferred — web runs HTTP inside the compose network)
-- [ ] Update `.env.example`: `DEV_DOMAIN`, `ACME_EMAIL`, `CORS_ORIGINS`, `NEXT_PUBLIC_API_URL`, Neon Auth redirect URLs for the dev domain
-- [ ] Update Neon Auth allowed origins / OAuth redirect URIs for the dev domain
-- [ ] Compose profiles: `docker compose --profile tls up` vs default profile keeping self-signed localhost for quick offline work
-- [ ] Document renewal (Caddy auto-renews; cert volume persists across restarts)
+- [x] Choose proxy: **Caddy** (built-in ACME, simplest) or Traefik + optional certbot sidecar
+- [x] Add `caddy` (or `traefik`) service + shared `certs` / `acme` volume
+- [x] Env: `DEV_DOMAIN`, `ACME_EMAIL` (Let's Encrypt account contact)
+- [x] HTTP-01 challenge on `:80` (required for standard ACME; Caddy handles automatically)
+- [x] Route `https://${DEV_DOMAIN}` → web; `https://api.${DEV_DOMAIN}` or path-based `/api` → api (pick one pattern and document it)
+- [x] Mount or sync issued certs into `apps/web/certificates/` **or** drop Next.js `--experimental-https` and let the proxy handle TLS (preferred — web runs HTTP inside the compose network)
+- [x] Update `.env.example`: `DEV_DOMAIN`, `ACME_EMAIL`, `CORS_ORIGINS`, `NEXT_PUBLIC_API_URL`, Neon Auth redirect URLs for the dev domain
+- [ ] Update Neon Auth allowed origins / OAuth redirect URIs for the dev domain (Neon Console — per `DEV_DOMAIN`)
+- [x] Compose profiles: `docker compose --profile tls up` vs default profile keeping self-signed localhost for quick offline work
+- [x] Document renewal (Caddy auto-renews; cert volume persists across restarts)
 
 **Acceptance:** `npm run docker:dev` (or `docker:dev:tls`) serves web + API on trusted HTTPS for `DEV_DOMAIN` without browser cert warnings; Neon Auth sign-in works on that origin.
 
@@ -225,7 +225,7 @@ Building on the shipped stack ([docker-dev.md](./docs/docker-dev.md)):
 
 - [x] `whisper`, `migrate`, `api`, `web` services with hot reload
 - [x] `TRANSCRIPTION_PROVIDER=whisper-cpp` wired in compose
-- [ ] TLS reverse proxy + Let's Encrypt (7.1)
+- [x] TLS reverse proxy + Let's Encrypt (7.1 core — Caddy profile; Neon Console origins per domain)
 - [ ] Optional: `docker-compose.prod.yml` override (no bind mounts, `npm start` / built images) for staging on a VPS
 - [ ] Healthchecks and `depends_on` for api ← whisper already in place; extend for caddy ← web/api
 - [x] **Phase 9:** `docker-compose.worktree.yml` + per-worktree port/env isolation ([worktree-dev.md](./docs/features/worktree-dev.md))
@@ -522,7 +522,7 @@ Root `portless.json` (monorepo):
 - [x] Each worktree uses its own Neon branch; sign-in on worktree A does not see worktree B's todos
 - [x] `worktree:list` shows slug, ports, Portless URLs, Neon branch name, compose project
 - [x] Main worktree unchanged — default `npm run docker:dev` still uses ports `3000`/`3001`/`8080`
-- [ ] Documented path with and without Portless
+- [x] Documented path with and without Portless
 
 #### Dependencies
 
@@ -534,8 +534,8 @@ Root `portless.json` (monorepo):
 
 Phase 3 core is shipped. Remaining priorities:
 
-1. **Phase 6 — MiniMax agent chat** — cross-device QA; mobile attachments (future)
-2. **Phase 7 — TLS + deploy** — Let's Encrypt in Docker Compose dev; Vercel for web; decide API/whisper host
+1. **Phase 7 — TLS + deploy** — verify `docker:dev:tls` with real domain; Neon Auth origins; Vercel web deploy
+2. **Phase 6 — MiniMax agent chat** — cross-device QA; mobile attachments (future)
 4. **OAuth providers** — Google + GitHub in Neon Console
 5. **Apple Watch follow-ups** — open todo count glance, bidirectional sync
 6. **Wear OS follow-ups** — open todo count glance via Data Layer

@@ -30,6 +30,7 @@ Run from the repo root:
 | `npm run dev:web` | Next.js web companion (`http://localhost:3001`) |
 | `npm run dev:web-api` | API + web in parallel (no mobile) |
 | `npm run docker:dev` | API + web + whisper via Docker Compose (see [docker-dev.md](./docker-dev.md)) |
+| `npm run docker:dev:tls` | Same stack with Caddy + Let's Encrypt (requires `DEV_DOMAIN` in `.env`) |
 | `npm run docker:down` | Stop Docker Compose stack |
 | `npm run docker:dev:worktree` | Compose stack for current linked worktree (see [worktree-dev.md](./features/worktree-dev.md)) |
 | `npm run docker:down:worktree` | Stop worktree Compose project only |

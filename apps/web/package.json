@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --port 3001 --experimental-https --experimental-https-key certificates/localhost-key.pem --experimental-https-cert certificates/localhost.pem",
     "dev:docker": "next dev --port ${PORT:-3001} --hostname 0.0.0.0 --experimental-https --experimental-https-key certificates/localhost-key.pem --experimental-https-cert certificates/localhost.pem",
+    "dev:docker:http": "next dev --port ${PORT:-3001} --hostname 0.0.0.0",
     "build": "next build",
     "start": "next start --port 3001",
     "lint": "eslint",
