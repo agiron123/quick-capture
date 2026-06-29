@@ -36,6 +36,9 @@ Run from the repo root:
 | `npm run worktree:bootstrap` | Neon branch + `.env.worktree` + migrate (linked worktrees) |
 | `npm run worktree:teardown` | Stop worktree stack; optional `-- --delete-neon-branch` |
 | `npm run worktree:list` | List bootstrapped worktrees, ports, and URLs |
+| `npm run worktree:portless` | Register Portless aliases for Docker hybrid URLs |
+| `npm run dev:portless` | Native dev via Portless (Option B — no Compose for web/api) |
+| `npm run portless:trust` | One-time local CA trust for Portless HTTPS |
 | `npm run build` | Build all packages (respects dependency order) |
 | `npm run typecheck` | Typecheck all packages |
 

@@ -20,6 +20,9 @@
     "worktree:teardown": "node scripts/worktree/teardown.mjs",
     "worktree:list": "node scripts/worktree/list.mjs",
     "worktree:slug": "node scripts/worktree/slug.mjs",
+    "worktree:portless": "node scripts/worktree/portless-alias.mjs",
+    "dev:portless": "portless",
+    "portless:trust": "portless trust",
     "ios": "npm run ios --workspace=@quick-capture/mobile",
     "android": "npm run android --workspace=@quick-capture/mobile",
     "build": "turbo run build",
@@ -27,6 +30,7 @@
     "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
+    "portless": "^0.13.0",
     "turbo": "^2.5.4"
   }
 }

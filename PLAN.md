@@ -497,13 +497,13 @@ Root `portless.json` (monorepo):
 }
 ```
 
-- [ ] Evaluate Portless **in front of** Docker-published ports vs native-only dev:
+- [x] Evaluate Portless **in front of** Docker-published ports vs native-only dev:
   - **Option A (hybrid):** Compose publishes `localhost:<API_PORT>`; Portless on host proxies `api.<slug>.quick-capture.localhost` → that port (single proxy, no port memorization)
   - **Option B (native):** `portless` + `npm run dev:web-api` per worktree (no Compose); whisper still via `docker compose up whisper` on worktree whisper port
-- [ ] Add `portless` as optional devDependency; document `portless trust` (one-time CA)
-- [ ] Wire `dev:docker` / compose web to respect `PORT` when Portless assigns child port
-- [ ] Update Neon Auth allowed origins for `https://<slug>.quick-capture.localhost` (and `api.` subdomain if browser calls API directly)
-- [ ] Mobile / Expo: `EXPO_PUBLIC_API_URL` + `EXPO_PUBLIC_NEON_AUTH_URL` in `.env.worktree` or `app.config` extra — document per-worktree LAN testing
+- [x] Add `portless` as optional devDependency; document `portless trust` (one-time CA)
+- [x] Wire `dev:docker` / compose web to respect `PORT` when Portless assigns child port
+- [x] Update Neon Auth allowed origins for `https://<slug>.quick-capture.localhost` (and `api.` subdomain if browser calls API directly)
+- [x] Mobile / Expo: `EXPO_PUBLIC_API_URL` + `EXPO_PUBLIC_NEON_AUTH_URL` in `.env.worktree` or `app.config` extra — document per-worktree LAN testing
 
 **Why Portless:** branch-prefixed subdomains align with worktree isolation; HTTPS via local CA avoids per-instance self-signed cert churn; agents and humans get stable URLs in logs and docs.
 
@@ -511,9 +511,9 @@ Root `portless.json` (monorepo):
 
 #### 9.5 — Developer ergonomics
 
-- [ ] `npm run worktree:bootstrap` / `worktree:teardown` / `worktree:list`
-- [ ] Cursor / agent skill note: always `cd` into correct worktree before `docker:dev`
-- [ ] AGENTS.md + [monorepo.md](./docs/monorepo.md) section on parallel worktrees
+- [x] `npm run worktree:bootstrap` / `worktree:teardown` / `worktree:list`
+- [x] Cursor / agent skill note: always `cd` into correct worktree before `docker:dev`
+- [x] AGENTS.md + [monorepo.md](./docs/monorepo.md) section on parallel worktrees
 - [ ] CI: not in scope — preview deploys stay Vercel + Neon preview branches ([Phase 7.3](#73--cloud-deployment-vercel-first-provider-tbd))
 
 #### Acceptance criteria
@@ -534,7 +534,7 @@ Root `portless.json` (monorepo):
 
 Phase 3 core is shipped. Remaining priorities:
 
-1. **Phase 9 — Parallel worktree dev** — Portless integration (9.4); end-to-end QA with two worktrees
+1. **Phase 9 — Parallel worktree dev** — end-to-end QA with two worktrees (acceptance criteria)
 2. **Phase 6 — MiniMax agent chat** — attachments (v1.1); cross-device QA
 3. **Phase 7 — TLS + deploy** — Let's Encrypt in Docker Compose dev; Vercel for web; decide API/whisper host
 4. **OAuth providers** — Google + GitHub in Neon Console

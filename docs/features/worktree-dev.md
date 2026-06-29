@@ -300,15 +300,15 @@ portless run …   # → https://feat-chat.quick-capture.localhost
 One-time trust (local CA):
 
 ```bash
-npm install -g portless   # or npm i -D portless
-portless trust
+npm install -D portless   # root devDependency
+npm run portless:trust    # one-time local CA
 ```
 
 ### Deployment modes
 
 | Mode | When to use | How |
 | --- | --- | --- |
-| **A — Hybrid (recommended)** | Full Docker stack per worktree | Compose publishes `localhost:API_PORT` / `WEB_PORT`; Portless on host proxies `https://feat-chat.quick-capture.localhost` → `WEB_PORT`, `https://api.feat-chat.quick-capture.localhost` → `API_PORT` |
+| **A — Hybrid (recommended)** | Full Docker stack per worktree | `npm run docker:dev:worktree` then `npm run worktree:portless` — registers `portless alias` routes to published ports |
 | **B — Native** | Faster web/api iteration | `portless` + `npm run dev:web-api`; only whisper in Compose on `WHISPER_PORT` |
 | **C — Ports only** | No Portless installed | Use `worktree:list` output: `http://localhost:3010`, `https://localhost:3011` + self-signed certs |
 
@@ -377,20 +377,22 @@ npm run worktree:teardown -- --delete-neon-branch
 cd .. && git worktree remove quick-capture-feat-chat
 ```
 
-## Code and file locations (planned)
+## Code and file locations
 
 | Path | Purpose |
 | --- | --- |
 | `docker-compose.worktree.yml` | Port + project name overrides |
 | `.env.worktree.example` | Documented placeholders |
 | `portless.json` | Monorepo Portless app names |
-| `scripts/worktree-slug.sh` | Branch → slug |
-| `scripts/worktree-bootstrap.sh` | Neon + env + migrate + registry |
-| `scripts/worktree-teardown.sh` | Compose down + registry cleanup |
-| `scripts/worktree-list.sh` | Print registry |
-| `scripts/worktree-ports.sh` | Allocate / validate port block |
-| `package.json` | `worktree:*` and `docker:dev:worktree` scripts |
-| `.gitignore` | `.env.worktree`, `.worktree-registry.json` |
+| `scripts/worktree/lib.mjs` | Slug, ports, registry, env helpers |
+| `scripts/worktree/bootstrap.mjs` | Neon + env + migrate + registry |
+| `scripts/worktree/teardown.mjs` | Compose down + registry cleanup |
+| `scripts/worktree/list.mjs` | Print registry |
+| `scripts/worktree/compose.mjs` | `docker:dev:worktree` / `docker:down:worktree` |
+| `scripts/worktree/slug.mjs` | Branch → slug CLI |
+| `~/.config/quick-capture/worktrees.json` | Instance registry |
+| `package.json` | `worktree:*` and `docker:*:worktree` scripts |
+| `.gitignore` | `.env.worktree` |
 
 ## Implementation checklist
 
@@ -417,15 +419,15 @@ cd .. && git worktree remove quick-capture-feat-chat
 ### Portless
 
 - [x] `portless.json` at repo root
-- [ ] Hybrid proxy docs + optional host proxy script
-- [ ] Neon Auth origins documented per slug (bootstrap prints reminder)
+- [x] Hybrid proxy docs + `npm run worktree:portless` alias script
+- [x] Neon Auth origins documented per slug (bootstrap prints reminder)
 - [x] Fallback path without Portless (`--no-portless`)
 
 ### Docs and ergonomics
 
 - [x] [docker-dev.md](../docker-dev.md) — link to this spec
 - [x] [monorepo.md](../monorepo.md) — parallel worktrees section
-- [ ] AGENTS.md — “cd into worktree before docker:dev”
+- [x] AGENTS.md — “cd into worktree before docker:dev”
 
 ## Acceptance criteria
 
