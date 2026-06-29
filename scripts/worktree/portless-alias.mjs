@@ -5,12 +5,12 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 import {
-  APP_NAME,
-  buildWorktreeUrls,
-  getRegistryEntry,
-  getRepoRoot,
-  parseEnvFile,
-  readRegistry,
+    APP_NAME,
+    buildWorktreeUrls,
+    getRegistryEntry,
+    getRepoRoot,
+    parseEnvFile,
+    readRegistry,
 } from './lib.mjs';
 
 function runPortless(args) {

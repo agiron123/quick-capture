@@ -1,11 +1,6 @@
 #!/usr/bin/env node
 
-import { branchToSlug } from './lib.mjs';
+import { branchToSlug, getBranchName } from './lib.mjs';
 
-const branch = process.argv[2] ?? process.env.BRANCH;
-if (!branch) {
-  console.error('Usage: node scripts/worktree/slug.mjs <branch-name>');
-  process.exit(1);
-}
-
+const branch = process.argv[2] ?? getBranchName();
 console.log(branchToSlug(branch));

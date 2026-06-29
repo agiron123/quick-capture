@@ -34,6 +34,7 @@ Run from the repo root:
 | `npm run docker:dev:worktree` | Compose stack for current linked worktree (see [worktree-dev.md](./features/worktree-dev.md)) |
 | `npm run docker:down:worktree` | Stop worktree Compose project only |
 | `npm run worktree:bootstrap` | Neon branch + `.env.worktree` + migrate (linked worktrees) |
+| `npm run worktree:create` | New worktree: `git worktree add` + install + bootstrap |
 | `npm run worktree:teardown` | Stop worktree stack; optional `-- --delete-neon-branch` |
 | `npm run worktree:list` | List bootstrapped worktrees, ports, and URLs |
 | `npm run worktree:portless` | Register Portless aliases for Docker hybrid URLs |
@@ -101,12 +102,19 @@ Spec: [features/ai-backend.md](./features/ai-backend.md)
 Use multiple linked worktrees when working on several features at once. Each worktree gets its own Neon branch, Docker Compose project, and port block.
 
 ```bash
-# From main repo
+# From main repo (recommended)
+npm run worktree:create -- ../quick-capture-feat-x -b feat/x
+cd ../quick-capture-feat-x
+npm run docker:dev:worktree
+npm run worktree:list
+```
+
+Or manually:
+
+```bash
 git worktree add ../quick-capture-feat-x -b feat/x
 cd ../quick-capture-feat-x
 npm install
-cp .env.example .env   # shared API keys
-
 npm run worktree:bootstrap
 npm run docker:dev:worktree
 npm run worktree:list

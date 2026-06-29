@@ -2,28 +2,28 @@
 
 import { existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { createInterface } from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
+import { createInterface } from 'node:readline/promises';
 
 import {
-  allocatePorts,
-  branchToSlug,
-  buildCorsOrigins,
-  buildWorktreeUrls,
-  commandExists,
-  dockerCompose,
-  getBranchName,
-  getRegistryEntry,
-  getRepoRoot,
-  isLinkedWorktree,
-  parseEnvFile,
-  printWorktreeSummary,
-  readRegistry,
-  reservedPortsFromRegistry,
-  runNeonctl,
-  serializeEnvFile,
-  slugToComposeProject,
-  writeRegistry,
+    allocatePorts,
+    branchToSlug,
+    buildCorsOrigins,
+    buildWorktreeUrls,
+    commandExists,
+    dockerCompose,
+    getBranchName,
+    getRegistryEntry,
+    getRepoRoot,
+    isLinkedWorktree,
+    parseEnvFile,
+    printWorktreeSummary,
+    readRegistry,
+    reservedPortsFromRegistry,
+    runNeonctl,
+    serializeEnvFile,
+    slugToComposeProject,
+    writeRegistry,
 } from './lib.mjs';
 
 function parseArgs(argv) {
@@ -31,7 +31,7 @@ function parseArgs(argv) {
     manual: argv.includes('--manual'),
     force: argv.includes('--force'),
     noPortless: argv.includes('--no-portless'),
-    parent: argv.find((arg, index) => argv[index - 1] === '--parent') ?? process.env.NEON_PARENT_BRANCH ?? 'main',
+    parent: argv.find((arg, index) => argv[index - 1] === '--parent') ?? process.env.NEON_PARENT_BRANCH ?? 'dev',
     databaseUrl: argv.find((arg, index) => argv[index - 1] === '--database-url'),
     authUrl: argv.find((arg, index) => argv[index - 1] === '--neon-auth-url'),
   };

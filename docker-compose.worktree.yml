@@ -8,21 +8,23 @@ services:
       - .env.worktree
 
   whisper:
-    ports:
+    ports: !override
       - "${WHISPER_PORT}:8080"
 
   api:
-    ports:
+    ports: !override
       - "${API_PORT}:3000"
     env_file:
       - .env.worktree
     environment:
+      PORT: "3000"
       CORS_ORIGINS: ${CORS_ORIGINS}
 
   web:
-    ports:
+    ports: !override
       - "${WEB_PORT}:3001"
     env_file:
       - .env.worktree
     environment:
+      PORT: "3001"
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}

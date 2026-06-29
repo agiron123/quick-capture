@@ -338,7 +338,27 @@ Expo reads `EXPO_PUBLIC_*` at bundle time. Per worktree:
 
 ## Target developer workflow
 
-### Create and run a feature worktree
+### Cursor integration
+
+On **session start**, `.cursor/hooks.json` runs `scripts/worktree/session-init.mjs` when this folder is a linked worktree:
+
+- Copies `.env` from the main checkout if missing
+- Injects agent context to run `npm run worktree:bootstrap` when `.env.worktree` is absent
+- Reminds agents to use `docker:dev:worktree` (not `docker:dev`)
+
+Static fallback: `.cursor/rules/parallel-worktree.mdc` (always apply).
+
+Skill: `.cursor/skills/quick-capture-worktree/SKILL.md`
+
+### Create a new worktree (from main checkout)
+
+```bash
+npm run worktree:create -- ../quick-capture-feat-chat -b feat/chat
+cd ../quick-capture-feat-chat
+npm run docker:dev:worktree
+```
+
+Equivalent manual steps:
 
 ```bash
 # From primary clone
@@ -390,6 +410,11 @@ cd .. && git worktree remove quick-capture-feat-chat
 | `scripts/worktree/list.mjs` | Print registry |
 | `scripts/worktree/compose.mjs` | `docker:dev:worktree` / `docker:down:worktree` |
 | `scripts/worktree/slug.mjs` | Branch → slug CLI |
+| `scripts/worktree/create.mjs` | `worktree:create` — git worktree + install + bootstrap |
+| `scripts/worktree/session-init.mjs` | Cursor `sessionStart` hook |
+| `.cursor/hooks.json` | Runs session-init on new agent sessions |
+| `.cursor/rules/parallel-worktree.mdc` | Always-on worktree reminders |
+| `.cursor/skills/quick-capture-worktree/SKILL.md` | Agent skill for worktree workflows |
 | `~/.config/quick-capture/worktrees.json` | Instance registry |
 | `package.json` | `worktree:*` and `docker:*:worktree` scripts |
 | `.gitignore` | `.env.worktree` |
@@ -427,7 +452,9 @@ cd .. && git worktree remove quick-capture-feat-chat
 
 - [x] [docker-dev.md](../docker-dev.md) — link to this spec
 - [x] [monorepo.md](../monorepo.md) — parallel worktrees section
-- [x] AGENTS.md — “cd into worktree before docker:dev”
+- [x] AGENTS.md — worktree skill + commands
+- [x] Cursor `sessionStart` hook + `parallel-worktree` rule
+- [x] `quick-capture-worktree` project skill
 
 ## Acceptance criteria
 
@@ -441,7 +468,9 @@ cd .. && git worktree remove quick-capture-feat-chat
 
 | Issue | Fix |
 | --- | --- |
-| Port already allocated | Run `worktree:list`; stop conflicting stack or re-bootstrap for new block |
+| Whisper binds host `8080` (conflicts with main stack) | Worktree override must use `ports: !override` — Compose merges port lists by default |
+| API health fails on host port but container logs show wrong port | `.env.worktree` sets `PORT` to the host API port; override `PORT: "3000"` / `PORT: "3001"` in `docker-compose.worktree.yml` for api/web |
+| Web crash: missing `localhost-key.pem` | Copy `apps/web/certificates/` from main checkout; `worktree:create` does this automatically |
 | Auth works on main but not worktree | Verify all `NEON_AUTH_*` and `DATABASE_URL` match the **same** Neon branch |
 | CORS errors | Add worktree web + API origins to `CORS_ORIGINS` in `.env.worktree` |
 | Portless cert warning | Run `portless trust` once |

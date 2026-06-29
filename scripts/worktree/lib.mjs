@@ -1,15 +1,15 @@
-import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import {
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  statSync,
-  writeFileSync,
+    existsSync,
+    mkdirSync,
+    readFileSync,
+    statSync,
+    writeFileSync,
 } from 'node:fs';
-import { homedir } from 'node:os';
-import { join } from 'node:path';
 import net from 'node:net';
+import { homedir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
 
 export const APP_NAME = 'quick-capture';
 export const REGISTRY_DIR = join(homedir(), '.config', APP_NAME);
@@ -24,6 +24,17 @@ export function getRepoRoot(cwd = process.cwd()) {
     throw new Error('Not inside a git repository');
   }
   return result.stdout.trim();
+}
+
+export function getMainRepoRoot(cwd = process.cwd()) {
+  const result = spawnSync('git', ['rev-parse', '--git-common-dir'], {
+    cwd,
+    encoding: 'utf8',
+  });
+  if (result.status !== 0) {
+    throw new Error('Not inside a git repository');
+  }
+  return resolve(dirname(result.stdout.trim()));
 }
 
 export function getBranchName(cwd = process.cwd()) {

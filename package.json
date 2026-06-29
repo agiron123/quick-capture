@@ -17,6 +17,8 @@
     "docker:dev:worktree": "node scripts/worktree/compose.mjs up",
     "docker:down:worktree": "node scripts/worktree/compose.mjs down",
     "worktree:bootstrap": "node scripts/worktree/bootstrap.mjs",
+    "worktree:create": "node scripts/worktree/create.mjs",
+    "worktree:session-init": "node scripts/worktree/session-init.mjs",
     "worktree:teardown": "node scripts/worktree/teardown.mjs",
     "worktree:list": "node scripts/worktree/list.mjs",
     "worktree:slug": "node scripts/worktree/slug.mjs",

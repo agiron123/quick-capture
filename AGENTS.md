@@ -30,6 +30,7 @@ npm run build                # Build shared + api (turbo cache)
 npm run typecheck            # Typecheck all packages
 npm run docker:dev           # Full stack in Docker (main checkout)
 npm run worktree:bootstrap   # Linked worktree: Neon branch + .env.worktree
+npm run worktree:create      # New linked worktree: git worktree add + bootstrap
 npm run docker:dev:worktree  # Docker stack for current worktree
 ```
 
@@ -125,6 +126,7 @@ Use these **existing skills** (install or enable in Cursor) when working in the 
 
 | Skill | When to use |
 | --- | --- |
+| `quick-capture-worktree` | Creating linked worktrees, parallel Docker stacks, `worktree:bootstrap` |
 | `create-skill` | Adding project-specific skills below |
 | `split-to-prs` | Large changes spanning mobile + api + shared |
 | `review-bugbot` | PR review before merge |
@@ -151,6 +153,7 @@ Create these under `.cursor/skills/` in this repo so all contributors get the sa
 | `quick-capture-capture-flow` | Camera/voice → AI service → review modal → `useTodos` pipeline |
 | `quick-capture-api` | Hono route patterns, shared validation, Neon Auth JWT middleware + Drizzle |
 | `quick-capture-monorepo` | Turbo filters, workspace deps, Metro gotchas |
+| `quick-capture-worktree` | Git worktrees, Neon branch per checkout, `docker:dev:worktree` |
 
 Use the `create-skill` skill to scaffold these. Each should link to the relevant `docs/features/*.md` spec.
 

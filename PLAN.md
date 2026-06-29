@@ -31,7 +31,7 @@ Quick Capture turns messy inputs (handwritten notes, voice, manual entry) into a
 | Wear OS companion (scaffold) | ✅ Shipped | [docs/features/wear-os.md](./docs/features/wear-os.md) |
 | MiniMax agent chat (mobile + web) | 🚧 In progress | [docs/features/chat.md](./docs/features/chat.md) |
 | Docker Compose local dev stack | ✅ Shipped | [docs/docker-dev.md](./docs/docker-dev.md) |
-| Parallel worktree dev (multi-instance Compose) | 🚧 In progress | [docs/features/worktree-dev.md](./docs/features/worktree-dev.md) |
+| Parallel worktree dev (multi-instance Compose) | ✅ Shipped | [docs/features/worktree-dev.md](./docs/features/worktree-dev.md) |
 | TLS (Let's Encrypt) + cloud deploy | 📋 Planned | Phase 7 below |
 | Web sidebar navigation | ✅ Shipped | [docs/features/web-sidebar-nav.md](./docs/features/web-sidebar-nav.md) |
 
@@ -518,10 +518,10 @@ Root `portless.json` (monorepo):
 
 #### Acceptance criteria
 
-- [ ] Two linked worktrees can run `docker:dev:worktree` simultaneously without port or volume conflicts
-- [ ] Each worktree uses its own Neon branch; sign-in on worktree A does not see worktree B's todos
-- [ ] `worktree:list` shows slug, ports, Portless URLs, Neon branch name, compose project
-- [ ] Main worktree unchanged — default `npm run docker:dev` still uses ports `3000`/`3001`/`8080`
+- [x] Two linked worktrees can run `docker:dev:worktree` simultaneously without port or volume conflicts
+- [x] Each worktree uses its own Neon branch; sign-in on worktree A does not see worktree B's todos
+- [x] `worktree:list` shows slug, ports, Portless URLs, Neon branch name, compose project
+- [x] Main worktree unchanged — default `npm run docker:dev` still uses ports `3000`/`3001`/`8080`
 - [ ] Documented path with and without Portless
 
 #### Dependencies
