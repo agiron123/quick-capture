@@ -269,11 +269,13 @@ flowchart TB
 
 **Vercel setup checklist (when ready):**
 
+- [x] `apps/web/vercel.json` — monorepo install/build (Root Directory: `apps/web`)
+- [x] CI: typecheck + web build on push/PR (`.github/workflows/ci.yml`)
 - [ ] Link `apps/web` project: `vercel link` (monorepo root or app directory per [docs/monorepo.md](./docs/monorepo.md))
 - [ ] `vercel env pull` — sync Neon, auth, and `NEXT_PUBLIC_API_URL` for preview/production
 - [ ] Preview branches: Neon database branch + matching `NEON_AUTH_*` / `DATABASE_URL` ([auth.md](./docs/features/auth.md#preview--staging-branches))
 - [ ] Production domain on Vercel; update Neon Auth redirect URLs and `CORS_ORIGINS` on API
-- [ ] CI: deploy web on push; API deploy workflow TBD with chosen host
+- [ ] CI: deploy web on push (needs `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, `VERCEL_TOKEN` in GitHub)
 
 **Open decisions (document in deployment spec before shipping prod):**
 

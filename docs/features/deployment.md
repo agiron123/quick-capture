@@ -57,6 +57,20 @@ Use default `npm run docker:dev` with self-signed certs, or [Portless](worktree-
 | whisper.cpp | Separate container or managed STT |
 | Capture storage | R2/S3 (already supported) |
 
+### Vercel (web)
+
+1. Create a Vercel project with **Root Directory** = `apps/web` (monorepo).
+2. `vercel.json` in `apps/web/` runs install/build from the repo root via Turbo (`@quick-capture/shared` builds first).
+3. Link locally: `cd apps/web && vercel link`
+4. Pull env: `vercel env pull .env.local` — set at minimum:
+   - `NEXT_PUBLIC_API_URL` — deployed API URL
+   - `NEXT_PUBLIC_NEON_AUTH_URL` / `NEON_AUTH_BASE_URL` / `NEON_AUTH_COOKIE_SECRET`
+   - `NEXT_PUBLIC_VAPID_PUBLIC_KEY` (web push)
+5. Add preview/production values in the Vercel dashboard; pair preview branches with Neon DB branches ([auth.md](./auth.md#preview--staging-branches)).
+6. Update API `CORS_ORIGINS` and Neon Auth redirect URLs for each Vercel origin.
+
+GitHub Actions (`.github/workflows/ci.yml`) runs typecheck and a production web build on push/PR. Deploy-on-push is manual until `VERCEL_*` secrets are configured.
+
 See [PLAN.md](../../PLAN.md) Phase 7.3 for open decisions.
 
 ## Related

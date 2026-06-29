@@ -98,6 +98,17 @@ Spec: [features/ai-backend.md](./features/ai-backend.md)
 5. For Web Push reminders: `npx web-push generate-vapid-keys` → set `VAPID_*` and `NEXT_PUBLIC_VAPID_PUBLIC_KEY`
 6. Hono verifies client JWTs via JWKS; see [features/auth.md](./features/auth.md).
 
+## Web deployment (Vercel)
+
+Deploy `@quick-capture/web` from the monorepo:
+
+1. Vercel project **Root Directory** = `apps/web`
+2. `apps/web/vercel.json` installs from repo root and runs `turbo build --filter=@quick-capture/web`
+3. Link: `cd apps/web && vercel link`
+4. Env: `vercel env pull .env.local` (see [features/deployment.md](./features/deployment.md))
+
+CI typecheck + web build: `.github/workflows/ci.yml`
+
 ## Parallel git worktrees
 
 Use multiple linked worktrees when working on several features at once. Each worktree gets its own Neon branch, Docker Compose project, and port block.
