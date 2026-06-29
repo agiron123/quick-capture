@@ -33,7 +33,7 @@ Quick Capture turns messy inputs (handwritten notes, voice, manual entry) into a
 | Docker Compose local dev stack | ✅ Shipped | [docs/docker-dev.md](./docs/docker-dev.md) |
 | Parallel worktree dev (multi-instance Compose) | 📋 Planned | [docs/features/worktree-dev.md](./docs/features/worktree-dev.md) |
 | TLS (Let's Encrypt) + cloud deploy | 📋 Planned | Phase 7 below |
-| Web sidebar navigation | 📋 Planned | Phase 8 below |
+| Web sidebar navigation | ✅ Shipped | [docs/features/web-sidebar-nav.md](./docs/features/web-sidebar-nav.md) |
 
 ## Vision
 
@@ -321,48 +321,48 @@ Install and wire the [shadcn Sidebar](https://ui.shadcn.com/docs/components/side
 npx shadcn@latest add sidebar
 ```
 
-- [ ] Add `SidebarProvider` in `(app)` layout (or refactor `AppShell` to wrap children)
-- [ ] New `app-sidebar.tsx` — logo/title, primary nav links, footer actions
-- [ ] Nav items with icons + labels: **Todos** (`/`), **Capture** (`/capture`), **Voice** (`/voice`), **Chat** (`/chat`), **Devices** (`/devices`)
-- [ ] Active state via `usePathname()` (`/chat` matches `/chat/*`)
-- [ ] Remove horizontal `<nav>` strip from `AppShell`
-- [ ] `SidebarInset` (or equivalent) for main content column
+- [x] Add `SidebarProvider` in `(app)` layout (or refactor `AppShell` to wrap children)
+- [x] New `app-sidebar.tsx` — logo/title, primary nav links, footer actions
+- [x] Nav items with icons + labels: **Todos** (`/`), **Capture** (`/capture`), **Voice** (`/voice`), **Chat** (`/chat`), **Devices** (`/devices`)
+- [x] Active state via `usePathname()` (`/chat` matches `/chat/*`)
+- [x] Remove horizontal `<nav>` strip from `AppShell`
+- [x] `SidebarInset` (or equivalent) for main content column
 
 #### 8.2 — Header and list picker
 
-- [ ] Slim **top bar** inside main inset only (not full width over sidebar): optional page title, `headerRight` slot (e.g. Add todo), theme toggle, sign out
-- [ ] Move **list picker** (Inbox / lists dropdown) to one of:
+- [x] Slim **top bar** inside main inset only (not full width over sidebar): optional page title, `headerRight` slot (e.g. Add todo), theme toggle, sign out
+- [x] Move **list picker** (Inbox / lists dropdown) to one of:
   - Sidebar section below nav (recommended — always visible on Todos)
   - Todos page header only (hide on Capture / Voice / Chat)
-- [ ] Keep `useLists()` / `onManageLists` behavior unchanged
+- [x] Keep `useLists()` / `onManageLists` behavior unchanged
 
 #### 8.3 — Responsive behavior
 
-- [ ] **Desktop (`md+`):** fixed left sidebar, collapsible to icon rail (`SidebarTrigger` + `collapsible="icon"`)
-- [ ] **Mobile:** sidebar hidden by default; **Sheet** or shadcn mobile sidebar trigger in top bar (hamburger)
-- [ ] Persist collapsed preference in `localStorage` or cookie
-- [ ] Adjust `min-h` / padding: remove `pb-20` meant for bottom nav; chat layout `min-h-[calc(100dvh-8rem)]` updated for new chrome heights
+- [x] **Desktop (`md+`):** fixed left sidebar, collapsible to icon rail (`SidebarTrigger` + `collapsible="icon"`)
+- [x] **Mobile:** sidebar hidden by default; **Sheet** or shadcn mobile sidebar trigger in top bar (hamburger)
+- [x] Persist collapsed preference in `localStorage` or cookie
+- [x] Adjust `min-h` / padding: remove `pb-20` meant for bottom nav; chat layout `min-h-[calc(100dvh-8rem)]` updated for new chrome heights
 
 #### 8.4 — Quick capture (mic)
 
-- [ ] Relocate bottom-center **Mic FAB** — options (pick one in spec):
+- [x] Relocate bottom-center **Mic FAB** — options (pick one in spec):
   - Sidebar footer primary action (always visible)
   - Floating FAB in main inset only (hide on `/voice` and `/chat`)
-- [ ] Preserve one-tap path to `/voice` from any signed-in route
+- [x] Preserve one-tap path to `/voice` from any signed-in route
 
 #### 8.5 — Chat layout integration
 
-- [ ] App sidebar remains visible on `/chat` (or collapses to icon rail automatically)
-- [ ] `ChatThreadSidebar` stays as **in-content** second column — avoid triple-sidebar on narrow viewports; stack thread list above conversation on mobile
-- [ ] `AppShell` prop `showMicFab={false}` on chat — keep or align with new FAB placement
+- [x] App sidebar remains visible on `/chat` (or collapses to icon rail automatically)
+- [x] `ChatThreadSidebar` stays as **in-content** second column — avoid triple-sidebar on narrow viewports; stack thread list above conversation on mobile
+- [x] `AppShell` prop `showMicFab={false}` on chat — keep or align with new FAB placement
 
 #### 8.6 — Polish and acceptance
 
 - [ ] Keyboard: focus order sidebar → main; skip link to content
-- [ ] `aria-current="page"` on active nav item
-- [ ] Dark mode: sidebar tokens match existing theme (`next-themes`)
-- [ ] Auth routes (`/auth/*`) unchanged — no sidebar on sign-in/up
-- [ ] Update [web-app.md](./docs/features/web-app.md) route/layout section when shipped
+- [x] `aria-current="page"` on active nav item
+- [x] Dark mode: sidebar tokens match existing theme (`next-themes`)
+- [x] Auth routes (`/auth/*`) unchanged — no sidebar on sign-in/up
+- [x] Update [web-app.md](./docs/features/web-app.md) route/layout section when shipped
 
 **Acceptance:** All primary routes reachable from sidebar; horizontal nav removed; mobile usable via drawer; list picker and sign-out still accessible; chat thread sidebar coexists without layout breakage.
 
@@ -372,7 +372,7 @@ npx shadcn@latest add sidebar
 
 Run **multiple full stacks at once** — one per git worktree — so feature branches never fight over ports, Neon data, or auth. Each worktree gets an isolated **Neon database branch**, **Compose project**, **host port block**, and (optionally) stable **`.localhost` URLs** via [Portless](https://github.com/vercel-labs/portless).
 
-**Spec (to create):** [docs/features/worktree-dev.md](./docs/features/worktree-dev.md)
+**Spec:** [docs/features/worktree-dev.md](./docs/features/worktree-dev.md)
 
 #### Problem
 
@@ -560,9 +560,9 @@ Specs:
 - [docs/features/scheduled-reminders.md](./docs/features/scheduled-reminders.md)
 - [docs/features/chat.md](./docs/features/chat.md)
 - [docs/docker-dev.md](./docs/docker-dev.md)
-- [docs/features/worktree-dev.md](./docs/features/worktree-dev.md) *(planned)*
+- [docs/features/worktree-dev.md](./docs/features/worktree-dev.md)
 - [docs/features/deployment.md](./docs/features/deployment.md) *(planned)*
-- [docs/features/web-sidebar-nav.md](./docs/features/web-sidebar-nav.md) *(planned)*
+- [docs/features/web-sidebar-nav.md](./docs/features/web-sidebar-nav.md)
 
 ## How to use this plan
 

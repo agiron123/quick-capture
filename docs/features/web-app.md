@@ -41,6 +41,14 @@ npm run dev:web-api   # API :3000 + web :3001 (recommended)
 | `/auth/sign-in` | Sign in |
 | `/auth/sign-up` | Sign up |
 
+## Layout and navigation
+
+Signed-in routes use **sidebar navigation** ([web-sidebar-nav.md](./web-sidebar-nav.md)):
+
+- `AppSidebar` — primary nav, list picker, quick capture link
+- `AppShell` — `SidebarInset` with compact header (toggle, page actions, sign out)
+- Auth routes (`/auth/*`) render without the app shell sidebar
+
 ## API integration
 
 Web attaches `Authorization: Bearer <jwt>` from Neon Auth session (`authClient.getSession()` → `session.token`) to all Hono sync and capture routes.

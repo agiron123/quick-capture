@@ -33,7 +33,7 @@ export function ChatPageClient({ threadId = null }: ChatPageClientProps) {
 
   return (
     <AppShell showMicFab={false}>
-      <div className="flex min-h-[calc(100dvh-8rem)] flex-col md:flex-row">
+      <div className="flex min-h-[calc(100dvh-3.5rem)] flex-col md:flex-row">
         <ChatThreadSidebar activeThreadId={threadId} onNewChat={handleNewChat} />
         <ChatConversation
           threadId={threadId}

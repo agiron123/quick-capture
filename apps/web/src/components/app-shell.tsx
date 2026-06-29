@@ -1,20 +1,13 @@
 'use client';
 
-import { Mic, Plus } from 'lucide-react';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
 
+import { AppSidebar } from '@/components/app-sidebar';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useLists } from '@/hooks/use-lists';
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { authClient } from '@/lib/auth/client';
 
 type AppShellProps = {
@@ -27,13 +20,11 @@ type AppShellProps = {
 export function AppShell({
   children,
   headerRight,
-  showMicFab = true,
+  showMicFab: _showMicFab = true,
   onManageLists,
 }: AppShellProps) {
-  const pathname = usePathname();
   const router = useRouter();
   const [signingOut, startSignOut] = useTransition();
-  const { lists, activeListId, setActiveListId, isLoading: listsLoading } = useLists();
 
   const handleSignOut = () => {
     startSignOut(async () => {
@@ -45,77 +36,30 @@ export function AppShell({
     });
   };
 
-  const activeList = lists.find((list) => list.id === activeListId);
-
   return (
-    <div className="flex min-h-full flex-col pb-20">
-      <header className="flex items-center justify-between border-b px-4 py-3">
-        <div className="flex items-center gap-2">
-          {listsLoading ? (
-            <Skeleton className="h-8 w-32" />
-          ) : (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">{activeList?.name ?? 'Inbox'}</Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                {lists.map((list) => (
-                  <DropdownMenuItem key={list.id} onClick={() => setActiveListId(list.id)}>
-                    {list.name}
-                  </DropdownMenuItem>
-                ))}
-                {onManageLists ? (
-                  <DropdownMenuItem onClick={onManageLists}>Manage lists…</DropdownMenuItem>
-                ) : null}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          {headerRight}
-          <ThemeToggle />
-          <Button
-            variant="ghost"
-            size="sm"
-            type="button"
-            disabled={signingOut}
-            onClick={handleSignOut}
-          >
-            {signingOut ? 'Signing out…' : 'Sign out'}
-          </Button>
-        </div>
-      </header>
+    <SidebarProvider>
+      <AppSidebar onManageLists={onManageLists} />
+      <SidebarInset>
+        <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
+          <SidebarTrigger aria-label="Toggle navigation" />
+          <div className="ml-auto flex items-center gap-2">
+            {headerRight}
+            <ThemeToggle />
+            <Button
+              variant="ghost"
+              size="sm"
+              type="button"
+              disabled={signingOut}
+              onClick={handleSignOut}
+            >
+              {signingOut ? 'Signing out…' : 'Sign out'}
+            </Button>
+          </div>
+        </header>
 
-      <nav className="flex items-center gap-2 border-b px-4 py-2">
-        <Button asChild variant={pathname === '/' ? 'secondary' : 'ghost'} size="sm">
-          <Link href="/">Todos</Link>
-        </Button>
-        <Button asChild variant={pathname === '/capture' ? 'secondary' : 'ghost'} size="sm">
-          <Link href="/capture">Capture</Link>
-        </Button>
-        <Button asChild variant={pathname === '/voice' ? 'secondary' : 'ghost'} size="sm">
-          <Link href="/voice">Voice</Link>
-        </Button>
-        <Button asChild variant={pathname.startsWith('/chat') ? 'secondary' : 'ghost'} size="sm">
-          <Link href="/chat">Chat</Link>
-        </Button>
-        <Button asChild variant={pathname === '/devices' ? 'secondary' : 'ghost'} size="sm">
-          <Link href="/devices">Devices</Link>
-        </Button>
-      </nav>
-
-      {children}
-
-      {showMicFab ? (
-        <Button
-          className="fixed bottom-6 left-1/2 size-14 -translate-x-1/2 rounded-full shadow-lg"
-          onClick={() => router.push('/voice')}
-          aria-label="Record voice note"
-        >
-          <Mic className="size-6" />
-        </Button>
-      ) : null}
-    </div>
+        <div className="flex min-h-0 flex-1 flex-col">{children}</div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
 
