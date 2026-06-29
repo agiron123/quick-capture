@@ -10,6 +10,7 @@ Native watchOS app for wrist-side voice capture. AI extraction and review still 
 | App Group shared flag | ✅ `group.com.quickcapture.shared` |
 | iPhone bridge → `/voice-record` | ✅ `watch-capture-bridge.ts` |
 | `@bacons/apple-targets` prebuild | ✅ Plugin in `app.json` |
+| Watch face complication (mic) | ✅ `targets/watch-widget/` |
 
 ## Capture flow
 
@@ -44,11 +45,11 @@ Todos created from watch-initiated capture use `source: 'watch'` through the rev
 | iPhone bridge | `apps/mobile/services/watch-capture-bridge.ts` |
 | App Group constants | `apps/mobile/constants/app-group.ts` |
 | Docs entry | `native/watch/README.md` |
+| Watch complication | `apps/mobile/targets/watch-widget/` |
 
 ## Follow-ups
 
 - WatchConnectivity bidirectional sync (open app when phone unreachable)
-- watch-widget complication for faster capture
 - Complication / glance at open todo count via App Group
 
 ## Related

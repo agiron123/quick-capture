@@ -121,7 +121,7 @@ Input (voice / photo / text)
 Phase 3 core is shipped. Remaining priorities:
 
 1. **OAuth providers** — Google + GitHub in Neon Console
-2. **Apple Watch follow-ups** — complications, bidirectional sync
+2. **Apple Watch follow-ups** — open todo count glance, bidirectional sync
 3. **Wear OS follow-ups** — open todo count glance via Data Layer
 
 Specs:

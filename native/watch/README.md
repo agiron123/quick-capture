@@ -9,6 +9,8 @@ SwiftUI watchOS app for one-tap voice capture on the wrist. Source lives in **`a
 3. When the iPhone app becomes active, `watch-capture-bridge.ts` reads the flag and opens `/voice-record`.
 4. Voice capture continues on the phone (AI + review modal — same as manual voice flow).
 
+Add the **Record voice** complication from the watch face editor for one-tap capture (opens the watch app and triggers the same phone flow).
+
 ## Build
 
 Requires a custom iOS dev build (not Expo Go):
