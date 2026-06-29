@@ -31,6 +31,11 @@ Run from the repo root:
 | `npm run dev:web-api` | API + web in parallel (no mobile) |
 | `npm run docker:dev` | API + web + whisper via Docker Compose (see [docker-dev.md](./docker-dev.md)) |
 | `npm run docker:down` | Stop Docker Compose stack |
+| `npm run docker:dev:worktree` | Compose stack for current linked worktree (see [worktree-dev.md](./features/worktree-dev.md)) |
+| `npm run docker:down:worktree` | Stop worktree Compose project only |
+| `npm run worktree:bootstrap` | Neon branch + `.env.worktree` + migrate (linked worktrees) |
+| `npm run worktree:teardown` | Stop worktree stack; optional `-- --delete-neon-branch` |
+| `npm run worktree:list` | List bootstrapped worktrees, ports, and URLs |
 | `npm run build` | Build all packages (respects dependency order) |
 | `npm run typecheck` | Typecheck all packages |
 
@@ -87,3 +92,21 @@ Spec: [features/ai-backend.md](./features/ai-backend.md)
 4. Run migrations: `npm run db:migrate --workspace=@quick-capture/api`
 5. For Web Push reminders: `npx web-push generate-vapid-keys` → set `VAPID_*` and `NEXT_PUBLIC_VAPID_PUBLIC_KEY`
 6. Hono verifies client JWTs via JWKS; see [features/auth.md](./features/auth.md).
+
+## Parallel git worktrees
+
+Use multiple linked worktrees when working on several features at once. Each worktree gets its own Neon branch, Docker Compose project, and port block.
+
+```bash
+# From main repo
+git worktree add ../quick-capture-feat-x -b feat/x
+cd ../quick-capture-feat-x
+npm install
+cp .env.example .env   # shared API keys
+
+npm run worktree:bootstrap
+npm run docker:dev:worktree
+npm run worktree:list
+```
+
+Main checkout behavior is unchanged (`npm run docker:dev`). Full spec: [features/worktree-dev.md](./features/worktree-dev.md).

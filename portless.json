@@ -1,0 +1,12 @@
+{
+  "apps": {
+    "apps/web": {
+      "name": "quick-capture",
+      "script": "dev:docker"
+    },
+    "apps/api": {
+      "name": "api.quick-capture",
+      "script": "dev"
+    }
+  }
+}

@@ -1,6 +1,6 @@
 # Parallel worktree development
 
-**Status:** Planned  
+**Status:** In progress (9.1–9.3 core shipped)  
 **Phase:** 9
 
 ## Problem
@@ -90,7 +90,7 @@ Rules:
 - `/` → `-`
 - Strip characters outside `[a-z0-9-]`
 - Max length 63 (DNS label limit)
-- Script: `scripts/worktree-slug.sh` (planned)
+- Script: `scripts/worktree-slug.sh` or `npm run worktree:slug`
 
 ## Port allocation
 
@@ -172,7 +172,7 @@ Inherits shared secrets from `.env` (API keys) but **overrides** branch- and ins
 | `CORS_ORIGINS` | This worktree’s web origin(s) + Expo `8081` |
 | `WHISPER_CPP_BASE_URL` | `http://whisper:8080` inside Compose (unchanged) |
 
-Template: **`.env.worktree.example`** (planned) — documents placeholders only; bootstrap fills real values.
+Template: **`.env.worktree.example`** — documents placeholders; bootstrap writes `.env.worktree`.
 
 **Rule:** Never mix `DATABASE_URL` from branch A with `NEON_AUTH_*` from branch B ([auth.md](./auth.md#preview--staging-branches)).
 
@@ -233,7 +233,7 @@ docker compose \
   up --build
 ```
 
-**`docker-compose.worktree.yml`** (planned) — parameterize host ports:
+**`docker-compose.worktree.yml`** — parameterize host ports and `COMPOSE_PROJECT_NAME`.
 
 ```yaml
 name: ${COMPOSE_PROJECT_NAME}
@@ -257,14 +257,15 @@ services:
 
 `COMPOSE_PROJECT_NAME` isolates named volumes (`api_uploads`, `node_modules` caches) per worktree.
 
-### npm scripts (planned)
+### npm scripts
 
 | Script | Purpose |
 | --- | --- |
 | `worktree:bootstrap` | Neon branch + `.env.worktree` + migrate + registry |
 | `worktree:teardown` | Stop this compose project; optional Neon delete |
 | `worktree:list` | All registered worktrees + ports + URLs |
-| `docker:dev:worktree` | Bootstrap if needed, then `compose up` with override |
+| `worktree:slug` | Print URL-safe slug for current or given branch |
+| `docker:dev:worktree` | `compose up` with worktree override + `.env.worktree` |
 | `docker:down:worktree` | `compose down` for current worktree project only |
 
 Main worktree unchanged:
@@ -395,35 +396,35 @@ cd .. && git worktree remove quick-capture-feat-chat
 
 ### Registry and ports
 
-- [ ] Slug derivation script
-- [ ] Port block allocation + conflict detection
-- [ ] `~/.config/quick-capture/worktrees.json` read/write
-- [ ] `.env.worktree.example`
+- [x] Slug derivation (`scripts/worktree/slug.mjs`, `lib.mjs`)
+- [x] Port block allocation + conflict detection
+- [x] `~/.config/quick-capture/worktrees.json` read/write
+- [x] `.env.worktree.example`
 
 ### Neon bootstrap
 
-- [ ] `worktree:bootstrap` with `neonctl` integration
-- [ ] Manual / Console fallback path
-- [ ] Branch-matched env generation
-- [ ] Migrate on bootstrap
+- [x] `worktree:bootstrap` with `neonctl` integration
+- [x] Manual / Console fallback path (prompts + `--manual`, `--database-url`, `--neon-auth-url`)
+- [x] Branch-matched env generation
+- [x] Migrate on bootstrap
 
 ### Docker Compose
 
-- [ ] `docker-compose.worktree.yml`
-- [ ] `docker:dev:worktree` / `docker:down:worktree`
-- [ ] Volume isolation verified (two projects up at once)
+- [x] `docker-compose.worktree.yml`
+- [x] `docker:dev:worktree` / `docker:down:worktree`
+- [ ] Volume isolation verified (manual QA — two projects up at once)
 
 ### Portless
 
-- [ ] `portless.json` at repo root
-- [ ] Hybrid proxy docs + optional `scripts/portless-proxy.sh`
-- [ ] Neon Auth origins documented per slug
-- [ ] Fallback path without Portless
+- [x] `portless.json` at repo root
+- [ ] Hybrid proxy docs + optional host proxy script
+- [ ] Neon Auth origins documented per slug (bootstrap prints reminder)
+- [x] Fallback path without Portless (`--no-portless`)
 
 ### Docs and ergonomics
 
-- [ ] [docker-dev.md](../docker-dev.md) — link to this spec
-- [ ] [monorepo.md](../monorepo.md) — parallel worktrees section
+- [x] [docker-dev.md](../docker-dev.md) — link to this spec
+- [x] [monorepo.md](../monorepo.md) — parallel worktrees section
 - [ ] AGENTS.md — “cd into worktree before docker:dev”
 
 ## Acceptance criteria

@@ -31,7 +31,7 @@ Quick Capture turns messy inputs (handwritten notes, voice, manual entry) into a
 | Wear OS companion (scaffold) | ✅ Shipped | [docs/features/wear-os.md](./docs/features/wear-os.md) |
 | MiniMax agent chat (mobile + web) | 🚧 In progress | [docs/features/chat.md](./docs/features/chat.md) |
 | Docker Compose local dev stack | ✅ Shipped | [docs/docker-dev.md](./docs/docker-dev.md) |
-| Parallel worktree dev (multi-instance Compose) | 📋 Planned | [docs/features/worktree-dev.md](./docs/features/worktree-dev.md) |
+| Parallel worktree dev (multi-instance Compose) | 🚧 In progress | [docs/features/worktree-dev.md](./docs/features/worktree-dev.md) |
 | TLS (Let's Encrypt) + cloud deploy | 📋 Planned | Phase 7 below |
 | Web sidebar navigation | ✅ Shipped | [docs/features/web-sidebar-nav.md](./docs/features/web-sidebar-nav.md) |
 
@@ -228,7 +228,7 @@ Building on the shipped stack ([docker-dev.md](./docs/docker-dev.md)):
 - [ ] TLS reverse proxy + Let's Encrypt (7.1)
 - [ ] Optional: `docker-compose.prod.yml` override (no bind mounts, `npm start` / built images) for staging on a VPS
 - [ ] Healthchecks and `depends_on` for api ← whisper already in place; extend for caddy ← web/api
-- [ ] **Phase 9:** `docker-compose.worktree.yml` + per-worktree port/env isolation ([worktree-dev.md](./docs/features/worktree-dev.md))
+- [x] **Phase 9:** `docker-compose.worktree.yml` + per-worktree port/env isolation ([worktree-dev.md](./docs/features/worktree-dev.md))
 
 #### 7.3 — Cloud deployment (Vercel-first, provider TBD)
 
@@ -451,36 +451,36 @@ flowchart TB
 
 #### 9.1 — Worktree registry and port allocation
 
-- [ ] Add `.worktree-registry.json` (gitignored) or `~/.config/quick-capture/worktrees.json` mapping `worktree path → { branch, neonBranchId, composeProject, ports, portlessNames }`
-- [ ] `scripts/worktree-slug.sh` — derive URL-safe slug from git branch (`feat/chat` → `feat-chat`)
-- [ ] Port block formula: base `3000 + (hash(slug) % 50) * 10` → API `+0`, web `+1`, whisper `+2` (document ranges; detect conflicts before `up`)
-- [ ] Env template `.env.worktree.example` — placeholders for `WORKTREE_SLUG`, `API_PORT`, `WEB_PORT`, `WHISPER_PORT`, `COMPOSE_PROJECT_NAME`
-- [ ] `docker-compose.worktree.yml` override: parameterize `ports:` and `COMPOSE_PROJECT_NAME` via env (no hardcoded `3000:3000`)
+- [x] Add `.worktree-registry.json` (gitignored) or `~/.config/quick-capture/worktrees.json` mapping `worktree path → { branch, neonBranchId, composeProject, ports, portlessNames }`
+- [x] `scripts/worktree-slug.sh` — derive URL-safe slug from git branch (`feat/chat` → `feat-chat`)
+- [x] Port block formula: base `3000 + (hash(slug) % 50) * 10` → API `+0`, web `+1`, whisper `+2` (document ranges; detect conflicts before `up`)
+- [x] Env template `.env.worktree.example` — placeholders for `WORKTREE_SLUG`, `API_PORT`, `WEB_PORT`, `WHISPER_PORT`, `COMPOSE_PROJECT_NAME`
+- [x] `docker-compose.worktree.yml` override: parameterize `ports:` and `COMPOSE_PROJECT_NAME` via env (no hardcoded `3000:3000`)
 
 #### 9.2 — Neon branch bootstrap
 
-- [ ] `scripts/worktree-bootstrap.sh` (or `npm run worktree:bootstrap`):
+- [x] `scripts/worktree-bootstrap.sh` (or `npm run worktree:bootstrap`):
   1. Read current branch / worktree path
   2. Create Neon branch from `main` (or `development`) if not exists — `neonctl branches create <slug> --parent main`
   3. Fetch branch `DATABASE_URL` + Auth URL from Neon API / console instructions
   4. Write `.env.worktree` (or merge into `.env.local`) with **all branch-matched** vars per [auth.md](./docs/features/auth.md#preview--staging-branches)
   5. Set `CORS_ORIGINS` to worktree web origin(s)
   6. Run `docker compose run migrate` against that branch
-- [ ] `scripts/worktree-teardown.sh` — stop compose project, optional `neonctl branches delete`
-- [ ] Document Neon Console fallback when `neonctl` not installed
+- [x] `scripts/worktree-teardown.sh` — stop compose project, optional `neonctl branches delete`
+- [x] Document Neon Console fallback when `neonctl` not installed
 
 #### 9.3 — Docker Compose multi-instance
 
 Building on [docker-dev.md](./docs/docker-dev.md):
 
-- [ ] `docker compose -f docker-compose.yml -f docker-compose.worktree.yml --env-file .env.worktree up`
-- [ ] Unique `COMPOSE_PROJECT_NAME` per worktree (`qc-feat-chat`) so volumes (`api_uploads`, `node_modules` caches) do not clash
-- [ ] `web` service: `NEXT_PUBLIC_API_URL` points at this worktree's API URL (Portless hostname or `http://localhost:<API_PORT>`)
-- [ ] `api` service: `CORS_ORIGINS` includes this worktree's web origin
-- [ ] Root scripts:
-  - `docker:dev:worktree` — bootstrap check + compose up with worktree env
+- [x] `docker compose -f docker-compose.yml -f docker-compose.worktree.yml --env-file .env.worktree up`
+- [x] Unique `COMPOSE_PROJECT_NAME` per worktree (`qc-feat-chat`) so volumes (`api_uploads`, `node_modules` caches) do not clash
+- [x] `web` service: `NEXT_PUBLIC_API_URL` points at this worktree's API URL (Portless hostname or `http://localhost:<API_PORT>`)
+- [x] `api` service: `CORS_ORIGINS` includes this worktree's web origin
+- [x] Root scripts:
+  - `docker:dev:worktree` — compose up with worktree env
   - `docker:down:worktree` — `compose down` for current project only
-- [ ] Health doc: list running instances (`npm run worktree:list`)
+- [x] Health doc: list running instances (`npm run worktree:list`)
 
 #### 9.4 — Portless integration (recommended URL layer)
 
@@ -534,8 +534,8 @@ Root `portless.json` (monorepo):
 
 Phase 3 core is shipped. Remaining priorities:
 
-1. **Phase 6 — MiniMax agent chat** — attachments (v1.1); cross-device QA
-2. **Phase 9 — Parallel worktree dev** — multi-instance Docker Compose, Neon branch per worktree, Portless URLs
+1. **Phase 9 — Parallel worktree dev** — Portless integration (9.4); end-to-end QA with two worktrees
+2. **Phase 6 — MiniMax agent chat** — attachments (v1.1); cross-device QA
 3. **Phase 7 — TLS + deploy** — Let's Encrypt in Docker Compose dev; Vercel for web; decide API/whisper host
 4. **OAuth providers** — Google + GitHub in Neon Console
 5. **Apple Watch follow-ups** — open todo count glance, bidirectional sync

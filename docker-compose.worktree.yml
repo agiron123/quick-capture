@@ -1,0 +1,28 @@
+# Override for linked git worktrees — use with:
+# docker compose -f docker-compose.yml -f docker-compose.worktree.yml --env-file .env.worktree up
+name: ${COMPOSE_PROJECT_NAME}
+
+services:
+  migrate:
+    env_file:
+      - .env.worktree
+
+  whisper:
+    ports:
+      - "${WHISPER_PORT}:8080"
+
+  api:
+    ports:
+      - "${API_PORT}:3000"
+    env_file:
+      - .env.worktree
+    environment:
+      CORS_ORIGINS: ${CORS_ORIGINS}
+
+  web:
+    ports:
+      - "${WEB_PORT}:3001"
+    env_file:
+      - .env.worktree
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}

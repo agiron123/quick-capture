@@ -116,4 +116,16 @@ See also [features/ai-backend.md](./features/ai-backend.md) and [monorepo.md](./
 
 ## Parallel worktrees
 
-To run **multiple Compose stacks** at once (one per git worktree), each with its own Neon branch and ports, see [features/worktree-dev.md](./features/worktree-dev.md). Main worktree behavior on this page is unchanged.
+To run **multiple Compose stacks** at once (one per git worktree), each with its own Neon branch and ports:
+
+```bash
+npm run worktree:bootstrap      # linked worktree only — creates Neon branch + .env.worktree
+npm run docker:dev:worktree     # start isolated stack
+npm run worktree:list           # ports + URLs for all instances
+npm run docker:down:worktree    # stop this worktree's stack
+npm run worktree:teardown -- --delete-neon-branch   # optional Neon cleanup
+```
+
+Optional [Portless](https://github.com/vercel-labs/portless) URLs: `https://<slug>.quick-capture.localhost` (see [features/worktree-dev.md](./features/worktree-dev.md)).
+
+Main worktree behavior on this page is unchanged (`npm run docker:dev`).
