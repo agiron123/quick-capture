@@ -4,6 +4,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   PlatformColor,
+  Pressable,
   ScrollView,
   StyleSheet,
   View,
@@ -25,6 +26,7 @@ export function ChatThreadScreen({ threadId }: ChatThreadScreenProps) {
     isLoading,
     isStreaming,
     error,
+    lastFailedMessage,
     sendMessage,
     setThread,
     resetConversation,
@@ -66,8 +68,18 @@ export function ChatThreadScreen({ threadId }: ChatThreadScreenProps) {
         keyboardShouldPersistTaps="handled">
         <ChatMessageList messages={messages} isLoading={isLoading} />
         {error ? (
-          <View style={styles.errorBox}>
+          <View style={styles.errorBox} accessibilityRole="alert">
             <Text style={styles.errorText}>{error}</Text>
+            {lastFailedMessage ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Retry sending message"
+                onPress={() => void sendMessage(lastFailedMessage)}
+                disabled={isStreaming}
+                style={styles.retryButton}>
+                <Text style={styles.retryLabel}>Retry</Text>
+              </Pressable>
+            ) : null}
           </View>
         ) : null}
       </ScrollView>
@@ -97,5 +109,15 @@ const styles = StyleSheet.create({
   errorText: {
     color: PlatformColor('systemRed'),
     fontWeight: '500',
+  },
+  retryButton: {
+    marginTop: 8,
+    alignSelf: 'flex-start',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  retryLabel: {
+    color: PlatformColor('systemBlue'),
+    fontWeight: '600',
   },
 });

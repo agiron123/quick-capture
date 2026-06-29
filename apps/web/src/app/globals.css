@@ -130,3 +130,9 @@
     @apply font-sans;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer {
+    animation: none !important;
+  }
+}

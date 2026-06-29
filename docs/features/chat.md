@@ -353,7 +353,7 @@ No new secrets beyond existing MiniMax vars. Optional tuning:
 
 - [x] Quick Capture system prompt
 - [ ] Cross-device sync verified (manual QA)
-- [ ] Accessibility (labels, reduced motion)
+- [x] Accessibility (labels, reduced motion, stream retry)
 - [ ] **Future:** “Add as todos” → review modal ([review-before-save convention](../architecture.md))
 
 ## Acceptance criteria

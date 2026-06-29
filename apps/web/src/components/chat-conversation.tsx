@@ -48,6 +48,7 @@ export function ChatConversation({
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamError, setStreamError] = useState<string | null>(null);
+  const [retryMessage, setRetryMessage] = useState<string | null>(null);
   const [activeThreadId, setActiveThreadId] = useState<string | null>(threadId);
   const streamingAssistantIdRef = useRef<string | null>(null);
 
@@ -103,6 +104,7 @@ export function ChatConversation({
 
       setDraft('');
       setStreamError(null);
+      setRetryMessage(null);
       setIsStreaming(true);
 
       const optimisticUser: DisplayMessage = {
@@ -180,11 +182,13 @@ export function ChatConversation({
 
             if (event.type === 'error') {
               setStreamError(event.error);
+              setRetryMessage(trimmed);
             }
           }
         );
       } catch (error) {
         setStreamError(error instanceof Error ? error.message : 'Failed to send message');
+        setRetryMessage(trimmed);
         setMessages((current) => current.filter((message) => message.id !== optimisticUser.id));
       } finally {
         setIsStreaming(false);
@@ -246,11 +250,11 @@ export function ChatConversation({
                   scrollAnchor={message.id === lastUserMessageId || message.streaming}
                 >
                   <Message align={message.role === 'user' ? 'end' : 'start'}>
-                    <MessageAvatar className="size-8">
+                    <MessageAvatar className="size-8" aria-hidden>
                       {message.role === 'user' ? (
-                        <User className="size-4" />
+                        <User className="size-4" aria-hidden />
                       ) : (
-                        <Bot className="size-4" />
+                        <Bot className="size-4" aria-hidden />
                       )}
                     </MessageAvatar>
                     <MessageContent>
@@ -262,10 +266,16 @@ export function ChatConversation({
                         align={message.role === 'user' ? 'end' : 'start'}
                       >
                         <BubbleContent>
-                          <span className="whitespace-pre-wrap">
+                          <span
+                            className="whitespace-pre-wrap"
+                            aria-live={message.streaming ? 'polite' : undefined}
+                            aria-busy={message.streaming && !message.content ? true : undefined}
+                          >
                             {message.content}
                             {message.streaming && !message.content ? (
-                              <span className="shimmer text-muted-foreground">Thinking…</span>
+                              <span className="shimmer motion-reduce:animate-none text-muted-foreground">
+                                Thinking…
+                              </span>
                             ) : null}
                           </span>
                         </BubbleContent>
@@ -277,8 +287,20 @@ export function ChatConversation({
 
               {streamError ? (
                 <MessageScrollerItem messageId="stream-error">
-                  <Marker variant="border">
+                  <Marker variant="border" role="alert">
                     <MarkerContent>{streamError}</MarkerContent>
+                    {retryMessage ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="ml-auto shrink-0"
+                        onClick={() => void sendMessage(retryMessage)}
+                        disabled={isStreaming}
+                      >
+                        Retry
+                      </Button>
+                    ) : null}
                   </Marker>
                 </MessageScrollerItem>
               ) : null}
@@ -291,6 +313,7 @@ export function ChatConversation({
       <form
         onSubmit={handleSubmit}
         className="border-t bg-background p-4"
+        aria-label="Send a chat message"
       >
         <div className="mx-auto flex max-w-3xl gap-2">
           <textarea
@@ -303,11 +326,16 @@ export function ChatConversation({
               }
             }}
             placeholder="Message the assistant…"
+            aria-label="Message the assistant"
             rows={2}
             disabled={isStreaming}
             className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[44px] flex-1 resize-none rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
           />
-          <Button type="submit" disabled={isStreaming || !draft.trim()}>
+          <Button
+            type="submit"
+            disabled={isStreaming || !draft.trim()}
+            aria-busy={isStreaming}
+          >
             Send
           </Button>
         </div>

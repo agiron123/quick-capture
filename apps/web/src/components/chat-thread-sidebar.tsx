@@ -26,24 +26,25 @@ export function ChatThreadSidebar({ activeThreadId, onNewChat }: ChatThreadSideb
   }, [search, threads]);
 
   return (
-    <aside className="flex w-full flex-col border-r md:w-72 lg:w-80">
+    <aside className="flex w-full flex-col border-r md:w-72 lg:w-80" aria-label="Chat threads">
       <div className="space-y-2 border-b p-3">
         <Button className="w-full justify-start" variant="outline" onClick={onNewChat}>
-          <MessageSquarePlus className="mr-2 size-4" />
+          <MessageSquarePlus className="mr-2 size-4" aria-hidden />
           New chat
         </Button>
         <div className="relative">
-          <Search className="text-muted-foreground absolute top-2.5 left-2.5 size-4" />
+          <Search className="text-muted-foreground absolute top-2.5 left-2.5 size-4" aria-hidden />
           <Input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search chats…"
+            aria-label="Search chats"
             className="pl-8"
           />
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-2">
+      <nav className="min-h-0 flex-1 overflow-y-auto p-2" aria-label="Thread list">
         {isLoading ? (
           <div className="space-y-2 p-2">
             <Skeleton className="h-10 w-full" />
@@ -61,7 +62,10 @@ export function ChatThreadSidebar({ activeThreadId, onNewChat }: ChatThreadSideb
                   variant={activeThreadId === thread.id ? 'secondary' : 'ghost'}
                   className={cn('h-auto min-h-10 flex-1 justify-start px-3 py-2 text-left')}
                 >
-                  <Link href={`/chat/${thread.id}`}>
+                  <Link
+                    href={`/chat/${thread.id}`}
+                    aria-current={activeThreadId === thread.id ? 'page' : undefined}
+                  >
                     <span className="line-clamp-2 text-sm">{thread.title}</span>
                   </Link>
                 </Button>
@@ -80,7 +84,7 @@ export function ChatThreadSidebar({ activeThreadId, onNewChat }: ChatThreadSideb
             ))}
           </ul>
         )}
-      </div>
+      </nav>
     </aside>
   );
 }

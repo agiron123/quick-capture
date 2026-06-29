@@ -31,6 +31,7 @@ Quick Capture turns messy inputs (handwritten notes, voice, manual entry) into a
 | Wear OS companion (scaffold) | ✅ Shipped | [docs/features/wear-os.md](./docs/features/wear-os.md) |
 | MiniMax agent chat (mobile + web) | 🚧 In progress | [docs/features/chat.md](./docs/features/chat.md) |
 | Docker Compose local dev stack | ✅ Shipped | [docs/docker-dev.md](./docs/docker-dev.md) |
+| Parallel worktree dev (multi-instance Compose) | 📋 Planned | [docs/features/worktree-dev.md](./docs/features/worktree-dev.md) |
 | TLS (Let's Encrypt) + cloud deploy | 📋 Planned | Phase 7 below |
 | Web sidebar navigation | 📋 Planned | Phase 8 below |
 
@@ -166,7 +167,7 @@ pnpm dlx shadcn@latest add message-scroller message bubble attachment marker
 - [x] System prompt: Quick Capture context (lists, todos, capture sources); no direct DB writes from model — suggest actions, user confirms
 - [ ] Future hook: “Add as todos” from assistant suggestions → existing review-before-save flow
 - [x] Cross-device: thread list and messages sync via API (source of truth in Neon Postgres)
-- [ ] Accessibility: labels, focus order, reduced motion for streaming markers
+- [x] Accessibility: labels, focus order, reduced motion for streaming markers
 
 #### Dependencies
 
@@ -227,6 +228,7 @@ Building on the shipped stack ([docker-dev.md](./docs/docker-dev.md)):
 - [ ] TLS reverse proxy + Let's Encrypt (7.1)
 - [ ] Optional: `docker-compose.prod.yml` override (no bind mounts, `npm start` / built images) for staging on a VPS
 - [ ] Healthchecks and `depends_on` for api ← whisper already in place; extend for caddy ← web/api
+- [ ] **Phase 9:** `docker-compose.worktree.yml` + per-worktree port/env isolation ([worktree-dev.md](./docs/features/worktree-dev.md))
 
 #### 7.3 — Cloud deployment (Vercel-first, provider TBD)
 
@@ -366,16 +368,179 @@ npx shadcn@latest add sidebar
 
 **Out of scope:** Mobile tab bar redesign; changing URL structure.
 
+### Phase 9 — Parallel worktree development (multi-instance Docker Compose)
+
+Run **multiple full stacks at once** — one per git worktree — so feature branches never fight over ports, Neon data, or auth. Each worktree gets an isolated **Neon database branch**, **Compose project**, **host port block**, and (optionally) stable **`.localhost` URLs** via [Portless](https://github.com/vercel-labs/portless).
+
+**Spec (to create):** [docs/features/worktree-dev.md](./docs/features/worktree-dev.md)
+
+#### Problem
+
+Today [docker-compose.yml](./docker-compose.yml) binds fixed host ports (`3000` API, `3001` web, `8080` whisper) and reads a single root `.env`. That works for one checkout but breaks when you use **git worktrees** to work on several features in parallel:
+
+| Collision | What breaks |
+| --- | --- |
+| Port `3000` / `3001` / `8080` already in use | Second `docker compose up` fails or hijacks the first stack |
+| One `DATABASE_URL` / `NEON_AUTH_*` | Worktrees share Neon branch — migrations and test data collide |
+| `CORS_ORIGINS` / `NEXT_PUBLIC_API_URL` | Web in worktree A talks to API in worktree B |
+| Self-signed certs tied to `localhost:3001` | Hard to reason about which instance is which |
+
+Neon already supports **branch-per-environment** ([auth.md](./docs/features/auth.md#preview--staging-branches)); this phase wires that into a repeatable worktree bootstrap.
+
+#### Target workflow
+
+```bash
+# From main repo (once per feature branch)
+git worktree add ../quick-capture-feat-chat -b feat/chat
+cd ../quick-capture-feat-chat
+
+# Bootstrap: Neon branch + .env.worktree + port block + migrate
+npm run worktree:bootstrap
+
+# Start this worktree's stack (isolated Compose project + ports)
+npm run docker:dev:worktree
+# -> https://feat-chat.quick-capture.localhost (web, via Portless)
+# -> https://api.feat-chat.quick-capture.localhost (API)
+# -> Neon branch feat-chat with matching Auth URL
+```
+
+Teardown when done:
+
+```bash
+npm run worktree:teardown   # optional: delete Neon branch
+git worktree remove ../quick-capture-feat-chat
+```
+
+#### Architecture
+
+```mermaid
+flowchart TB
+  subgraph wt1 [Worktree feat/chat]
+    P1[Portless proxy]
+    C1[Compose project qc-feat-chat]
+    E1[.env.worktree]
+    N1[(Neon branch feat-chat)]
+    P1 --> C1
+    C1 --> N1
+    E1 --> C1
+  end
+
+  subgraph wt2 [Worktree fix/sync]
+    P2[Portless proxy]
+    C2[Compose project qc-fix-sync]
+    E2[.env.worktree]
+    N2[(Neon branch fix-sync)]
+    P2 --> C2
+    C2 --> N2
+    E2 --> C2
+  end
+
+  Main[Main worktree] --> P0[quick-capture.localhost : default ports]
+```
+
+**Isolation layers:**
+
+| Layer | Mechanism |
+| --- | --- |
+| Git | Linked worktree per branch (`git worktree add`) |
+| Neon | New DB branch per worktree (`neonctl branches create --name <slug>`) |
+| Auth | Branch-specific `NEON_AUTH_URL` + `NEXT_PUBLIC_NEON_AUTH_URL` (cloned `neon_auth`) |
+| Docker | `COMPOSE_PROJECT_NAME=qc-<slug>` — separate containers + named volumes |
+| Ports | Per-worktree offset block (e.g. slug hash → `3010/3011/8081`) |
+| URLs | Portless worktree subdomain prefix (e.g. `feat-chat.quick-capture.localhost`) |
+
+#### 9.1 — Worktree registry and port allocation
+
+- [ ] Add `.worktree-registry.json` (gitignored) or `~/.config/quick-capture/worktrees.json` mapping `worktree path → { branch, neonBranchId, composeProject, ports, portlessNames }`
+- [ ] `scripts/worktree-slug.sh` — derive URL-safe slug from git branch (`feat/chat` → `feat-chat`)
+- [ ] Port block formula: base `3000 + (hash(slug) % 50) * 10` → API `+0`, web `+1`, whisper `+2` (document ranges; detect conflicts before `up`)
+- [ ] Env template `.env.worktree.example` — placeholders for `WORKTREE_SLUG`, `API_PORT`, `WEB_PORT`, `WHISPER_PORT`, `COMPOSE_PROJECT_NAME`
+- [ ] `docker-compose.worktree.yml` override: parameterize `ports:` and `COMPOSE_PROJECT_NAME` via env (no hardcoded `3000:3000`)
+
+#### 9.2 — Neon branch bootstrap
+
+- [ ] `scripts/worktree-bootstrap.sh` (or `npm run worktree:bootstrap`):
+  1. Read current branch / worktree path
+  2. Create Neon branch from `main` (or `development`) if not exists — `neonctl branches create <slug> --parent main`
+  3. Fetch branch `DATABASE_URL` + Auth URL from Neon API / console instructions
+  4. Write `.env.worktree` (or merge into `.env.local`) with **all branch-matched** vars per [auth.md](./docs/features/auth.md#preview--staging-branches)
+  5. Set `CORS_ORIGINS` to worktree web origin(s)
+  6. Run `docker compose run migrate` against that branch
+- [ ] `scripts/worktree-teardown.sh` — stop compose project, optional `neonctl branches delete`
+- [ ] Document Neon Console fallback when `neonctl` not installed
+
+#### 9.3 — Docker Compose multi-instance
+
+Building on [docker-dev.md](./docs/docker-dev.md):
+
+- [ ] `docker compose -f docker-compose.yml -f docker-compose.worktree.yml --env-file .env.worktree up`
+- [ ] Unique `COMPOSE_PROJECT_NAME` per worktree (`qc-feat-chat`) so volumes (`api_uploads`, `node_modules` caches) do not clash
+- [ ] `web` service: `NEXT_PUBLIC_API_URL` points at this worktree's API URL (Portless hostname or `http://localhost:<API_PORT>`)
+- [ ] `api` service: `CORS_ORIGINS` includes this worktree's web origin
+- [ ] Root scripts:
+  - `docker:dev:worktree` — bootstrap check + compose up with worktree env
+  - `docker:down:worktree` — `compose down` for current project only
+- [ ] Health doc: list running instances (`npm run worktree:list`)
+
+#### 9.4 — Portless integration (recommended URL layer)
+
+[Portless](https://github.com/vercel-labs/portless) gives **stable named URLs** instead of remembering port offsets. It **auto-detects git worktrees** and prepends the branch as a subdomain (`feat-chat.quick-capture.localhost`).
+
+Root `portless.json` (monorepo):
+
+```json
+{
+  "apps": {
+    "apps/web": { "name": "quick-capture" },
+    "apps/api": { "name": "api.quick-capture", "script": "dev" }
+  }
+}
+```
+
+- [ ] Evaluate Portless **in front of** Docker-published ports vs native-only dev:
+  - **Option A (hybrid):** Compose publishes `localhost:<API_PORT>`; Portless on host proxies `api.<slug>.quick-capture.localhost` → that port (single proxy, no port memorization)
+  - **Option B (native):** `portless` + `npm run dev:web-api` per worktree (no Compose); whisper still via `docker compose up whisper` on worktree whisper port
+- [ ] Add `portless` as optional devDependency; document `portless trust` (one-time CA)
+- [ ] Wire `dev:docker` / compose web to respect `PORT` when Portless assigns child port
+- [ ] Update Neon Auth allowed origins for `https://<slug>.quick-capture.localhost` (and `api.` subdomain if browser calls API directly)
+- [ ] Mobile / Expo: `EXPO_PUBLIC_API_URL` + `EXPO_PUBLIC_NEON_AUTH_URL` in `.env.worktree` or `app.config` extra — document per-worktree LAN testing
+
+**Why Portless:** branch-prefixed subdomains align with worktree isolation; HTTPS via local CA avoids per-instance self-signed cert churn; agents and humans get stable URLs in logs and docs.
+
+**Fallback:** port-offset mode only (no Portless) — `http://localhost:3010` / `https://localhost:3011` documented in `worktree:list` output.
+
+#### 9.5 — Developer ergonomics
+
+- [ ] `npm run worktree:bootstrap` / `worktree:teardown` / `worktree:list`
+- [ ] Cursor / agent skill note: always `cd` into correct worktree before `docker:dev`
+- [ ] AGENTS.md + [monorepo.md](./docs/monorepo.md) section on parallel worktrees
+- [ ] CI: not in scope — preview deploys stay Vercel + Neon preview branches ([Phase 7.3](#73--cloud-deployment-vercel-first-provider-tbd))
+
+#### Acceptance criteria
+
+- [ ] Two linked worktrees can run `docker:dev:worktree` simultaneously without port or volume conflicts
+- [ ] Each worktree uses its own Neon branch; sign-in on worktree A does not see worktree B's todos
+- [ ] `worktree:list` shows slug, ports, Portless URLs, Neon branch name, compose project
+- [ ] Main worktree unchanged — default `npm run docker:dev` still uses ports `3000`/`3001`/`8080`
+- [ ] Documented path with and without Portless
+
+#### Dependencies
+
+- Shipped [docker-compose.yml](./docker-compose.yml) ([docker-dev.md](./docs/docker-dev.md))
+- Neon branch + Auth pairing ([auth.md](./docs/features/auth.md))
+- Optional: [Phase 7.1](#71--lets-encrypt-in-docker-compose-local-dev) TLS proxy — worktree mode may use Portless HTTPS instead of per-compose Caddy
+
 ## Next up
 
 Phase 3 core is shipped. Remaining priorities:
 
 1. **Phase 6 — MiniMax agent chat** — finish polish (attachments, a11y, “add as todos” hook)
-2. **Phase 8 — Web sidebar navigation** — replace horizontal nav in `AppShell` with shadcn sidebar
-3. **Phase 7 — TLS + deploy** — Let's Encrypt in Docker Compose dev; Vercel for web; decide API/whisper host
-4. **OAuth providers** — Google + GitHub in Neon Console
-5. **Apple Watch follow-ups** — open todo count glance, bidirectional sync
-6. **Wear OS follow-ups** — open todo count glance via Data Layer
+2. **Phase 9 — Parallel worktree dev** — multi-instance Docker Compose, Neon branch per worktree, Portless URLs
+3. **Phase 8 — Web sidebar navigation** — replace horizontal nav in `AppShell` with shadcn sidebar
+4. **Phase 7 — TLS + deploy** — Let's Encrypt in Docker Compose dev; Vercel for web; decide API/whisper host
+5. **OAuth providers** — Google + GitHub in Neon Console
+6. **Apple Watch follow-ups** — open todo count glance, bidirectional sync
+7. **Wear OS follow-ups** — open todo count glance via Data Layer
 
 Specs:
 - [docs/features/apple-watch.md](./docs/features/apple-watch.md)
@@ -395,6 +560,7 @@ Specs:
 - [docs/features/scheduled-reminders.md](./docs/features/scheduled-reminders.md)
 - [docs/features/chat.md](./docs/features/chat.md)
 - [docs/docker-dev.md](./docs/docker-dev.md)
+- [docs/features/worktree-dev.md](./docs/features/worktree-dev.md) *(planned)*
 - [docs/features/deployment.md](./docs/features/deployment.md) *(planned)*
 - [docs/features/web-sidebar-nav.md](./docs/features/web-sidebar-nav.md) *(planned)*
 

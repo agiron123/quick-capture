@@ -35,12 +35,24 @@ export function ChatMessageList({ messages, isLoading }: ChatMessageListProps) {
         return (
           <View
             key={message.id}
-            style={[styles.row, isUser ? styles.rowUser : styles.rowAssistant]}>
+            style={[styles.row, isUser ? styles.rowUser : styles.rowAssistant]}
+            accessible
+            accessibilityRole="text"
+            accessibilityLabel={`${isUser ? 'You' : 'Assistant'}: ${message.content || (message.streaming ? 'Thinking' : '')}`}
+          >
             <View style={[styles.bubble, isUser ? styles.bubbleUser : styles.bubbleAssistant]}>
-              <Text style={[styles.label, isUser ? styles.labelUser : styles.labelAssistant]}>
+              <Text
+                style={[styles.label, isUser ? styles.labelUser : styles.labelAssistant]}
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants"
+              >
                 {isUser ? 'You' : 'Assistant'}
               </Text>
-              <Text style={[styles.content, isUser ? styles.contentUser : styles.contentAssistant]}>
+              <Text
+                style={[styles.content, isUser ? styles.contentUser : styles.contentAssistant]}
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+              >
                 {message.content}
                 {message.streaming && !message.content ? 'Thinking…' : ''}
               </Text>

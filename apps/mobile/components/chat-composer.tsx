@@ -32,6 +32,7 @@ export function ChatComposer({ onSend, disabled = false }: ChatComposerProps) {
         onChangeText={setDraft}
         placeholder="Message the assistant…"
         placeholderTextColor={PlatformColor('placeholderText')}
+        accessibilityLabel="Message the assistant"
         multiline
         style={styles.input}
         editable={!disabled}

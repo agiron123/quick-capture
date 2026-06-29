@@ -13,6 +13,7 @@ export function useChatConversation(threadId: string | null) {
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
   const [activeThreadId, setActiveThreadId] = useState<string | null>(threadId);
 
   const loadMessages = useCallback(async (id: string) => {
@@ -34,6 +35,7 @@ export function useChatConversation(threadId: string | null) {
       if (!trimmed || isStreaming) return null;
 
       setError(null);
+      setLastFailedMessage(null);
       setIsStreaming(true);
 
       const optimisticUser: DisplayMessage = {
@@ -111,11 +113,13 @@ export function useChatConversation(threadId: string | null) {
 
             if (event.type === 'error') {
               setError(event.error);
+              setLastFailedMessage(trimmed);
             }
           }
         );
       } catch (sendError) {
         setError(sendError instanceof Error ? sendError.message : 'Failed to send message');
+        setLastFailedMessage(trimmed);
         setMessages((current) => current.filter((message) => message.id !== optimisticUser.id));
       } finally {
         setIsStreaming(false);
@@ -149,6 +153,7 @@ export function useChatConversation(threadId: string | null) {
     isLoading,
     isStreaming,
     error,
+    lastFailedMessage,
     activeThreadId,
     sendMessage,
     resetConversation,
