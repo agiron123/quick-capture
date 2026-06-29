@@ -28,9 +28,14 @@ npm run dev:api              # API at http://localhost:3000
 npm run dev                  # Mobile + API in parallel
 npm run build                # Build shared + api (turbo cache)
 npm run typecheck            # Typecheck all packages
+npm run docker:dev           # Full stack in Docker (main checkout)
+npm run worktree:bootstrap   # Linked worktree: Neon branch + .env.worktree
+npm run docker:dev:worktree  # Docker stack for current worktree
 ```
 
 Copy `.env.example` to `.env` for local env vars. Mobile env uses `EXPO_PUBLIC_*` prefix.
+
+**Parallel worktrees:** Always `cd` into the linked worktree before `worktree:bootstrap` or `docker:dev:worktree`. Main checkout uses `npm run docker:dev`. See [docs/features/worktree-dev.md](./docs/features/worktree-dev.md).
 
 ## Core product flows
 
