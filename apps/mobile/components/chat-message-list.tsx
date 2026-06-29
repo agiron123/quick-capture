@@ -1,14 +1,21 @@
 import type { ChatMessage } from '@quick-capture/shared';
-import { ActivityIndicator, PlatformColor, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, PlatformColor, Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/Themed';
 
 type ChatMessageListProps = {
   messages: (ChatMessage & { streaming?: boolean })[];
   isLoading?: boolean;
+  onAddAsTodos?: (assistantContent: string) => void;
+  isExtractingTodos?: boolean;
 };
 
-export function ChatMessageList({ messages, isLoading }: ChatMessageListProps) {
+export function ChatMessageList({
+  messages,
+  isLoading,
+  onAddAsTodos,
+  isExtractingTodos = false,
+}: ChatMessageListProps) {
   if (isLoading) {
     return (
       <View style={styles.centered}>
@@ -57,6 +64,16 @@ export function ChatMessageList({ messages, isLoading }: ChatMessageListProps) {
                 {message.streaming && !message.content ? 'Thinking…' : ''}
               </Text>
             </View>
+            {!isUser && !message.streaming && message.content.trim() && onAddAsTodos ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Add assistant message as todos"
+                disabled={isExtractingTodos}
+                onPress={() => onAddAsTodos(message.content)}
+                style={styles.addTodosButton}>
+                <Text style={styles.addTodosLabel}>Add as todos</Text>
+              </Pressable>
+            ) : null}
           </View>
         );
       })}
@@ -111,6 +128,16 @@ const styles = StyleSheet.create({
   },
   contentAssistant: {
     color: PlatformColor('label'),
+  },
+  addTodosButton: {
+    marginTop: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 2,
+  },
+  addTodosLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: PlatformColor('systemBlue'),
   },
   centered: {
     flex: 1,

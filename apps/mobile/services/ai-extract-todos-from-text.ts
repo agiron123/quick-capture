@@ -10,7 +10,15 @@ export async function extractTodosFromTranscript(transcript: string): Promise<Ex
   const trimmed = transcript.trim();
   if (!trimmed) return [];
 
-  if (shouldUseMockAi() || !isApiConfigured()) {
+  if (shouldUseMockAi()) {
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    return [
+      { title: 'Review meeting notes' },
+      { title: 'Send follow-up email' },
+    ];
+  }
+
+  if (!isApiConfigured()) {
     throw new Error('AI API is not configured. Set EXPO_PUBLIC_API_URL or enable mock mode.');
   }
 

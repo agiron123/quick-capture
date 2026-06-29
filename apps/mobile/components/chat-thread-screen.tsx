@@ -1,6 +1,8 @@
 import { router, type Href } from 'expo-router';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   PlatformColor,
@@ -14,6 +16,7 @@ import { ChatComposer } from '@/components/chat-composer';
 import { ChatMessageList } from '@/components/chat-message-list';
 import { Text } from '@/components/Themed';
 import { useChatConversation } from '@/hooks/use-chat-conversation';
+import { extractTodosFromTranscript } from '@/services/ai-extract-todos-from-text';
 
 type ChatThreadScreenProps = {
   threadId?: string;
@@ -21,6 +24,7 @@ type ChatThreadScreenProps = {
 
 export function ChatThreadScreen({ threadId }: ChatThreadScreenProps) {
   const scrollRef = useRef<ScrollView>(null);
+  const [isExtractingTodos, setIsExtractingTodos] = useState(false);
   const {
     messages,
     isLoading,
@@ -55,6 +59,30 @@ export function ChatThreadScreen({ threadId }: ChatThreadScreenProps) {
     [sendMessage, threadId]
   );
 
+  const handleAddAsTodos = useCallback(async (assistantContent: string) => {
+    setIsExtractingTodos(true);
+    try {
+      const todos = await extractTodosFromTranscript(assistantContent);
+      router.push({
+        pathname: '/review-todos',
+        params: {
+          source: 'manual',
+          todos: JSON.stringify(todos),
+        },
+      });
+      if (todos.length === 0) {
+        Alert.alert('No todos extracted', 'Edit lines manually before saving.');
+      }
+    } catch (extractError) {
+      Alert.alert(
+        'Could not extract todos',
+        extractError instanceof Error ? extractError.message : 'Something went wrong'
+      );
+    } finally {
+      setIsExtractingTodos(false);
+    }
+  }, []);
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -66,7 +94,18 @@ export function ChatThreadScreen({ threadId }: ChatThreadScreenProps) {
         contentContainerStyle={styles.scrollContent}
         contentInsetAdjustmentBehavior="automatic"
         keyboardShouldPersistTaps="handled">
-        <ChatMessageList messages={messages} isLoading={isLoading} />
+        <ChatMessageList
+          messages={messages}
+          isLoading={isLoading}
+          onAddAsTodos={(content) => void handleAddAsTodos(content)}
+          isExtractingTodos={isExtractingTodos}
+        />
+        {isExtractingTodos ? (
+          <View style={styles.extractingRow}>
+            <ActivityIndicator size="small" />
+            <Text style={styles.extractingText}>Extracting todos…</Text>
+          </View>
+        ) : null}
         {error ? (
           <View style={styles.errorBox} accessibilityRole="alert">
             <Text style={styles.errorText}>{error}</Text>
@@ -119,5 +158,16 @@ const styles = StyleSheet.create({
   retryLabel: {
     color: PlatformColor('systemBlue'),
     fontWeight: '600',
+  },
+  extractingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginHorizontal: 16,
+    marginBottom: 8,
+  },
+  extractingText: {
+    fontSize: 14,
+    color: PlatformColor('secondaryLabel'),
   },
 });

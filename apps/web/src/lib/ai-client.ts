@@ -1,4 +1,9 @@
-import type { ExtractedTodoDto, ExtractImageResponse, ExtractVoiceResponse } from '@quick-capture/shared';
+import type {
+  ExtractedTodoDto,
+  ExtractImageResponse,
+  ExtractTranscriptResponse,
+  ExtractVoiceResponse,
+} from '@quick-capture/shared';
 
 const MOCK_TODOS: ExtractedTodoDto[] = [
   { title: 'Review meeting notes' },
@@ -76,4 +81,29 @@ export async function extractTodosFromVoice(blob: Blob, filename = 'recording.we
 
   const data = (await response.json()) as ExtractVoiceResponse;
   return { transcript: data.transcript, todos: data.todos };
+}
+
+export async function extractTodosFromTranscript(transcript: string): Promise<ExtractedTodoDto[]> {
+  const trimmed = transcript.trim();
+  if (!trimmed) {
+    return [];
+  }
+
+  if (shouldUseMockAi()) {
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    return MOCK_TODOS;
+  }
+
+  const response = await fetch(`${getApiBaseUrl()}/api/ai/extract/transcript`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ transcript: trimmed }),
+  });
+
+  if (!response.ok) {
+    throw new Error(await parseApiError(response));
+  }
+
+  const data = (await response.json()) as ExtractTranscriptResponse;
+  return data.todos;
 }

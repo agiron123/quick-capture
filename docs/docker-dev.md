@@ -113,3 +113,7 @@ npm run dev:web-api
 ```
 
 See also [features/ai-backend.md](./features/ai-backend.md) and [monorepo.md](./monorepo.md).
+
+## Parallel worktrees
+
+To run **multiple Compose stacks** at once (one per git worktree), each with its own Neon branch and ports, see [features/worktree-dev.md](./features/worktree-dev.md). Main worktree behavior on this page is unchanged.

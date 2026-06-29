@@ -354,7 +354,7 @@ No new secrets beyond existing MiniMax vars. Optional tuning:
 - [x] Quick Capture system prompt
 - [ ] Cross-device sync verified (manual QA)
 - [x] Accessibility (labels, reduced motion, stream retry)
-- [ ] **Future:** “Add as todos” → review modal ([review-before-save convention](../architecture.md))
+- [x] **Future:** “Add as todos” → review modal ([review-before-save convention](../architecture.md))
 
 ## Acceptance criteria
 
@@ -372,7 +372,7 @@ No new secrets beyond existing MiniMax vars. Optional tuning:
 | Slice | Description |
 | --- | --- |
 | **Attachments** | Image upload in chat via shadcn `Attachment`; vision messages to MiniMax |
-| **Todo actions** | Parse assistant suggestions → `review-todos` flow |
+| **Todo actions** | Parse assistant suggestions → `review-todos` flow (shipped) |
 | **Todo context** | Inject open todos into system prompt for list-aware answers |
 | **Search** | Full-text search across thread titles and messages |
 | **Export** | Export thread as markdown |

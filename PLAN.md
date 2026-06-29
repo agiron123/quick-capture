@@ -165,7 +165,7 @@ pnpm dlx shadcn@latest add message-scroller message bubble attachment marker
 #### 6.4 — Agent behavior and product polish
 
 - [x] System prompt: Quick Capture context (lists, todos, capture sources); no direct DB writes from model — suggest actions, user confirms
-- [ ] Future hook: “Add as todos” from assistant suggestions → existing review-before-save flow
+- [x] Future hook: “Add as todos” from assistant suggestions → existing review-before-save flow
 - [x] Cross-device: thread list and messages sync via API (source of truth in Neon Postgres)
 - [x] Accessibility: labels, focus order, reduced motion for streaming markers
 
@@ -534,13 +534,12 @@ Root `portless.json` (monorepo):
 
 Phase 3 core is shipped. Remaining priorities:
 
-1. **Phase 6 — MiniMax agent chat** — finish polish (attachments, a11y, “add as todos” hook)
+1. **Phase 6 — MiniMax agent chat** — attachments (v1.1); cross-device QA
 2. **Phase 9 — Parallel worktree dev** — multi-instance Docker Compose, Neon branch per worktree, Portless URLs
-3. **Phase 8 — Web sidebar navigation** — replace horizontal nav in `AppShell` with shadcn sidebar
-4. **Phase 7 — TLS + deploy** — Let's Encrypt in Docker Compose dev; Vercel for web; decide API/whisper host
-5. **OAuth providers** — Google + GitHub in Neon Console
-6. **Apple Watch follow-ups** — open todo count glance, bidirectional sync
-7. **Wear OS follow-ups** — open todo count glance via Data Layer
+3. **Phase 7 — TLS + deploy** — Let's Encrypt in Docker Compose dev; Vercel for web; decide API/whisper host
+4. **OAuth providers** — Google + GitHub in Neon Console
+5. **Apple Watch follow-ups** — open todo count glance, bidirectional sync
+6. **Wear OS follow-ups** — open todo count glance via Data Layer
 
 Specs:
 - [docs/features/apple-watch.md](./docs/features/apple-watch.md)

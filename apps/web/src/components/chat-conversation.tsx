@@ -1,7 +1,7 @@
 'use client';
 
 import type { ChatMessage } from '@quick-capture/shared';
-import { Bot, User } from 'lucide-react';
+import { Bot, ListPlus, User } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -34,6 +34,8 @@ type ChatConversationProps = {
   threadId: string | null;
   onThreadCreated: (threadId: string) => void;
   onMessageSent?: () => void;
+  onAddAsTodos?: (assistantContent: string) => void;
+  isExtractingTodos?: boolean;
 };
 
 type DisplayMessage = ChatMessage & { streaming?: boolean };
@@ -42,6 +44,8 @@ export function ChatConversation({
   threadId,
   onThreadCreated,
   onMessageSent,
+  onAddAsTodos,
+  isExtractingTodos = false,
 }: ChatConversationProps) {
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
   const [draft, setDraft] = useState('');
@@ -280,6 +284,22 @@ export function ChatConversation({
                           </span>
                         </BubbleContent>
                       </Bubble>
+                      {message.role === 'assistant' &&
+                      !message.streaming &&
+                      message.content.trim() &&
+                      onAddAsTodos ? (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="mt-1 h-8 px-2 text-muted-foreground"
+                          disabled={isExtractingTodos || isStreaming}
+                          onClick={() => onAddAsTodos(message.content)}
+                        >
+                          <ListPlus className="mr-1 size-4" aria-hidden />
+                          Add as todos
+                        </Button>
+                      ) : null}
                     </MessageContent>
                   </Message>
                 </MessageScrollerItem>

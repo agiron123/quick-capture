@@ -18,7 +18,13 @@ export default function ReviewTodosModal() {
   const { addTodos } = useTodos();
 
   const captureSource: TodoSource =
-    source === 'watch' ? 'watch' : source === 'voice' ? 'voice' : 'capture';
+    source === 'watch'
+      ? 'watch'
+      : source === 'voice'
+        ? 'voice'
+        : source === 'manual'
+          ? 'manual'
+          : 'capture';
 
   const initialTodos = useMemo(() => {
     if (!todosParam) return [];
@@ -58,7 +64,9 @@ export default function ReviewTodosModal() {
               ? 'Review Watch Todos'
               : captureSource === 'voice'
                 ? 'Review Voice Todos'
-                : 'Review Todos',
+                : captureSource === 'manual'
+                  ? 'Review Todos'
+                  : 'Review Todos',
           headerRight: () => (
             <Pressable onPress={saveTodos} style={{ paddingHorizontal: 4 }}>
               <Text style={{ color: PlatformColor('systemBlue'), fontSize: 17, fontWeight: '600' }}>
