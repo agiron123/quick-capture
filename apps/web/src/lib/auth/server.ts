@@ -16,7 +16,11 @@ const config = getAuthConfig();
 export const auth = config
   ? createNeonAuth({
       baseUrl: config.baseUrl,
-      cookies: { secret: config.secret },
+      cookies: {
+        secret: config.secret,
+        // lax: OAuth return navigations + localhost HTTPS dev (Secure cookies)
+        sameSite: 'lax',
+      },
     })
   : null;
 

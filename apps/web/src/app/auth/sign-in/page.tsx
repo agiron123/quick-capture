@@ -4,11 +4,12 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useActionState } from 'react';
 
-import { signInWithEmail, signInWithProvider } from '@/app/auth/actions';
+import { signInWithEmail } from '@/app/auth/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { authClient } from '@/lib/auth/client';
 
 export default function SignInPage() {
   return (
@@ -65,14 +66,20 @@ function SignInForm() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => void signInWithProvider('google')}
+              disabled={!authClient}
+              onClick={() =>
+                void authClient?.signIn.social({ provider: 'google', callbackURL: '/' })
+              }
             >
               Continue with Google
             </Button>
             <Button
               type="button"
               variant="outline"
-              onClick={() => void signInWithProvider('github')}
+              disabled={!authClient}
+              onClick={() =>
+                void authClient?.signIn.social({ provider: 'github', callbackURL: '/' })
+              }
             >
               Continue with GitHub
             </Button>

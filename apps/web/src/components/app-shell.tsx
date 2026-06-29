@@ -3,8 +3,8 @@
 import { Mic, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useTransition } from 'react';
 
-import { signOutAction } from '@/app/auth/actions';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLists } from '@/hooks/use-lists';
+import { authClient } from '@/lib/auth/client';
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -31,7 +32,18 @@ export function AppShell({
 }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const [signingOut, startSignOut] = useTransition();
   const { lists, activeListId, setActiveListId, isLoading: listsLoading } = useLists();
+
+  const handleSignOut = () => {
+    startSignOut(async () => {
+      if (authClient) {
+        await authClient.signOut();
+      }
+      router.push('/auth/sign-in');
+      router.refresh();
+    });
+  };
 
   const activeList = lists.find((list) => list.id === activeListId);
 
@@ -62,11 +74,15 @@ export function AppShell({
         <div className="flex items-center gap-2">
           {headerRight}
           <ThemeToggle />
-          <form action={signOutAction}>
-            <Button variant="ghost" size="sm" type="submit">
-              Sign out
-            </Button>
-          </form>
+          <Button
+            variant="ghost"
+            size="sm"
+            type="button"
+            disabled={signingOut}
+            onClick={handleSignOut}
+          >
+            {signingOut ? 'Signing out…' : 'Sign out'}
+          </Button>
         </div>
       </header>
 

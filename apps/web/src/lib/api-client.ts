@@ -12,9 +12,8 @@ function getApiBaseUrl(): string {
 
 async function getServerAccessToken(): Promise<string | null> {
   if (!auth) return null;
-  const result = await auth.getSession();
-  const token = result.data?.session?.token;
-  return token ?? null;
+  const result = await auth.token();
+  return result.data?.token ?? null;
 }
 
 async function parseApiError(response: Response): Promise<string> {

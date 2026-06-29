@@ -14,8 +14,10 @@ function getApiBaseUrl(): string {
 
 async function getAccessToken(): Promise<string | null> {
   if (!authClient) return null;
-  const result = await authClient.getSession();
-  return result.data?.session?.token ?? null;
+  const response = await fetch('/api/auth/token', { credentials: 'include' });
+  if (!response.ok) return null;
+  const data = (await response.json()) as { token?: string };
+  return data.token ?? null;
 }
 
 async function parseApiError(response: Response): Promise<string> {
