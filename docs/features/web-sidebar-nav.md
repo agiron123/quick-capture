@@ -33,6 +33,12 @@ Primary web navigation uses the shadcn **Sidebar** in [`apps/web/src/components/
 - **Mobile:** Sheet drawer via `SidebarTrigger` in header
 - Collapsed state persisted in cookie (`sidebar_state`)
 
+## Accessibility
+
+- **Skip link:** First tab stop — “Skip to main content” jumps to `#main-content` in the header area
+- **Focus order:** Sidebar navigation → page header → main content (DOM order)
+- **Keyboard:** ⌘/Ctrl+B toggles sidebar; mobile drawer via `SidebarTrigger`
+
 ## Related
 
 - [web-app.md](./web-app.md)

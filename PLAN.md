@@ -358,7 +358,7 @@ npx shadcn@latest add sidebar
 
 #### 8.6 — Polish and acceptance
 
-- [ ] Keyboard: focus order sidebar → main; skip link to content
+- [x] Keyboard: focus order sidebar → main; skip link to content
 - [x] `aria-current="page"` on active nav item
 - [x] Dark mode: sidebar tokens match existing theme (`next-themes`)
 - [x] Auth routes (`/auth/*`) unchanged — no sidebar on sign-in/up

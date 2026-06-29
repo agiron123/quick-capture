@@ -38,6 +38,12 @@ export function AppShell({
 
   return (
     <SidebarProvider>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:border focus:bg-background focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+      >
+        Skip to main content
+      </a>
       <AppSidebar onManageLists={onManageLists} />
       <SidebarInset>
         <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
@@ -57,7 +63,9 @@ export function AppShell({
           </div>
         </header>
 
-        <div className="flex min-h-0 flex-1 flex-col">{children}</div>
+        <main id="main-content" tabIndex={-1} className="flex min-h-0 flex-1 flex-col outline-none">
+          {children}
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );
