@@ -6,7 +6,7 @@ import { AppProviders } from '@/components/providers';
 import './globals.css';
 
 const geistSans = Geist({
-  variable: '--font-geist-sans',
+  variable: '--font-sans',
   subsets: ['latin'],
 });
 
@@ -31,7 +31,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">
+      <body className="flex min-h-full flex-col font-sans">
         <AppProviders>{children}</AppProviders>
       </body>
     </html>

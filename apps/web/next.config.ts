@@ -12,7 +12,9 @@ const repoRoot = path.resolve(
 loadEnvConfig(repoRoot);
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  turbopack: {
+    root: repoRoot,
+  },
 };
 
 export default nextConfig;
