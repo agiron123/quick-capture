@@ -30,6 +30,9 @@ Quick Capture turns messy inputs (handwritten notes, voice, manual entry) into a
 | Apple Watch companion (scaffold) | ✅ Shipped | [docs/features/apple-watch.md](./docs/features/apple-watch.md) |
 | Wear OS companion (scaffold) | ✅ Shipped | [docs/features/wear-os.md](./docs/features/wear-os.md) |
 | MiniMax agent chat (mobile + web) | 🚧 In progress | [docs/features/chat.md](./docs/features/chat.md) |
+| Docker Compose local dev stack | ✅ Shipped | [docs/docker-dev.md](./docs/docker-dev.md) |
+| TLS (Let's Encrypt) + cloud deploy | 📋 Planned | Phase 7 below |
+| Web sidebar navigation | 📋 Planned | Phase 8 below |
 
 ## Vision
 
@@ -171,14 +174,208 @@ pnpm dlx shadcn@latest add message-scroller message bubble attachment marker
 - MiniMax provider in `apps/api/src/ai/` ([ai-backend.md](./docs/features/ai-backend.md))
 - Web shadcn/ui stack ([web-app.md](./docs/features/web-app.md))
 
+### Phase 7 — TLS, Docker Compose dev, and cloud deployment
+
+Replace ad-hoc self-signed certs with **automated Let's Encrypt** in the local Docker stack, and define a **Vercel-first** production target while keeping API / whisper / storage choices flexible until a full cloud provider is picked.
+
+**Spec (to create):** [docs/features/deployment.md](./docs/features/deployment.md)
+
+#### Why Let's Encrypt needs a real domain (even for “local” dev)
+
+Let's Encrypt **cannot** issue certificates for `localhost`. Neon Auth also expects a stable HTTPS origin (production uses your app domain; local dev today uses self-signed `https://localhost:3001`).
+
+For trusted certs in Docker Compose dev, use a **dev hostname** you control (e.g. `dev.quickcapture.example.com`) that resolves to your machine:
+
+| Approach | How it works | Good for |
+| --- | --- | --- |
+| **DNS A/AAAA record** | Point dev subdomain to your LAN IP or public IP | Home lab, fixed IP |
+| **Cloudflare Tunnel** | Tunnel exposes local compose to the internet; DNS at Cloudflare | No port forwarding, dynamic IP |
+| **Tailscale Funnel / similar** | HTTPS on a MagicDNS or funnel URL | Team-only dev |
+
+Self-signed / mkcert remain the **offline fallback** when no public domain is available ([docker-dev.md](./docs/docker-dev.md)).
+
+#### 7.1 — Let's Encrypt in Docker Compose (local dev)
+
+Add a reverse-proxy service to [docker-compose.yml](./docker-compose.yml) that terminates TLS and routes to existing services:
+
+```
+Browser → Caddy (or Traefik) :443  [Let's Encrypt]
+              ├─→ web:3001   (Next.js dev)
+              ├─→ api:3000   (Hono)
+              └─→ whisper:8080 (optional; usually internal only)
+```
+
+- [ ] Choose proxy: **Caddy** (built-in ACME, simplest) or Traefik + optional certbot sidecar
+- [ ] Add `caddy` (or `traefik`) service + shared `certs` / `acme` volume
+- [ ] Env: `DEV_DOMAIN`, `ACME_EMAIL` (Let's Encrypt account contact)
+- [ ] HTTP-01 challenge on `:80` (required for standard ACME; Caddy handles automatically)
+- [ ] Route `https://${DEV_DOMAIN}` → web; `https://api.${DEV_DOMAIN}` or path-based `/api` → api (pick one pattern and document it)
+- [ ] Mount or sync issued certs into `apps/web/certificates/` **or** drop Next.js `--experimental-https` and let the proxy handle TLS (preferred — web runs HTTP inside the compose network)
+- [ ] Update `.env.example`: `DEV_DOMAIN`, `ACME_EMAIL`, `CORS_ORIGINS`, `NEXT_PUBLIC_API_URL`, Neon Auth redirect URLs for the dev domain
+- [ ] Update Neon Auth allowed origins / OAuth redirect URIs for the dev domain
+- [ ] Compose profiles: `docker compose --profile tls up` vs default profile keeping self-signed localhost for quick offline work
+- [ ] Document renewal (Caddy auto-renews; cert volume persists across restarts)
+
+**Acceptance:** `npm run docker:dev` (or `docker:dev:tls`) serves web + API on trusted HTTPS for `DEV_DOMAIN` without browser cert warnings; Neon Auth sign-in works on that origin.
+
+#### 7.2 — Docker Compose stack maturity
+
+Building on the shipped stack ([docker-dev.md](./docs/docker-dev.md)):
+
+- [x] `whisper`, `migrate`, `api`, `web` services with hot reload
+- [x] `TRANSCRIPTION_PROVIDER=whisper-cpp` wired in compose
+- [ ] TLS reverse proxy + Let's Encrypt (7.1)
+- [ ] Optional: `docker-compose.prod.yml` override (no bind mounts, `npm start` / built images) for staging on a VPS
+- [ ] Healthchecks and `depends_on` for api ← whisper already in place; extend for caddy ← web/api
+
+#### 7.3 — Cloud deployment (Vercel-first, provider TBD)
+
+Target: use **Vercel wherever it fits natively**; run long-lived / heavy workloads elsewhere. Final provider for API and whisper is **not decided** — this section records the default bias and open choices.
+
+```mermaid
+flowchart TB
+  subgraph vercel [Vercel preferred]
+    Web[apps/web Next.js]
+  end
+  subgraph neon [Neon already in use]
+    DB[(Postgres)]
+    Auth[Neon Auth]
+  end
+  subgraph tbd [Provider TBD]
+    API[apps/api Hono]
+    Whisper[whisper.cpp or managed STT]
+    Media[Capture object storage R2/S3]
+  end
+  Mobile[Expo mobile]
+  Web --> Auth
+  Web --> API
+  Mobile --> API
+  Mobile --> Auth
+  API --> DB
+  API --> Whisper
+  API --> Media
+```
+
+| Component | Vercel fit | Default recommendation | Notes |
+| --- | --- | --- | --- |
+| **Web** (`apps/web`) | ✅ Excellent | **Deploy on Vercel** | HTTPS automatic; preview URLs per branch; env via Vercel dashboard / `vercel env pull` |
+| **Neon Postgres + Auth** | ✅ Marketplace | **Keep on Neon** | Already integrated; branch-per-preview pairs with Vercel preview deployments |
+| **API** (`apps/api`) | ⚠️ Partial | **Evaluate** Vercel Functions (Hono adapter) vs Railway / Fly.io / VPS | SSE chat streams, reminder worker cron, multipart uploads, whisper proxy — validate limits on chosen platform |
+| **whisper.cpp** | ❌ Not on Vercel | **Separate container** (Railway, Fly, VPS, or local-only dev) | CPU/GPU bound; keep internal URL; prod may switch to managed STT later |
+| **Capture storage** | Blob optional | **R2/S3** or Vercel Blob | R2 already supported in API; Vercel Blob if staying all-in on Vercel storage |
+| **Mobile** | N/A (EAS) | Expo EAS | `EXPO_PUBLIC_*` points at deployed API + Neon Auth URLs |
+
+**Vercel setup checklist (when ready):**
+
+- [ ] Link `apps/web` project: `vercel link` (monorepo root or app directory per [docs/monorepo.md](./docs/monorepo.md))
+- [ ] `vercel env pull` — sync Neon, auth, and `NEXT_PUBLIC_API_URL` for preview/production
+- [ ] Preview branches: Neon database branch + matching `NEON_AUTH_*` / `DATABASE_URL` ([auth.md](./docs/features/auth.md#preview--staging-branches))
+- [ ] Production domain on Vercel; update Neon Auth redirect URLs and `CORS_ORIGINS` on API
+- [ ] CI: deploy web on push; API deploy workflow TBD with chosen host
+
+**Open decisions (document in deployment spec before shipping prod):**
+
+1. **API host** — Vercel Functions vs Railway vs Fly vs single VPS running the existing Docker stack
+2. **Whisper in prod** — self-hosted whisper.cpp vs OpenAI Whisper API vs other managed STT
+3. **Single domain vs split** — e.g. `app.example.com` (Vercel) + `api.example.com` (API host) vs path routing on one domain
+4. **Reminder worker** — Vercel Cron invoking API route vs always-on process on API host
+
+**Non-Vercel fallback:** The same [docker-compose.yml](./docker-compose.yml) (+ prod override) can run on any VPS if you prefer one box for API + whisper + Caddy; web could still be on Vercel pointing at that API URL.
+
+### Phase 8 — Web sidebar navigation
+
+Replace the horizontal top nav in [`apps/web/src/components/app-shell.tsx`](apps/web/src/components/app-shell.tsx) with a **persistent sidebar** for primary app navigation. Mobile (`apps/mobile`) keeps the bottom **tab bar** — this phase is web-only.
+
+**Spec (to create):** extend [docs/features/web-app.md](./docs/features/web-app.md) or add [docs/features/web-sidebar-nav.md](./docs/features/web-sidebar-nav.md)
+
+#### Current layout (to replace)
+
+Today `AppShell` stacks:
+
+1. **Header** — active list dropdown, page actions, theme toggle, sign out
+2. **Horizontal `<nav>`** — Todos, Capture, Voice, Chat, Devices (link buttons)
+3. **Main content** — route pages
+4. **Mic FAB** — fixed bottom-center quick capture
+
+Chat already adds a **second sidebar** (`ChatThreadSidebar`) inside the main area for thread history — the app shell sidebar becomes the **primary** nav; chat threads stay a **secondary** panel within `/chat`.
+
+```
+Today                          Target
+┌─────────────────────┐        ┌──────┬──────────────────────┐
+│ Header + list       │        │ App  │ Page header + actions│
+├─────────────────────┤   →    │ side │──────────────────────│
+│ Todos Capture …     │        │ bar  │ Main content         │
+├─────────────────────┤        │      │ (chat: + thread panel) │
+│ Content             │        └──────┴──────────────────────┘
+│        [Mic]        │
+└─────────────────────┘
+```
+
+#### 8.1 — Sidebar shell (shadcn/ui)
+
+Install and wire the [shadcn Sidebar](https://ui.shadcn.com/docs/components/sidebar) pattern:
+
+```bash
+npx shadcn@latest add sidebar
+```
+
+- [ ] Add `SidebarProvider` in `(app)` layout (or refactor `AppShell` to wrap children)
+- [ ] New `app-sidebar.tsx` — logo/title, primary nav links, footer actions
+- [ ] Nav items with icons + labels: **Todos** (`/`), **Capture** (`/capture`), **Voice** (`/voice`), **Chat** (`/chat`), **Devices** (`/devices`)
+- [ ] Active state via `usePathname()` (`/chat` matches `/chat/*`)
+- [ ] Remove horizontal `<nav>` strip from `AppShell`
+- [ ] `SidebarInset` (or equivalent) for main content column
+
+#### 8.2 — Header and list picker
+
+- [ ] Slim **top bar** inside main inset only (not full width over sidebar): optional page title, `headerRight` slot (e.g. Add todo), theme toggle, sign out
+- [ ] Move **list picker** (Inbox / lists dropdown) to one of:
+  - Sidebar section below nav (recommended — always visible on Todos)
+  - Todos page header only (hide on Capture / Voice / Chat)
+- [ ] Keep `useLists()` / `onManageLists` behavior unchanged
+
+#### 8.3 — Responsive behavior
+
+- [ ] **Desktop (`md+`):** fixed left sidebar, collapsible to icon rail (`SidebarTrigger` + `collapsible="icon"`)
+- [ ] **Mobile:** sidebar hidden by default; **Sheet** or shadcn mobile sidebar trigger in top bar (hamburger)
+- [ ] Persist collapsed preference in `localStorage` or cookie
+- [ ] Adjust `min-h` / padding: remove `pb-20` meant for bottom nav; chat layout `min-h-[calc(100dvh-8rem)]` updated for new chrome heights
+
+#### 8.4 — Quick capture (mic)
+
+- [ ] Relocate bottom-center **Mic FAB** — options (pick one in spec):
+  - Sidebar footer primary action (always visible)
+  - Floating FAB in main inset only (hide on `/voice` and `/chat`)
+- [ ] Preserve one-tap path to `/voice` from any signed-in route
+
+#### 8.5 — Chat layout integration
+
+- [ ] App sidebar remains visible on `/chat` (or collapses to icon rail automatically)
+- [ ] `ChatThreadSidebar` stays as **in-content** second column — avoid triple-sidebar on narrow viewports; stack thread list above conversation on mobile
+- [ ] `AppShell` prop `showMicFab={false}` on chat — keep or align with new FAB placement
+
+#### 8.6 — Polish and acceptance
+
+- [ ] Keyboard: focus order sidebar → main; skip link to content
+- [ ] `aria-current="page"` on active nav item
+- [ ] Dark mode: sidebar tokens match existing theme (`next-themes`)
+- [ ] Auth routes (`/auth/*`) unchanged — no sidebar on sign-in/up
+- [ ] Update [web-app.md](./docs/features/web-app.md) route/layout section when shipped
+
+**Acceptance:** All primary routes reachable from sidebar; horizontal nav removed; mobile usable via drawer; list picker and sign-out still accessible; chat thread sidebar coexists without layout breakage.
+
+**Out of scope:** Mobile tab bar redesign; changing URL structure.
+
 ## Next up
 
 Phase 3 core is shipped. Remaining priorities:
 
-1. **Phase 6 — MiniMax agent chat** — API + persisted threads, web (shadcn chat components), mobile Chat tab
-2. **OAuth providers** — Google + GitHub in Neon Console
-3. **Apple Watch follow-ups** — open todo count glance, bidirectional sync
-4. **Wear OS follow-ups** — open todo count glance via Data Layer
+1. **Phase 6 — MiniMax agent chat** — finish polish (attachments, a11y, “add as todos” hook)
+2. **Phase 8 — Web sidebar navigation** — replace horizontal nav in `AppShell` with shadcn sidebar
+3. **Phase 7 — TLS + deploy** — Let's Encrypt in Docker Compose dev; Vercel for web; decide API/whisper host
+4. **OAuth providers** — Google + GitHub in Neon Console
+5. **Apple Watch follow-ups** — open todo count glance, bidirectional sync
+6. **Wear OS follow-ups** — open todo count glance via Data Layer
 
 Specs:
 - [docs/features/apple-watch.md](./docs/features/apple-watch.md)
@@ -197,6 +394,9 @@ Specs:
 - [docs/features/push-notifications.md](./docs/features/push-notifications.md)
 - [docs/features/scheduled-reminders.md](./docs/features/scheduled-reminders.md)
 - [docs/features/chat.md](./docs/features/chat.md)
+- [docs/docker-dev.md](./docs/docker-dev.md)
+- [docs/features/deployment.md](./docs/features/deployment.md) *(planned)*
+- [docs/features/web-sidebar-nav.md](./docs/features/web-sidebar-nav.md) *(planned)*
 
 ## How to use this plan
 
