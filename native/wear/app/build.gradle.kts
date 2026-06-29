@@ -46,6 +46,10 @@ dependencies {
   implementation("androidx.compose.ui:ui-tooling-preview")
   implementation("androidx.wear.compose:compose-material:1.4.1")
   implementation("androidx.wear.compose:compose-foundation:1.4.1")
+  implementation("androidx.wear.tiles:tiles:1.4.1")
+  implementation("androidx.wear.protolayout:protolayout:1.2.1")
+  implementation("androidx.wear.protolayout:protolayout-material:1.2.1")
   implementation("com.google.android.gms:play-services-wearable:18.2.0")
+  implementation("com.google.guava:guava:33.4.0-android")
   debugImplementation("androidx.compose.ui:ui-tooling")
 }

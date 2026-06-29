@@ -11,6 +11,7 @@ Native Wear OS app for wrist-side voice capture. AI extraction and review still 
 | Phone listener + deep link | ✅ `WearCaptureListenerService` via config plugin |
 | Android bridge → `/voice-record` | ✅ `wear-capture-bridge.ts` |
 | `with-wear-capture-bridge` prebuild plugin | ✅ Injects native module + service |
+| Watch face tile (one-tap voice) | ✅ `VoiceCaptureTileService` |
 
 ## Capture flow
 
@@ -50,6 +51,7 @@ Requires a dev/EAS build — not Expo Go.
 | Area | Path |
 | --- | --- |
 | Wear Kotlin / Compose | `native/wear/app/src/main/java/com/quickcapture/wear/` |
+| Voice capture tile | `native/wear/.../VoiceCaptureTileService.kt` |
 | Wear docs entry | `native/wear/README.md` |
 | Prebuild plugin | `apps/mobile/plugins/with-wear-capture-bridge.js` |
 | Native bridge sources | `apps/mobile/plugins/wear-bridge/` |
@@ -58,7 +60,6 @@ Requires a dev/EAS build — not Expo Go.
 
 ## Follow-ups
 
-- Tile / complication for faster capture
 - Open todo count glance on watch via Data Layer sync
 
 ## Not supported

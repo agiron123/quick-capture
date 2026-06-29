@@ -10,6 +10,8 @@ Kotlin Wear OS app for one-tap voice capture on the wrist. AI extraction and rev
 4. `wear-capture-bridge.ts` reads the pending flag when the app is active and navigates to voice capture.
 5. Voice capture continues on the phone (AI + review modal — same as manual voice flow).
 
+Add the **Record voice** tile from the watch face editor for one-tap capture without opening the app.
+
 ## Build
 
 Requires Android Studio with Wear OS emulator or physical watch paired to a phone running a dev/EAS build (not Expo Go).

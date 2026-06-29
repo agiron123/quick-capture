@@ -122,7 +122,7 @@ Phase 3 core is shipped. Remaining priorities:
 
 1. **OAuth providers** — Google + GitHub in Neon Console
 2. **Apple Watch follow-ups** — complications, bidirectional sync
-3. **Wear OS follow-ups** — tile / complication
+3. **Wear OS follow-ups** — open todo count glance via Data Layer
 
 Specs:
 - [docs/features/apple-watch.md](./docs/features/apple-watch.md)
