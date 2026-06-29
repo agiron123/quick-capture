@@ -227,7 +227,7 @@ Building on the shipped stack ([docker-dev.md](./docs/docker-dev.md)):
 - [x] `TRANSCRIPTION_PROVIDER=whisper-cpp` wired in compose
 - [x] TLS reverse proxy + Let's Encrypt (7.1 core — Caddy profile; Neon Console origins per domain)
 - [ ] Optional: `docker-compose.prod.yml` override (no bind mounts, `npm start` / built images) for staging on a VPS
-- [ ] Healthchecks and `depends_on` for api ← whisper already in place; extend for caddy ← web/api
+- [x] Healthchecks and `depends_on` for api ← whisper already in place; extend for caddy ← web/api
 - [x] **Phase 9:** `docker-compose.worktree.yml` + per-worktree port/env isolation ([worktree-dev.md](./docs/features/worktree-dev.md))
 
 #### 7.3 — Cloud deployment (Vercel-first, provider TBD)
@@ -559,7 +559,7 @@ Specs:
 - [docs/features/chat.md](./docs/features/chat.md)
 - [docs/docker-dev.md](./docs/docker-dev.md)
 - [docs/features/worktree-dev.md](./docs/features/worktree-dev.md)
-- [docs/features/deployment.md](./docs/features/deployment.md) *(planned)*
+- [docs/features/deployment.md](./docs/features/deployment.md)
 - [docs/features/web-sidebar-nav.md](./docs/features/web-sidebar-nav.md)
 
 ## How to use this plan

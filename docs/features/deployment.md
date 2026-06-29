@@ -39,7 +39,9 @@ npm run docker:dev:tls
 
 ### Renewal
 
-Caddy auto-renews certificates. Data persists in the `caddy_data` volume across restarts.
+Caddy waits for healthy **web** and **api** before accepting traffic. The TLS stack adds healthchecks on all three services (Node `fetch` for app containers, `wget` for Caddy on port 80).
+
+Default localhost stack: **web** waits for healthy **api**; **api** waits for healthy **whisper**.
 
 ### Offline / localhost fallback
 
