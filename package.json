@@ -10,6 +10,7 @@
     "dev": "turbo run dev",
     "dev:mobile": "turbo run dev --filter=@quick-capture/mobile",
     "dev:api": "turbo run dev --filter=@quick-capture/api",
+    "dev:livekit-transcriber": "turbo run dev --filter=@quick-capture/livekit-transcriber",
     "dev:web": "turbo run dev --filter=@quick-capture/web",
     "dev:web-api": "turbo run dev --filter=@quick-capture/api --filter=@quick-capture/web",
     "docker:dev": "docker compose up --build",

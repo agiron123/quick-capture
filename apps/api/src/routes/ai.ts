@@ -11,6 +11,7 @@ import {
     assertChatProviderConfigured,
     assertTranscriptionConfigured,
     getAiConfig,
+    isLivekitRealtimeEnabled,
 } from '../ai/config.js';
 import { getChatProvider } from '../ai/router.js';
 import { transcribeAudio } from '../ai/transcribe.js';
@@ -60,6 +61,7 @@ aiRoutes.get('/status', (c) => {
     provider: config.provider,
     transcriptionProvider: config.transcriptionProvider,
     mockMode: false,
+    livekitRealtime: isLivekitRealtimeEnabled(config),
   });
   return c.json(payload);
 });

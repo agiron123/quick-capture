@@ -17,6 +17,8 @@ export type AiConfig = {
   livekitInferenceUrl: string | undefined;
   livekitSttModel: string;
   livekitSttLanguage: string;
+  livekitUrl: string | undefined;
+  livekitTranscriberAgentName: string;
 };
 
 function parseProvider(value: string | undefined): AiProvider {
@@ -50,6 +52,9 @@ export function getAiConfig(): AiConfig {
     livekitInferenceUrl: process.env.LIVEKIT_INFERENCE_URL?.trim() || undefined,
     livekitSttModel: process.env.LIVEKIT_STT_MODEL?.trim() || 'deepgram/nova-3',
     livekitSttLanguage: process.env.LIVEKIT_STT_LANGUAGE?.trim() || 'en',
+    livekitUrl: process.env.LIVEKIT_URL?.trim() || undefined,
+    livekitTranscriberAgentName:
+      process.env.LIVEKIT_TRANSCRIBER_AGENT_NAME?.trim() || 'qc-transcriber',
   };
 }
 
@@ -82,6 +87,24 @@ export function assertTranscriptionConfigured(config: AiConfig): void {
   if (!config.openaiApiKey) {
     throw new Error('Voice capture requires OPENAI_API_KEY for transcription.');
   }
+}
+
+export function assertLivekitRealtimeConfigured(config: AiConfig): void {
+  if (!config.livekitApiKey || !config.livekitApiSecret) {
+    throw new Error(
+      'LiveKit realtime requires LIVEKIT_API_KEY and LIVEKIT_API_SECRET when TRANSCRIPTION_PROVIDER=livekit.'
+    );
+  }
+  if (!config.livekitUrl) {
+    throw new Error('LiveKit realtime requires LIVEKIT_URL when TRANSCRIPTION_PROVIDER=livekit.');
+  }
+}
+
+export function isLivekitRealtimeEnabled(config: AiConfig): boolean {
+  return (
+    config.transcriptionProvider === 'livekit' &&
+    Boolean(config.livekitApiKey && config.livekitApiSecret && config.livekitUrl)
+  );
 }
 
 export function assertMiniMaxChatConfigured(config: AiConfig): void {

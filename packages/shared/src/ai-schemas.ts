@@ -28,6 +28,7 @@ export const aiStatusResponseSchema = z.object({
   provider: aiProviderSchema,
   transcriptionProvider: transcriptionProviderSchema,
   mockMode: z.boolean(),
+  livekitRealtime: z.boolean(),
 });
 
 export type AiProvider = z.infer<typeof aiProviderSchema>;

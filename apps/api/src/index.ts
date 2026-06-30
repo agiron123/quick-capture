@@ -10,6 +10,7 @@ import { captureRoutes } from './routes/captures.js';
 import { chatRoutes } from './routes/chat.js';
 import { deviceRoutes } from './routes/devices.js';
 import { listRoutes } from './routes/lists.js';
+import { livekitRoutes } from './routes/livekit.js';
 import { todoRoutes } from './routes/todos.js';
 import { getCaptureStorageProvider } from './services/capture-storage.js';
 import { startReminderWorker } from './services/reminder-worker.js';
@@ -62,6 +63,7 @@ app.post('/api/todos/validate', async (c) => {
 });
 
 app.route('/api/ai', aiRoutes);
+app.route('/api/livekit', livekitRoutes);
 app.route('/api/chat', chatRoutes);
 app.route('/api/captures', captureRoutes);
 app.route('/api/devices', deviceRoutes);

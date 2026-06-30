@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
+import { registerGlobals } from '@livekit/react-native';
 
 import { useColorScheme } from '@/components/useColorScheme';
 import { AuthProvider } from '@/contexts/auth-provider';
@@ -19,6 +20,8 @@ export { ErrorBoundary } from 'expo-router';
 export const unstable_settings = {
   initialRouteName: '(tabs)',
 };
+
+registerGlobals();
 
 SplashScreen.preventAutoHideAsync();
 

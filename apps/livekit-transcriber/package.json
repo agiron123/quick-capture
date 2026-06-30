@@ -1,0 +1,22 @@
+{
+  "name": "@quick-capture/livekit-transcriber",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/agent.ts dev",
+    "start": "tsx src/agent.ts start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@livekit/agents": "^1.4.11",
+    "@livekit/agents-plugin-silero": "^1.4.11",
+    "dotenv": "^17.4.2"
+  },
+  "devDependencies": {
+    "@quick-capture/typescript-config": "*",
+    "@types/node": "^22.15.32",
+    "tsx": "^4.20.3",
+    "typescript": "~6.0.3"
+  }
+}

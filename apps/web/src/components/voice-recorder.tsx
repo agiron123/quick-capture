@@ -5,26 +5,54 @@ import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { MAX_RECORDING_MS, MIN_RECORDING_MS } from '@/lib/constants';
+import {
+  fetchLivekitVoiceToken,
+  isLivekitRealtimeAvailable,
+  LivekitVoiceSession,
+} from '@/lib/livekit-voice-session';
+
+export type VoiceRecordingResult = {
+  blob: Blob;
+  transcript?: string;
+  durationMs: number;
+};
 
 type VoiceRecorderProps = {
-  onComplete: (blob: Blob) => Promise<void>;
+  onComplete: (result: VoiceRecordingResult) => Promise<void>;
   disabled?: boolean;
 };
 
 type RecorderState = 'idle' | 'recording' | 'processing';
 
+function getApiBaseUrl(): string | undefined {
+  return process.env.NEXT_PUBLIC_API_URL?.trim()?.replace(/\/$/, '');
+}
+
 export function VoiceRecorder({ onComplete, disabled }: VoiceRecorderProps) {
   const [state, setState] = useState<RecorderState>('idle');
   const [elapsedMs, setElapsedMs] = useState(0);
+  const [liveTranscript, setLiveTranscript] = useState('');
+  const [livekitEnabled, setLivekitEnabled] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const livekitSessionRef = useRef<LivekitVoiceSession | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const startedAtRef = useRef(0);
   const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
+    const apiBaseUrl = getApiBaseUrl();
+    if (!apiBaseUrl || process.env.NEXT_PUBLIC_USE_MOCK_AI === 'true') {
+      return;
+    }
+
+    void isLivekitRealtimeAvailable(apiBaseUrl).then(setLivekitEnabled);
+  }, []);
+
+  useEffect(() => {
     return () => {
       if (timerRef.current) window.clearInterval(timerRef.current);
       mediaRecorderRef.current?.stream.getTracks().forEach((track) => track.stop());
+      void livekitSessionRef.current?.stop();
     };
   }, []);
 
@@ -44,12 +72,28 @@ export function VoiceRecorder({ onComplete, disabled }: VoiceRecorderProps) {
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const apiBaseUrl = getApiBaseUrl();
+      let stream: MediaStream;
+      let livekitSession: LivekitVoiceSession | null = null;
+
+      if (livekitEnabled && apiBaseUrl) {
+        livekitSession = new LivekitVoiceSession();
+        livekitSessionRef.current = livekitSession;
+        stream =
+          (await livekitSession.start({
+            fetchToken: () => fetchLivekitVoiceToken(apiBaseUrl),
+            onTranscriptChange: (transcript) => setLiveTranscript(transcript),
+          })) ?? (await navigator.mediaDevices.getUserMedia({ audio: true }));
+      } else {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      }
+
       const recorder = new MediaRecorder(stream);
       mediaRecorderRef.current = recorder;
       chunksRef.current = [];
       startedAtRef.current = Date.now();
       setElapsedMs(0);
+      setLiveTranscript('');
       setState('recording');
 
       recorder.ondataavailable = (event) => {
@@ -64,15 +108,29 @@ export function VoiceRecorder({ onComplete, disabled }: VoiceRecorderProps) {
         void (async () => {
           if (duration < MIN_RECORDING_MS) {
             window.alert('Hold a little longer — try at least one second.');
+            if (livekitSessionRef.current) {
+              await livekitSessionRef.current.stop();
+              livekitSessionRef.current = null;
+            }
             setState('idle');
             return;
           }
 
           setState('processing');
           try {
-            await onComplete(blob);
+            const liveTranscriptFinal = livekitSessionRef.current
+              ? await livekitSessionRef.current.stop()
+              : undefined;
+            livekitSessionRef.current = null;
+
+            await onComplete({
+              blob,
+              durationMs: duration,
+              transcript: liveTranscriptFinal?.trim() || undefined,
+            });
           } finally {
             setState('idle');
+            setLiveTranscript('');
           }
         })();
       };
@@ -85,8 +143,12 @@ export function VoiceRecorder({ onComplete, disabled }: VoiceRecorderProps) {
           finishRecording();
         }
       }, 200);
-    } catch {
-      window.alert('Microphone permission is required to record voice notes.');
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'Could not start recording.');
+      if (livekitSessionRef.current) {
+        await livekitSessionRef.current.stop();
+        livekitSessionRef.current = null;
+      }
     }
   };
 
@@ -111,6 +173,11 @@ export function VoiceRecorder({ onComplete, disabled }: VoiceRecorderProps) {
       {state === 'recording' ? (
         <>
           <p className="font-mono text-lg">{seconds}s</p>
+          {liveTranscript ? (
+            <div className="max-w-md rounded-lg border bg-muted/40 px-4 py-3 text-sm leading-relaxed">
+              {liveTranscript}
+            </div>
+          ) : null}
           <Button size="lg" variant="destructive" className="size-20 rounded-full" onClick={finishRecording}>
             <Square className="size-8" />
           </Button>

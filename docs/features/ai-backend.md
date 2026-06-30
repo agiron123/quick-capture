@@ -33,7 +33,9 @@ Voice pipeline (hybrid):
 
 For local dev without OpenAI for voice, set `TRANSCRIPTION_PROVIDER=whisper-cpp` and run the whisper sidecar (see [docker-dev.md](../docker-dev.md) or start whisper.cpp server on port 8080).
 
-For production STT via LiveKit Cloud Inference, set `TRANSCRIPTION_PROVIDER=livekit` and configure `LIVEKIT_STT_MODEL` (default `deepgram/nova-3`). The API decodes uploaded audio to PCM and streams it through LiveKit Inference — no mobile/web client changes required.
+For production STT via LiveKit Cloud Inference, set `TRANSCRIPTION_PROVIDER=livekit` and configure `LIVEKIT_STT_MODEL` (default `deepgram/nova-3`). The API decodes uploaded audio to PCM and streams it through LiveKit Inference for batch uploads.
+
+**LiveKit realtime (Phase 2):** When `LIVEKIT_URL` is also set, clients can stream mic audio to a LiveKit room during recording and show interim transcripts. A transcriber agent (`apps/livekit-transcriber`) publishes user speech to the `lk.transcription` text stream; on stop, clients call `/api/ai/extract/transcript` with the live transcript instead of re-uploading audio for STT.
 
 ## Environment
 
@@ -45,6 +47,8 @@ Server-only keys in repo root `.env`:
 - `MINIMAX_API_KEY` — required when `AI_PROVIDER=minimax`
 - `WHISPER_CPP_BASE_URL` — required when `TRANSCRIPTION_PROVIDER=whisper-cpp` (e.g. `http://127.0.0.1:8080` or `http://whisper:8080` in Docker)
 - `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET` — required when `TRANSCRIPTION_PROVIDER=livekit`
+- `LIVEKIT_URL` — LiveKit Cloud WebSocket URL (required for realtime transcription)
+- `LIVEKIT_TRANSCRIBER_AGENT_NAME` — agent worker name (default `qc-transcriber`)
 - `LIVEKIT_STT_MODEL` — LiveKit Inference model id (default `deepgram/nova-3`)
 - `LIVEKIT_STT_LANGUAGE` — language code (default `en`)
 - `LIVEKIT_INFERENCE_URL` — optional override for LiveKit Inference gateway URL
@@ -62,13 +66,28 @@ Mobile:
 | POST | `/api/ai/extract/image` | multipart `image` |
 | POST | `/api/ai/extract/voice` | multipart `audio` |
 | POST | `/api/ai/extract/transcript` | JSON `{ transcript }` |
+| POST | `/api/livekit/voice-token` | — (returns LiveKit room token when realtime enabled) |
+
+## LiveKit transcriber worker
+
+Run the STT-only agent that joins voice capture rooms:
+
+```bash
+npm run dev:livekit-transcriber
+```
+
+Requires the same LiveKit env vars as the API. Register the worker in LiveKit Cloud with agent name `qc-transcriber` (or your `LIVEKIT_TRANSCRIBER_AGENT_NAME`). Mobile requires a dev client build (Expo Go does not include LiveKit native modules).
 
 ## Code locations
 
-- Shared schemas: `packages/shared/src/ai-schemas.ts`
+- Shared schemas: `packages/shared/src/ai-schemas.ts`, `livekit-schemas.ts`
 - API providers: `apps/api/src/ai/`
 - Transcription: `apps/api/src/ai/providers/transcribe-openai.ts`, `transcribe-whisper-cpp.ts`, `transcribe-livekit.ts`
-- Audio decode (LiveKit): `apps/api/src/ai/audio/decode-to-pcm.ts` (ffmpeg-static)
+- Audio decode (LiveKit batch): `apps/api/src/ai/audio/decode-to-pcm.ts` (ffmpeg-static)
+- LiveKit token route: `apps/api/src/routes/livekit.ts`
+- Transcriber agent: `apps/livekit-transcriber/src/agent.ts`
+- Web realtime client: `apps/web/src/lib/livekit-voice-session.ts`
+- Mobile realtime client: `apps/mobile/services/livekit-voice-session.ts`
 - API routes: `apps/api/src/routes/ai.ts`
 - Mobile client: `apps/mobile/services/ai-api-client.ts`
 
@@ -79,5 +98,7 @@ Mobile:
 - [x] Voice uses transcription provider + selected chat provider
 - [x] whisper.cpp transcription for local dev
 - [x] LiveKit Inference STT via `TRANSCRIPTION_PROVIDER=livekit`
+- [x] LiveKit realtime transcription with interim transcript UI (web + mobile dev client)
+- [x] Transcriber agent worker for LiveKit rooms
 - [x] Mobile mock mode works without API
 - [x] CORS enabled for web dev

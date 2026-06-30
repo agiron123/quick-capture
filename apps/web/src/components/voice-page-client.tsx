@@ -5,10 +5,10 @@ import { toast } from 'sonner';
 
 import { AppShell } from '@/components/app-shell';
 import { ReviewTodosDialog, type ReviewSavePayload } from '@/components/review-todos-dialog';
-import { VoiceRecorder } from '@/components/voice-recorder';
+import { VoiceRecorder, type VoiceRecordingResult } from '@/components/voice-recorder';
 import { useLists } from '@/hooks/use-lists';
 import { useTodos } from '@/hooks/use-todos';
-import { extractTodosFromVoice } from '@/lib/ai-client';
+import { extractTodosFromTranscript, extractTodosFromVoice } from '@/lib/ai-client';
 import { createTodosBatch, uploadCapture } from '@/lib/api-client-client';
 
 export function VoicePageClient() {
@@ -20,10 +20,15 @@ export function VoicePageClient() {
   const [pendingBlob, setPendingBlob] = useState<Blob | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
-  const handleRecording = async (blob: Blob) => {
+  const handleRecording = async ({ blob, transcript }: VoiceRecordingResult) => {
     setIsBusy(true);
     try {
-      const result = await extractTodosFromVoice(blob);
+      const result = transcript
+        ? {
+            transcript,
+            todos: await extractTodosFromTranscript(transcript),
+          }
+        : await extractTodosFromVoice(blob);
       setPendingBlob(blob);
       setTranscript(result.transcript);
       setReviewTitles(result.todos.map((todo) => todo.title));

@@ -9,9 +9,16 @@ export default function VoiceRecordModal() {
   const { origin } = useLocalSearchParams<{ origin?: string }>();
   const reviewSource: TodoSource = origin === 'watch' ? 'watch' : 'voice';
 
-  const handleRecordingComplete = async (uri: string) => {
+  const handleRecordingComplete = async ({
+    uri,
+    transcript,
+  }: {
+    uri?: string;
+    durationMs: number;
+    transcript?: string;
+  }) => {
     try {
-      const { transcript, todos } = await extractTodosFromVoice(uri);
+      const { transcript: resolvedTranscript, todos } = await extractTodosFromVoice(uri, transcript);
 
       if (todos.length === 0) {
         Alert.alert(
@@ -26,7 +33,7 @@ export default function VoiceRecordModal() {
                   params: {
                     source: reviewSource,
                     audioUri: uri,
-                    transcript,
+                    transcript: resolvedTranscript,
                     todos: JSON.stringify([]),
                   },
                 }),
@@ -42,7 +49,7 @@ export default function VoiceRecordModal() {
         params: {
           source: reviewSource,
           audioUri: uri,
-          transcript,
+          transcript: resolvedTranscript,
           todos: JSON.stringify(todos),
         },
       });

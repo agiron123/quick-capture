@@ -171,6 +171,7 @@ On success: `router.replace({ pathname: '/review-todos', params: { source, audio
 
 ### Phase 3 — Polish
 
+- [x] Live transcript during recording (LiveKit realtime when `LIVEKIT_URL` configured)
 - [ ] Waveform visualization during recording
 - [ ] Cancel recording without processing
 - [ ] Background noise hint in empty state

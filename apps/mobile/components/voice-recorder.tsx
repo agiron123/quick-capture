@@ -18,11 +18,22 @@ import {
 } from 'react-native';
 
 import { MAX_RECORDING_MS, MIN_RECORDING_MS } from '@/constants/voice-capture';
+import {
+  fetchLivekitVoiceToken,
+  isLivekitRealtimeAvailable,
+  LivekitVoiceSession,
+} from '@/services/livekit-voice-session';
 
 type RecorderPhase = 'idle' | 'recording' | 'processing' | 'error';
 
+export type VoiceRecordingResult = {
+  uri?: string;
+  durationMs: number;
+  transcript?: string;
+};
+
 type VoiceRecorderProps = {
-  onRecordingComplete: (uri: string, durationMs: number) => Promise<void>;
+  onRecordingComplete: (result: VoiceRecordingResult) => Promise<void>;
 };
 
 function formatDuration(ms: number): string {
@@ -32,14 +43,37 @@ function formatDuration(ms: number): string {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
+function getApiBaseUrl(): string | undefined {
+  return process.env.EXPO_PUBLIC_API_URL?.trim()?.replace(/\/$/, '');
+}
+
 export function VoiceRecorder({ onRecordingComplete }: VoiceRecorderProps) {
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const recorderState = useAudioRecorderState(recorder, 200);
   const [phase, setPhase] = useState<RecorderPhase>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
+  const [liveTranscript, setLiveTranscript] = useState('');
+  const [livekitEnabled, setLivekitEnabled] = useState(false);
+  const [elapsedMs, setElapsedMs] = useState(0);
   const recordingStartedAt = useRef<number | null>(null);
   const autoStopTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const livekitSessionRef = useRef<LivekitVoiceSession | null>(null);
+  const usingLivekitRef = useRef(false);
+
+  useEffect(() => {
+    if (phase !== 'recording' || !usingLivekitRef.current) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      if (recordingStartedAt.current) {
+        setElapsedMs(Date.now() - recordingStartedAt.current);
+      }
+    }, 200);
+
+    return () => clearInterval(interval);
+  }, [phase]);
 
   useEffect(() => {
     void (async () => {
@@ -50,8 +84,14 @@ export function VoiceRecorder({ onRecordingComplete }: VoiceRecorderProps) {
       }
     })();
 
+    const apiBaseUrl = getApiBaseUrl();
+    if (apiBaseUrl && process.env.EXPO_PUBLIC_USE_MOCK_AI !== 'true') {
+      void isLivekitRealtimeAvailable(apiBaseUrl).then(setLivekitEnabled);
+    }
+
     return () => {
       if (autoStopTimer.current) clearTimeout(autoStopTimer.current);
+      void livekitSessionRef.current?.stop();
     };
   }, []);
 
@@ -66,20 +106,39 @@ export function VoiceRecorder({ onRecordingComplete }: VoiceRecorderProps) {
     if (permissionGranted === false) return;
 
     setErrorMessage(null);
+    setLiveTranscript('');
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
-      await recorder.prepareToRecordAsync();
-      recorder.record();
+      const apiBaseUrl = getApiBaseUrl();
+      usingLivekitRef.current = Boolean(livekitEnabled && apiBaseUrl);
+
+      if (usingLivekitRef.current && apiBaseUrl) {
+        const session = new LivekitVoiceSession();
+        livekitSessionRef.current = session;
+        await session.start({
+          fetchToken: () => fetchLivekitVoiceToken(apiBaseUrl),
+          onTranscriptChange: (transcript) => setLiveTranscript(transcript),
+        });
+      } else {
+        await recorder.prepareToRecordAsync();
+        recorder.record();
+      }
+
       recordingStartedAt.current = Date.now();
+      setElapsedMs(0);
       setPhase('recording');
 
       autoStopTimer.current = setTimeout(() => {
         void stopRecording();
       }, MAX_RECORDING_MS);
-    } catch {
+    } catch (error) {
       setPhase('error');
-      setErrorMessage('Could not start recording. Please try again.');
+      setErrorMessage(error instanceof Error ? error.message : 'Could not start recording. Please try again.');
+      if (livekitSessionRef.current) {
+        await livekitSessionRef.current.stop();
+        livekitSessionRef.current = null;
+      }
     }
   };
 
@@ -94,12 +153,19 @@ export function VoiceRecorder({ onRecordingComplete }: VoiceRecorderProps) {
     recordingStartedAt.current = null;
 
     if (durationMs < MIN_RECORDING_MS) {
-      try {
-        await recorder.stop();
-      } catch {
-        // ignore cleanup errors
+      if (usingLivekitRef.current && livekitSessionRef.current) {
+        await livekitSessionRef.current.stop();
+        livekitSessionRef.current = null;
+      } else {
+        try {
+          await recorder.stop();
+        } catch {
+          // ignore cleanup errors
+        }
       }
+      usingLivekitRef.current = false;
       setPhase('idle');
+      setLiveTranscript('');
       setErrorMessage('Hold a little longer — speak for at least one second.');
       return;
     }
@@ -107,15 +173,29 @@ export function VoiceRecorder({ onRecordingComplete }: VoiceRecorderProps) {
     setPhase('processing');
 
     try {
+      if (usingLivekitRef.current && livekitSessionRef.current) {
+        const transcript = await livekitSessionRef.current.stop();
+        livekitSessionRef.current = null;
+        usingLivekitRef.current = false;
+        await onRecordingComplete({
+          durationMs,
+          transcript: transcript.trim() || undefined,
+        });
+        return;
+      }
+
       await recorder.stop();
       const uri = recorder.uri;
       if (!uri) {
         throw new Error('Recording file was not saved');
       }
-      await onRecordingComplete(uri, durationMs);
+      await onRecordingComplete({ uri, durationMs });
     } catch (error) {
       setPhase('error');
       setErrorMessage(error instanceof Error ? error.message : 'Something went wrong');
+    } finally {
+      usingLivekitRef.current = false;
+      setLiveTranscript('');
     }
   };
 
@@ -157,7 +237,11 @@ export function VoiceRecorder({ onRecordingComplete }: VoiceRecorderProps) {
   }
 
   const isRecording = phase === 'recording';
-  const durationMs = isRecording ? recorderState.durationMillis : 0;
+  const durationMs = isRecording
+    ? usingLivekitRef.current
+      ? elapsedMs
+      : recorderState.durationMillis
+    : 0;
 
   return (
     <View
@@ -194,6 +278,22 @@ export function VoiceRecorder({ onRecordingComplete }: VoiceRecorderProps) {
             </Text>
           ) : null}
 
+          {isRecording && liveTranscript ? (
+            <View
+              style={{
+                width: '100%',
+                maxWidth: 420,
+                borderRadius: 12,
+                paddingHorizontal: 16,
+                paddingVertical: 12,
+                backgroundColor: PlatformColor('secondarySystemBackground'),
+              }}>
+              <Text selectable style={{ color: PlatformColor('label'), fontSize: 15, lineHeight: 22 }}>
+                {liveTranscript}
+              </Text>
+            </View>
+          ) : null}
+
           <Pressable
             onPress={isRecording ? stopRecording : startRecording}
             disabled={phase === 'error'}
@@ -228,7 +328,11 @@ export function VoiceRecorder({ onRecordingComplete }: VoiceRecorderProps) {
                 style={{ color: PlatformColor('systemRed'), fontSize: 15, textAlign: 'center' }}>
                 {errorMessage}
               </Text>
-              <Pressable onPress={() => { setPhase('idle'); setErrorMessage(null); }}>
+              <Pressable
+                onPress={() => {
+                  setPhase('idle');
+                  setErrorMessage(null);
+                }}>
                 <Text style={{ color: PlatformColor('systemBlue'), fontSize: 17, fontWeight: '600' }}>
                   Try again
                 </Text>
