@@ -79,6 +79,7 @@ Environment variables load from the repo root `.env` (see [`.env.example`](../.e
 3. Choose a transcription provider for voice capture:
    - **OpenAI Whisper (default):** `TRANSCRIPTION_PROVIDER=openai` + `OPENAI_API_KEY`
    - **Local whisper.cpp:** `TRANSCRIPTION_PROVIDER=whisper-cpp` + `WHISPER_CPP_BASE_URL=http://127.0.0.1:8080` (no OpenAI key needed for STT)
+   - **LiveKit Inference:** `TRANSCRIPTION_PROVIDER=livekit` + `LIVEKIT_API_KEY` + `LIVEKIT_API_SECRET` (optional `LIVEKIT_STT_MODEL=deepgram/nova-3`)
 4. Set mobile vars: `EXPO_PUBLIC_API_URL=http://localhost:3000`, `EXPO_PUBLIC_USE_MOCK_AI=false`
 5. Run `npm run dev` (API + Expo together), or `npm run docker:dev` for the full web stack in Docker.
 6. On a physical device, use your machine's LAN IP instead of `localhost` for `EXPO_PUBLIC_API_URL`.

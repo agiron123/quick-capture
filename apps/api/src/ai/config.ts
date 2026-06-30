@@ -12,6 +12,11 @@ export type AiConfig = {
   minimaxChatModel: string;
   whisperCppBaseUrl: string | undefined;
   whisperCppInferencePath: string;
+  livekitApiKey: string | undefined;
+  livekitApiSecret: string | undefined;
+  livekitInferenceUrl: string | undefined;
+  livekitSttModel: string;
+  livekitSttLanguage: string;
 };
 
 function parseProvider(value: string | undefined): AiProvider {
@@ -21,6 +26,7 @@ function parseProvider(value: string | undefined): AiProvider {
 
 function parseTranscriptionProvider(value: string | undefined): TranscriptionProvider {
   if (value === 'whisper-cpp') return 'whisper-cpp';
+  if (value === 'livekit') return 'livekit';
   return 'openai';
 }
 
@@ -39,6 +45,11 @@ export function getAiConfig(): AiConfig {
     minimaxChatModel: process.env.MINIMAX_CHAT_MODEL?.trim() || 'MiniMax-M2.5',
     whisperCppBaseUrl: process.env.WHISPER_CPP_BASE_URL?.trim() || undefined,
     whisperCppInferencePath: process.env.WHISPER_CPP_INFERENCE_PATH?.trim() || '/inference',
+    livekitApiKey: process.env.LIVEKIT_API_KEY?.trim() || undefined,
+    livekitApiSecret: process.env.LIVEKIT_API_SECRET?.trim() || undefined,
+    livekitInferenceUrl: process.env.LIVEKIT_INFERENCE_URL?.trim() || undefined,
+    livekitSttModel: process.env.LIVEKIT_STT_MODEL?.trim() || 'deepgram/nova-3',
+    livekitSttLanguage: process.env.LIVEKIT_STT_LANGUAGE?.trim() || 'en',
   };
 }
 
@@ -55,6 +66,15 @@ export function assertTranscriptionConfigured(config: AiConfig): void {
   if (config.transcriptionProvider === 'whisper-cpp') {
     if (!config.whisperCppBaseUrl) {
       throw new Error('Voice capture requires WHISPER_CPP_BASE_URL when TRANSCRIPTION_PROVIDER=whisper-cpp.');
+    }
+    return;
+  }
+
+  if (config.transcriptionProvider === 'livekit') {
+    if (!config.livekitApiKey || !config.livekitApiSecret) {
+      throw new Error(
+        'Voice capture requires LIVEKIT_API_KEY and LIVEKIT_API_SECRET when TRANSCRIPTION_PROVIDER=livekit.'
+      );
     }
     return;
   }

@@ -6,6 +6,8 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends openssl \
   && rm -rf /var/lib/apt/lists/*
 
+# LiveKit STT decodes uploads via ffmpeg-static (bundled npm binary); no system ffmpeg required.
+
 COPY package.json package-lock.json ./
 COPY apps/api/package.json apps/api/
 COPY packages/shared/package.json packages/shared/
@@ -27,6 +29,8 @@ ENV NODE_ENV=production
 
 RUN apt-get update && apt-get install -y --no-install-recommends openssl \
   && rm -rf /var/lib/apt/lists/*
+
+# LiveKit STT decodes uploads via ffmpeg-static (bundled npm binary); no system ffmpeg required.
 
 COPY package.json package-lock.json ./
 COPY apps/api/package.json apps/api/

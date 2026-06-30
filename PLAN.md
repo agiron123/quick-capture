@@ -280,7 +280,7 @@ flowchart TB
 **Open decisions (document in deployment spec before shipping prod):**
 
 1. **API host** — Vercel Functions vs Railway vs Fly vs single VPS running the existing Docker stack
-2. **Whisper in prod** — self-hosted whisper.cpp vs OpenAI Whisper API vs other managed STT
+2. **Whisper in prod** — self-hosted whisper.cpp vs OpenAI Whisper API vs **LiveKit Inference STT** vs other managed STT
 3. **Single domain vs split** — e.g. `app.example.com` (Vercel) + `api.example.com` (API host) vs path routing on one domain
 4. **Reminder worker** — Vercel Cron invoking API route vs always-on process on API host
 

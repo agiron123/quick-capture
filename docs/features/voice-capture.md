@@ -124,7 +124,9 @@ audio URI
 
 Shared transcript → todos logic in `services/ai-extract-todos-from-text.ts`.
 
-**Mock mode** (`EXPO_PUBLIC_USE_MOCK_AI=true` or no API key): returns sample transcript and todos after a short delay.
+**Mock mode** (`EXPO_PUBLIC_USE_MOCK_AI=true` or no API URL): returns sample transcript and todos after a short delay.
+
+**Real mode:** uploads audio to `POST /api/ai/extract/voice` on the API. Transcription runs server-side via `TRANSCRIPTION_PROVIDER` (`openai`, `whisper-cpp`, or `livekit`); todo extraction uses the configured chat provider.
 
 ## Dependencies
 
@@ -180,7 +182,7 @@ On success: `router.replace({ pathname: '/review-todos', params: { source, audio
 - [x] Tap mic → record → stop → review → save adds todos with `source: 'voice'`
 - [x] Transcript visible on review screen
 - [x] Mock mode works without API key
-- [x] Real mode transcribes and extracts with OpenAI (when `EXPO_PUBLIC_OPENAI_API_KEY` set)
+- [x] Real mode transcribes and extracts via API (`EXPO_PUBLIC_API_URL` + server-side providers)
 - [x] Mic permission denied shows clear message and settings path
 - [x] Recordings under 1s rejected with friendly feedback
 

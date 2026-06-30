@@ -71,7 +71,7 @@ Mobile signed in: todo-store → SQLite + sync API
 Web signed in:   API only (no local DB)
 ```
 
-Voice uses hybrid transcription: OpenAI Whisper for speech-to-text, then the configured chat provider for todo extraction.
+Voice uses hybrid transcription: a configurable STT provider (`openai`, `whisper-cpp`, or `livekit`) converts audio to text, then the configured chat provider extracts todos.
 
 ## Core types
 
@@ -168,7 +168,9 @@ Multi-device: one reminder → notification on every active registered device.
 | Variable | App | Purpose |
 | --- | --- | --- |
 | `AI_PROVIDER` | api | `openai` or `minimax` |
-| `OPENAI_API_KEY` | api | OpenAI chat + Whisper |
+| `TRANSCRIPTION_PROVIDER` | api | `openai`, `whisper-cpp`, or `livekit` |
+| `OPENAI_API_KEY` | api | OpenAI chat + Whisper (when `TRANSCRIPTION_PROVIDER=openai`) |
+| `LIVEKIT_API_KEY` | api | LiveKit Inference STT (when `TRANSCRIPTION_PROVIDER=livekit`) |
 | `DATABASE_URL` | api | Neon Postgres |
 | `NEON_AUTH_URL` | api | JWKS issuer |
 | `CORS_ORIGINS` | api | Web + Expo origins |
