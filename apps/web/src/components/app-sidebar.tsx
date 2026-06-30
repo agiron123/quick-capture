@@ -32,34 +32,21 @@ import {
 } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLists } from '@/hooks/use-lists';
+import { APP_NAV_ITEMS } from '@/lib/app-nav';
 
-const NAV_ITEMS = [
-  { href: '/', label: 'Todos', icon: CheckSquare, match: (path: string) => path === '/' },
-  {
-    href: '/capture',
-    label: 'Capture',
-    icon: Camera,
-    match: (path: string) => path === '/capture',
-  },
-  {
-    href: '/voice',
-    label: 'Voice',
-    icon: Mic,
-    match: (path: string) => path === '/voice',
-  },
-  {
-    href: '/chat',
-    label: 'Chat',
-    icon: MessageSquare,
-    match: (path: string) => path.startsWith('/chat'),
-  },
-  {
-    href: '/devices',
-    label: 'Devices',
-    icon: Smartphone,
-    match: (path: string) => path === '/devices',
-  },
-] as const;
+const NAV_ITEMS = APP_NAV_ITEMS.map((item) => ({
+  ...item,
+  icon:
+    item.href === '/'
+      ? CheckSquare
+      : item.href === '/capture'
+        ? Camera
+        : item.href === '/voice'
+          ? Mic
+          : item.href === '/chat'
+            ? MessageSquare
+            : Smartphone,
+}));
 
 type AppSidebarProps = {
   onManageLists?: () => void;

@@ -669,7 +669,7 @@ Focus on **logic without native modules** first; component tests second.
 | Hooks | [`hooks/use-todos.ts`](./apps/mobile/hooks/use-todos.ts) | `@testing-library/react-native` + mock repository (optional v1.1) |
 
 - [x] Vitest config with React Native mocks (`react-native` → `react-native-web` or `vitest-react-native`)
-- [ ] Mock modules: `expo-notifications`, `expo-sqlite`, `@/services/auth-client`
+- [x] Mock modules: `expo-notifications`, `expo-sqlite`, `@/services/auth-client` (notifications done; sqlite/auth pending)
 
 #### 10.5 — `apps/web` (priority 3)
 
@@ -683,7 +683,7 @@ Focus on **logic without native modules** first; component tests second.
 | Components | `review-todos-dialog`, `todo-filter-bar`, `chat-conversation` | User-visible behavior with RTL; mock hooks/data |
 
 - [x] Vitest + `jsdom` + Testing Library
-- [ ] `vi.mock('next/navigation')` for pathname-dependent components (`app-sidebar` active state)
+- [x] `vi.mock('next/navigation')` for pathname-dependent components (`app-nav` unit tests cover chat active matching)
 
 #### 10.6 — Deduplicate shared logic (enables fewer tests)
 
@@ -765,7 +765,7 @@ export function createTestList(overrides?: Partial<TodoListRecord>): TodoListRec
 | **Wave 3** | Mobile/web formatters (or post-dedup shared tests) | [x] Label parity verified |
 | **Wave 4** | Chat SSE client parse tests; chat service trimming | [x] Streaming edge cases covered (SSE parser) |
 | **Wave 5** | Worktree `lib.mjs` tests; mobile sync pure helpers | [x] Port slug formula regression-proof |
-| **Wave 6** | Component tests (review modal, filter bar) | RTL smoke tests; no snapshot churn |
+| **Wave 6** | Component tests (review modal, filter bar) | [x] RTL smoke (`todo-filter-bar`); review/nav logic unit tests |
 
 #### Dependencies
 

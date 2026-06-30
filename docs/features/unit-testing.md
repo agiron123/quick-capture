@@ -50,11 +50,13 @@ Pure logic and Zod schemas: `todo-filter`, `todo-tree`, `todo-export`, `todo-tag
 
 ### `apps/mobile`
 
-Extracted sync helpers (`services/todo-sync-helpers.ts`), `sync-conflict`, `sync-mode`. Mock `expo-*` modules for reminder/repository tests (future).
+Extracted sync helpers (`services/todo-sync-helpers.ts`), `sync-conflict`, `sync-mode`, and `reminder-scheduler` (mocked `expo-notifications`). Repository tests with mocked `expo-sqlite` are future work.
 
 ### `apps/web`
 
-Extracted SSE parser (`lib/chat-sse.ts`), `lib/utils` (`cn`). Component tests with Testing Library (future).
+Extracted SSE parser (`lib/chat-sse.ts`), `lib/utils` (`cn`), review save logic (`lib/review-todos.ts`), and nav matching (`lib/app-nav.ts`). `todo-filter-bar.test.tsx` is the RTL smoke test.
+
+Full dialog/sidebar RTL mounts may fail until workspace `react` / `react-dom` versions are aligned (19.2.3 mobile vs 19.2.4 web hoisting).
 
 ### `scripts/worktree`
 

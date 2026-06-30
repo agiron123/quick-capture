@@ -14,13 +14,9 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { buildReviewSavePayload, type ReviewSavePayload } from '@/lib/review-todos';
 
-export type ReviewSavePayload = {
-  titles: string[];
-  source: TodoSource;
-  captureId?: string;
-  transcript?: string;
-};
+export type { ReviewSavePayload };
 
 type ReviewTodosDialogProps = {
   open: boolean;
@@ -61,17 +57,17 @@ export function ReviewTodosDialog({
   };
 
   const handleSave = async () => {
-    const cleaned = titles.map((title) => title.trim()).filter(Boolean);
-    if (cleaned.length === 0) return;
+    const payload = buildReviewSavePayload({
+      titles,
+      source,
+      captureId,
+      transcript,
+    });
+    if (!payload) return;
 
     setIsSaving(true);
     try {
-      await onSave({
-        titles: cleaned,
-        source,
-        captureId,
-        transcript,
-      });
+      await onSave(payload);
       onOpenChange(false);
     } finally {
       setIsSaving(false);
