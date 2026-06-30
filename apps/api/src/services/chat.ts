@@ -18,6 +18,7 @@ import {
 import { getDatabase } from '../db/client.js';
 import { chatMessages, chatThreads } from '../db/schema.js';
 import { createId } from '../lib/id.js';
+import { sanitizeChatThreadTitle } from '../lib/chat-title.js';
 import { serializeChatMessage, serializeChatThread } from '../lib/chat-serialize.js';
 import { readChatAttachment } from './chat-attachment-storage.js';
 
@@ -240,9 +241,8 @@ async function generateThreadTitle(firstUserMessage: string): Promise<string> {
     { role: 'user', content: firstUserMessage },
   ]);
 
-  const cleaned = title.replace(/^["']|["']$/g, '').trim();
-  if (!cleaned) return DEFAULT_THREAD_TITLE;
-  return cleaned.length > 60 ? `${cleaned.slice(0, 57)}…` : cleaned;
+  const cleaned = sanitizeChatThreadTitle(title, DEFAULT_THREAD_TITLE);
+  return cleaned;
 }
 
 export type ChatStreamWriter = {

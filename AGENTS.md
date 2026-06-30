@@ -28,6 +28,7 @@ npm run dev:api              # API at http://localhost:3000
 npm run dev                  # Mobile + API in parallel
 npm run build                # Build shared + api (turbo cache)
 npm run typecheck            # Typecheck all packages
+npm test                     # Unit tests (all workspaces)
 npm run docker:dev           # Full stack in Docker (main checkout)
 npm run worktree:bootstrap   # Linked worktree: Neon branch + .env.worktree
 npm run worktree:create      # New linked worktree: git worktree add + bootstrap
@@ -93,6 +94,7 @@ All AI-generated todos go through **review before save**. Never skip the review 
 
 ```bash
 npm run typecheck                                    # All packages
+npm test                                             # Unit tests — see docs/features/unit-testing.md
 npm run build --workspace=@quick-capture/shared      # After shared changes
 curl http://localhost:3000/health                    # API health
 ```

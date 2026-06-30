@@ -34,10 +34,13 @@
     "android": "npm run android --workspace=@quick-capture/mobile",
     "build": "turbo run build",
     "lint": "turbo run lint",
-    "typecheck": "turbo run typecheck"
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test && vitest run --config vitest.worktree.config.ts",
+    "test:worktree": "vitest run --config vitest.worktree.config.ts"
   },
   "devDependencies": {
     "portless": "^0.13.0",
-    "turbo": "^2.5.4"
+    "turbo": "^2.5.4",
+    "vitest": "^3.2.4"
   }
 }

@@ -9,4 +9,8 @@ export * from './todo-filter';
 export * from './todo-export';
 export * from './todo-tags';
 export * from './todo';
+export * from './format-due-date';
+export * from './format-reminder';
+export * from './format-priority';
+export * from './format-tags';
 

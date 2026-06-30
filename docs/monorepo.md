@@ -43,6 +43,9 @@ Run from the repo root:
 | `npm run portless:trust` | One-time local CA trust for Portless HTTPS |
 | `npm run build` | Build all packages (respects dependency order) |
 | `npm run typecheck` | Typecheck all packages |
+| `npm test` | Unit tests (all workspaces + worktree scripts) |
+
+See [unit-testing.md](./features/unit-testing.md) for per-package test commands and conventions.
 
 ## Adding a package
 
@@ -107,7 +110,7 @@ Deploy `@quick-capture/web` from the monorepo:
 3. Link: `cd apps/web && vercel link`
 4. Env: `vercel env pull .env.local` (see [features/deployment.md](./features/deployment.md))
 
-CI typecheck + web build: `.github/workflows/ci.yml`
+CI typecheck, unit tests, and web build: `.github/workflows/ci.yml`
 
 ## Parallel git worktrees
 

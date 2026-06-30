@@ -10,6 +10,7 @@ import type {
 } from '@quick-capture/shared';
 
 import { authClient } from '@/lib/auth/client';
+import { parseSseBuffer, parseSseEvents } from '@/lib/chat-sse';
 
 function getApiBaseUrl(): string {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
@@ -138,21 +139,6 @@ export async function fetchChatAttachmentObjectUrl(attachmentId: string): Promis
   return URL.createObjectURL(blob);
 }
 
-function parseSseEvents(chunk: string, onEvent: (event: ChatStreamEvent) => void) {
-  const lines = chunk.split('\n');
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed.startsWith('data:')) continue;
-    const payload = trimmed.slice('data:'.length).trim();
-    if (!payload) continue;
-    try {
-      onEvent(JSON.parse(payload) as ChatStreamEvent);
-    } catch {
-      // ignore malformed events
-    }
-  }
-}
-
 export async function streamChatMessage(
   input: { threadId?: string; message: string; attachmentId?: string },
   onEvent: (event: ChatStreamEvent) => void
@@ -182,11 +168,10 @@ export async function streamChatMessage(
     if (done) break;
 
     buffer += decoder.decode(value, { stream: true });
-    const parts = buffer.split('\n\n');
-    buffer = parts.pop() ?? '';
-
-    for (const part of parts) {
-      parseSseEvents(part, onEvent);
+    const parsed = parseSseBuffer(buffer);
+    buffer = parsed.remainder;
+    for (const event of parsed.events) {
+      onEvent(event);
     }
   }
 

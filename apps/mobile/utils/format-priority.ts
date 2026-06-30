@@ -1,10 +1,7 @@
-import type { TodoPriority } from '@/types/todo';
+import type { TodoPriority } from '@quick-capture/shared';
+import { formatPriorityLabel } from '@quick-capture/shared';
 
-import { PRIORITY_LABELS } from '@/constants/priority';
-
-export function formatPriorityLabel(priority: TodoPriority): string {
-  return `${PRIORITY_LABELS[priority]} priority`;
-}
+export { formatPriorityLabel };
 
 export function priorityAccentColor(priority: TodoPriority): string {
   switch (priority) {
