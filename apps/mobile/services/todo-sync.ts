@@ -1,5 +1,3 @@
-import { todoTagsEqual } from '@quick-capture/shared';
-
 import { DEFAULT_LIST_ID } from '@/constants/lists';
 import type { Todo } from '@/types/todo';
 import {
@@ -11,6 +9,7 @@ import {
 } from '@/services/sync-api-client';
 import { isServerRemindersEnabled } from '@/services/sync-mode';
 import { SyncConflictError } from '@/services/sync-conflict';
+import { buildListIdMap, localTodoDiffers } from '@/services/todo-sync-helpers';
 import * as listRepository from '@/utils/list-repository';
 import { refreshListsFromDb } from '@/utils/list-store';
 import * as todoRepository from '@/utils/todo-repository';
@@ -26,31 +25,6 @@ async function fetchAllServerTodos(
       map.set(todo.id, todo);
     }
   }
-  return map;
-}
-
-function buildListIdMap(
-  localLists: Awaited<ReturnType<typeof listRepository.fetchAllLists>>,
-  serverLists: Awaited<ReturnType<typeof fetchListsFromApi>>
-): Map<string, string> {
-  const map = new Map<string, string>();
-  const serverByName = new Map(serverLists.map((list) => [list.name, list.id]));
-
-  for (const list of localLists) {
-    if (serverLists.some((serverList) => serverList.id === list.id)) {
-      map.set(list.id, list.id);
-      continue;
-    }
-
-    const matchedByName = serverByName.get(list.name);
-    if (matchedByName) {
-      map.set(list.id, matchedByName);
-      continue;
-    }
-
-    map.set(list.id, list.id);
-  }
-
   return map;
 }
 
@@ -73,19 +47,6 @@ async function ensureServerLists(
   }
 
   return nextServerLists;
-}
-
-function localTodoDiffers(local: Todo, server: Todo, mappedListId: string): boolean {
-  return (
-    local.title !== server.title ||
-    local.completed !== server.completed ||
-    (local.dueAt ?? null) !== (server.dueAt ?? null) ||
-    (local.priority ?? null) !== (server.priority ?? null) ||
-    !todoTagsEqual(local.tags, server.tags) ||
-    (local.reminderAt ?? null) !== (server.reminderAt ?? null) ||
-    mappedListId !== server.listId ||
-    local.sortOrder !== server.sortOrder
-  );
 }
 
 async function pushNewTodosForList(listId: string, todos: Todo[]): Promise<void> {

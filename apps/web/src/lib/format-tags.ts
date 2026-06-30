@@ -1,3 +1,1 @@
-export function formatTagsLabel(tags: string[]): string {
-  return tags.map((tag) => `#${tag}`).join(' ');
-}
+export { formatTagsLabel } from '@quick-capture/shared';

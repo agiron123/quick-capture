@@ -8,18 +8,27 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./test-fixtures": {
+      "types": "./src/test-fixtures.ts",
+      "default": "./src/test-fixtures.ts"
     }
   },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "zod": "^3.25.76"
   },
   "devDependencies": {
     "@quick-capture/typescript-config": "*",
-    "typescript": "~6.0.3"
+    "@vitest/coverage-v8": "^3.2.6",
+    "typescript": "~6.0.3",
+    "vitest": "^3.2.6"
   }
 }

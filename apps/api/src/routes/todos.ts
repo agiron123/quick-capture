@@ -12,6 +12,7 @@ import { todos } from '../db/schema.js';
 import { DEFAULT_LIST_ID } from '../lib/constants.js';
 import { createId } from '../lib/id.js';
 import { serializeTodo } from '../lib/serialize.js';
+import { hasTodoUpdateConflict } from '../lib/todo-conflict.js';
 import type { AuthVariables } from '../middleware/auth.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { ensureDefaultList, getUserList } from '../services/lists.js';
@@ -168,7 +169,7 @@ todoRoutes.patch('/:id', async (c) => {
     return c.json({ error: 'Todo not found' }, 404);
   }
 
-  if (parsed.data.baseUpdatedAt !== undefined && todo.updatedAt !== parsed.data.baseUpdatedAt) {
+  if (hasTodoUpdateConflict(todo.updatedAt, parsed.data.baseUpdatedAt)) {
     return c.json({ error: 'Conflict', todo: serializeTodo(todo) }, 409);
   }
 

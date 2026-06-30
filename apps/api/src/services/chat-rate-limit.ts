@@ -7,6 +7,10 @@ type RateLimitEntry = {
 
 const buckets = new Map<string, RateLimitEntry>();
 
+export function resetChatRateLimitForTests(): void {
+  buckets.clear();
+}
+
 export function checkChatRateLimit(userId: string): { allowed: true } | { allowed: false; retryAfterSec: number } {
   const limit = getChatRateLimitPerHour();
   const now = Date.now();

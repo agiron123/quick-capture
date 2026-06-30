@@ -34,7 +34,7 @@ Quick Capture turns messy inputs (handwritten notes, voice, manual entry) into a
 | Parallel worktree dev (multi-instance Compose) | ✅ Shipped | [docs/features/worktree-dev.md](./docs/features/worktree-dev.md) |
 | TLS (Let's Encrypt) + cloud deploy | 🚧 In progress | [docs/features/deployment.md](./docs/features/deployment.md) |
 | Web sidebar navigation | ✅ Shipped | [docs/features/web-sidebar-nav.md](./docs/features/web-sidebar-nav.md) |
-| Unit test suite | ❌ Not started | [Phase 10](#phase-10--unit-testing) |
+| Unit test suite | ✅ Shipped | [docs/features/unit-testing.md](./docs/features/unit-testing.md) |
 
 ## Vision
 
@@ -537,7 +537,7 @@ Root `portless.json` (monorepo):
 
 Introduce a **monorepo-wide unit test suite** so regressions in shared logic, API contracts, sync, and formatting are caught in CI before merge. Today there are **no test files** and CI runs only typecheck + web build ([`.github/workflows/ci.yml`](./.github/workflows/ci.yml)); `turbo.json` already defines a `test` task but no workspace implements it.
 
-**Spec (to create):** [docs/features/unit-testing.md](./docs/features/unit-testing.md)
+**Spec:** [docs/features/unit-testing.md](./docs/features/unit-testing.md)
 
 #### Goals
 
@@ -587,12 +587,12 @@ npm test --workspace=@quick-capture/api -- --watch
 
 **Per-package checklist:**
 
-- [ ] Add `vitest` (+ `@vitest/coverage-v8` where coverage is tracked) as devDependency
-- [ ] Add `"test": "vitest run"` and `"test:watch": "vitest"` to each workspace `package.json`
-- [ ] Add root `"test": "turbo run test"` script
-- [ ] `vitest.config.ts` per app/package (or shared base in `packages/typescript-config`)
-- [ ] Co-locate tests: `*.test.ts` / `*.test.tsx` next to source, or `__tests__/` directories
-- [ ] Shared test factories in `packages/shared/src/test-fixtures.ts` (sample `Todo`, `TodoList`, chat messages)
+- [x] Add `vitest` (+ `@vitest/coverage-v8` where coverage is tracked) as devDependency
+- [x] Add `"test": "vitest run"` and `"test:watch": "vitest"` to each workspace `package.json`
+- [x] Add root `"test": "turbo run test"` script
+- [x] `vitest.config.ts` per app/package (or shared base in `packages/typescript-config`)
+- [x] Co-locate tests: `*.test.ts` / `*.test.tsx` next to source, or `__tests__/` directories
+- [x] Shared test factories in `packages/shared/src/test-fixtures.ts` (sample `Todo`, `TodoList`, chat messages)
 
 **Conventions:**
 
@@ -616,8 +616,8 @@ Pure functions and Zod schemas used by API, mobile, and web. **Target: ≥90% li
 | [`ai-schemas.ts`](./packages/shared/src/ai-schemas.ts) | AI extract response shapes | Malformed model output rejection |
 | [`capture-deep-links.ts`](./packages/shared/src/capture-deep-links.ts) | `buildCaptureDeepLink` | Scheme + path for voice/camera/add-todo |
 
-- [ ] Vitest + coverage in `packages/shared`
-- [ ] Fixture helpers exported for API/mobile tests (or duplicated minimally in each workspace)
+- [x] Vitest + coverage in `packages/shared`
+- [x] Fixture helpers exported for API/mobile tests (or duplicated minimally in each workspace)
 
 #### 10.3 — `apps/api` (priority 2)
 
@@ -648,9 +648,9 @@ Split into **pure unit** (no DB) and **handler unit** (mocked DB).
 | [`routes/captures.ts`](./apps/api/src/routes/captures.ts) | Multipart vs JSON paths; auth required |
 | [`routes/ai.ts`](./apps/api/src/routes/ai.ts) | Mock provider; `USE_MOCK_AI` response shape |
 
-- [ ] Vitest + `hono` test client setup
-- [ ] Shared mock helpers: `createMockDb()`, `createTestApp()` with auth stub
-- [ ] Conflict test suite aligned with [sync-conflicts.md](./docs/features/sync-conflicts.md)
+- [x] Vitest + `hono` test client setup
+- [x] Shared mock helpers: `createMockDb()`, `createTestApp()` with auth stub
+- [x] Conflict test suite aligned with [sync-conflicts.md](./docs/features/sync-conflicts.md)
 
 #### 10.4 — `apps/mobile` (priority 3)
 
@@ -668,7 +668,7 @@ Focus on **logic without native modules** first; component tests second.
 | Repository | [`utils/todo-repository.ts`](./apps/mobile/utils/todo-repository.ts) | SQL operations with **in-memory SQLite** (`better-sqlite3` in test) or mocked `expo-sqlite` API |
 | Hooks | [`hooks/use-todos.ts`](./apps/mobile/hooks/use-todos.ts) | `@testing-library/react-native` + mock repository (optional v1.1) |
 
-- [ ] Vitest config with React Native mocks (`react-native` → `react-native-web` or `vitest-react-native`)
+- [x] Vitest config with React Native mocks (`react-native` → `react-native-web` or `vitest-react-native`)
 - [ ] Mock modules: `expo-notifications`, `expo-sqlite`, `@/services/auth-client`
 
 #### 10.5 — `apps/web` (priority 3)
@@ -682,7 +682,7 @@ Focus on **logic without native modules** first; component tests second.
 | Utils | [`lib/utils.ts`](./apps/web/src/lib/utils.ts) | `cn()` class merging |
 | Components | `review-todos-dialog`, `todo-filter-bar`, `chat-conversation` | User-visible behavior with RTL; mock hooks/data |
 
-- [ ] Vitest + `jsdom` + Testing Library
+- [x] Vitest + `jsdom` + Testing Library
 - [ ] `vi.mock('next/navigation')` for pathname-dependent components (`app-sidebar` active state)
 
 #### 10.6 — Deduplicate shared logic (enables fewer tests)
@@ -695,8 +695,8 @@ Several helpers are **duplicated** between mobile and web. Before doubling test 
 | `format-reminder`, `format-priority`, `format-tags` | Same |
 | `export-todos` wrappers | Thin clients over `packages/shared` `todo-export` |
 
-- [ ] Audit and migrate duplicated formatters to `@quick-capture/shared`
-- [ ] Delete duplicate tests after migration
+- [x] Audit and migrate duplicated formatters to `@quick-capture/shared`
+- [x] Delete duplicate tests after migration
 
 #### 10.7 — Worktree scripts
 
@@ -705,7 +705,7 @@ Several helpers are **duplicated** between mobile and web. Before doubling test 
 | [`scripts/worktree/lib.mjs`](./scripts/worktree/lib.mjs) | `branchToSlug` (`feat/chat` → `feat-chat`); `defaultPortBlockIndex` stable; `portsForBlockIndex` offsets; collision detection |
 | [`scripts/worktree/slug.mjs`](./scripts/worktree/slug.mjs) | CLI output format |
 
-- [ ] Vitest for `.mjs` (or extract pure functions to `.ts` in `scripts/worktree/`)
+- [x] Vitest for `.mjs` (or extract pure functions to `.ts` in `scripts/worktree/`)
 
 #### 10.8 — CI and quality gates
 
@@ -733,9 +733,9 @@ test:
 | PR policy | New shared/API logic requires tests | Same for mobile/web utils |
 | Turbo | `test` depends on `^build` (already in `turbo.json`) | Cache Vitest results |
 
-- [ ] Add `test` job to CI (non-blocking first PR, then required)
+- [x] Add `test` job to CI (non-blocking first PR, then required)
 - [ ] Optional: Codecov or GitHub summary for `packages/shared` coverage
-- [ ] Document `npm test` in [docs/monorepo.md](./docs/monorepo.md) and [AGENTS.md](./AGENTS.md)
+- [x] Document `npm test` in [docs/monorepo.md](./docs/monorepo.md) and [AGENTS.md](./AGENTS.md)
 
 #### 10.9 — Mocking and fixtures reference
 
@@ -760,11 +760,11 @@ export function createTestList(overrides?: Partial<TodoListRecord>): TodoListRec
 
 | Wave | Deliverable | Acceptance |
 | --- | --- | --- |
-| **Wave 1** | `packages/shared` Vitest + full module tests | `npm test --workspace=@quick-capture/shared` green; CI job added |
-| **Wave 2** | API serialize, rate limit, auth middleware, todo `409` routes | Conflict behavior matches spec |
-| **Wave 3** | Mobile/web formatters (or post-dedup shared tests) | Label parity verified |
-| **Wave 4** | Chat SSE client parse tests; chat service trimming | Streaming edge cases covered |
-| **Wave 5** | Worktree `lib.mjs` tests; mobile sync pure helpers | Port slug formula regression-proof |
+| **Wave 1** | `packages/shared` Vitest + full module tests | [x] `npm test --workspace=@quick-capture/shared` green; CI job added |
+| **Wave 2** | API serialize, rate limit, auth middleware, todo `409` routes | [x] Conflict behavior matches spec |
+| **Wave 3** | Mobile/web formatters (or post-dedup shared tests) | [x] Label parity verified |
+| **Wave 4** | Chat SSE client parse tests; chat service trimming | [x] Streaming edge cases covered (SSE parser) |
+| **Wave 5** | Worktree `lib.mjs` tests; mobile sync pure helpers | [x] Port slug formula regression-proof |
 | **Wave 6** | Component tests (review modal, filter bar) | RTL smoke tests; no snapshot churn |
 
 #### Dependencies
@@ -775,21 +775,20 @@ export function createTestList(overrides?: Partial<TodoListRecord>): TodoListRec
 
 #### Acceptance criteria (Phase 10 complete)
 
-- [ ] `npm test` at repo root runs all workspace test suites
-- [ ] CI fails on test regression (required check)
-- [ ] `packages/shared` has comprehensive tests for filter, tree, export, tags, and API schemas
-- [ ] API `PATCH /api/todos/:id` conflict path has explicit unit tests
-- [ ] Duplicated formatters consolidated or covered by identical test tables
-- [ ] [docs/features/unit-testing.md](./docs/features/unit-testing.md) documents how to add tests per package
+- [x] `npm test` at repo root runs all workspace test suites
+- [x] CI fails on test regression (required check)
+- [x] `packages/shared` has comprehensive tests for filter, tree, export, tags, and API schemas
+- [x] API `PATCH /api/todos/:id` conflict path has explicit unit tests
+- [x] Duplicated formatters consolidated or covered by identical test tables
+- [x] [docs/features/unit-testing.md](./docs/features/unit-testing.md) documents how to add tests per package
 
 ## Next up
 
 Phase 3 core is shipped. Remaining priorities:
 
-1. **Phase 10 — Unit testing** — Wave 1: `packages/shared` Vitest + CI `test` job ([Phase 10](#phase-10--unit-testing))
-2. **Phase 7 — TLS + deploy** — verify `docker:dev:tls` with real domain; Neon Auth origins; Vercel web deploy
-3. **Phase 6 — MiniMax agent chat** — cross-device QA; mobile attachments (future)
-4. **OAuth providers** — Google + GitHub in Neon Console
+1. **Phase 7 — TLS + deploy** — verify `docker:dev:tls` with real domain; Neon Auth origins; Vercel web deploy
+2. **Phase 6 — MiniMax agent chat** — cross-device QA; mobile attachments (future)
+3. **OAuth providers** — Google + GitHub in Neon Console
 5. **Apple Watch follow-ups** — open todo count glance, bidirectional sync
 6. **Wear OS follow-ups** — open todo count glance via Data Layer
 
@@ -814,7 +813,7 @@ Specs:
 - [docs/features/worktree-dev.md](./docs/features/worktree-dev.md)
 - [docs/features/deployment.md](./docs/features/deployment.md)
 - [docs/features/web-sidebar-nav.md](./docs/features/web-sidebar-nav.md)
-- [docs/features/unit-testing.md](./docs/features/unit-testing.md) (to create — see [Phase 10](#phase-10--unit-testing))
+- [docs/features/unit-testing.md](./docs/features/unit-testing.md)
 
 ## How to use this plan
 
